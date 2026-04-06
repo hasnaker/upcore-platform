@@ -18,6 +18,7 @@ interface OkrItem {
   progress: number;
   owner: string;
   deadline: string;
+  updatedAt?: string;
   level: 'company' | 'team' | 'individual';
   team?: string;
   keyResults: KeyResult[];
@@ -247,6 +248,17 @@ const OkrCard = ({ okr, onProgressUpdate }: { okr: OkrItem; onProgressUpdate: (k
               {okr.deadline}
             </span>
           </div>
+
+          {/* Last updated timestamp */}
+          {okr.updatedAt && (
+            <div className="mt-3 flex items-center gap-2 text-[11px] text-[#A3A3A3]">
+              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <circle cx="12" cy="12" r="10" />
+                <path d="M12 6v6l4 2" />
+              </svg>
+              Son guncelleme: {new Date(okr.updatedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+            </div>
+          )}
         </div>
       )}
     </div>

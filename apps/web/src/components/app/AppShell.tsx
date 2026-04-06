@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { AppSidebar } from './AppSidebar';
 import { AppTopbar } from './AppTopbar';
+import { CommandPalette } from './CommandPalette';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -29,6 +30,9 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="flex h-screen w-full overflow-hidden bg-[#fafafa]">
+      {/* Global Search (Cmd+K) */}
+      <CommandPalette />
+
       {/* Desktop sidebar */}
       <div className="hidden md:flex">
         <AppSidebar />

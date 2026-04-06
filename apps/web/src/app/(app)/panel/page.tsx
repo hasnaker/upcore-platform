@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Greeting } from './_components/Greeting';
 import { PriorityActions } from './_components/PriorityActions';
 import { WeeklyRecap } from './_components/WeeklyRecap';
@@ -22,6 +22,18 @@ interface IntelligenceSummary {
   nineBoxDistribution: Record<string, number>;
 }
 
+const formatTimeAgo = (date: Date): string => {
+  const now = new Date();
+  const diffMs = now.getTime() - date.getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return 'az once';
+  if (diffMin === 1) return '1 dk once';
+  if (diffMin < 60) return `${diffMin} dk once`;
+  const diffHours = Math.floor(diffMin / 60);
+  if (diffHours === 1) return '1 saat once';
+  return `${diffHours} saat once`;
+};
+
 interface IntelligenceEmployee {
   id: string;
   name: string;
@@ -41,8 +53,9 @@ export default function PanelPage() {
   const [burnoutData, setBurnoutData] = useState<BurnoutApiData | null>(null);
   const [actionData, setActionData] = useState<Record<string, unknown> | null>(null);
   const [intelligence, setIntelligence] = useState<{ employees: IntelligenceEmployee[]; summary: IntelligenceSummary } | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  useEffect(() => {
+  const fetchData = useCallback(() => {
     fetch('/api/burnout/heatmap')
       .then((r) => r.json())
       .then((data) => { if (data && (data.stats || data.critical)) setBurnoutData(data); })
@@ -57,7 +70,15 @@ export default function PanelPage() {
       .then((r) => r.json())
       .then((data) => { if (data && data.summary) setIntelligence(data); })
       .catch(() => {});
+
+    setLastUpdated(new Date());
   }, []);
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchData]);
 
   const summary = intelligence?.summary;
   const riskEmployees = intelligence?.employees?.filter((e) => e.synthesis.riskScore.level === 'critical' || e.synthesis.riskScore.level === 'high') || [];
@@ -70,9 +91,25 @@ export default function PanelPage() {
       {/* Organization Health Dashboard */}
       {summary && (
         <section>
-          <h2 className="mb-5 text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">
-            Organizasyon Saglik Paneli
-          </h2>
+          <div className="mb-5 flex items-center gap-3">
+            <h2 className="text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">
+              Organizasyon Saglik Paneli
+            </h2>
+            {lastUpdated && (
+              <span className="text-[11px] text-[#aaa]">
+                Son guncelleme: {formatTimeAgo(lastUpdated)}
+              </span>
+            )}
+            <button
+              onClick={fetchData}
+              className="flex h-6 w-6 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-[#f5f5f5] hover:text-[#525252]"
+              title="Yenile"
+            >
+              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            </button>
+          </div>
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
             <HealthCard label="Toplam Calisan" value={summary.totalEmployees} color="#0A0A0A" />
             <HealthCard label="Kritik Risk" value={summary.criticalRisk} color="#DC2626" alert={summary.criticalRisk > 0} />

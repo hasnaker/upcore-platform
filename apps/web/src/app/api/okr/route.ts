@@ -12,7 +12,7 @@ export async function GET() {
     const objectives = await pool.query(
       `SELECT
          o.id, o.level, o.title, o.progress, o.status, o.deadline,
-         o.parent_id, o.department_id,
+         o.updated_at, o.parent_id, o.department_id,
          e.ad as owner_first_name, e.soyad as owner_last_name,
          d.name_tr as department_name
        FROM app.okr_objectives o
@@ -49,6 +49,7 @@ export async function GET() {
       progress: Number(o.progress),
       owner: o.owner_first_name ? `${o.owner_first_name} ${o.owner_last_name}` : 'Atanmamış',
       deadline: o.deadline,
+      updatedAt: o.updated_at || undefined,
       level: o.level as 'company' | 'team' | 'individual',
       team: o.department_name || undefined,
       keyResults: (krByObjective.get(o.id) || []).map((kr) => ({
