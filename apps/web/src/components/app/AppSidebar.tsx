@@ -20,6 +20,10 @@ const NAV_ITEMS = [
   { href: '/egitim', label: 'Eğitim & Gelişim', icon: 'book' },
   { href: '/baglilik', label: 'Bağlılık', icon: 'heart' },
   { href: '/is-akislari', label: 'İş Akışları', icon: 'workflow' },
+  { href: '/tahminler', label: 'AI Tahminler', icon: 'brain' },
+  { href: '/onboarding-yonetimi', label: 'Onboarding', icon: 'rocket' },
+  { href: '/organizasyon', label: 'Organizasyon', icon: 'org' },
+  { href: '/raporlar', label: 'Raporlar', icon: 'report' },
   { href: '/analytics', label: 'Analitik', icon: 'trending-up' },
   { href: '/aksiyonlar', label: 'Aksiyonlar', icon: 'list' },
   { href: '/ayarlar', label: 'Ayarlar', icon: 'settings' },
@@ -45,6 +49,10 @@ const ICONS: Record<string, React.ReactNode> = {
   book: <><path strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path strokeLinecap="round" strokeLinejoin="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></>,
   heart: <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
   workflow: <><path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 12h18M3 18h18" /><circle cx="6" cy="6" r="2" fill="currentColor" /><circle cx="12" cy="12" r="2" fill="currentColor" /><circle cx="18" cy="18" r="2" fill="currentColor" /></>,
+  brain: <><path strokeLinecap="round" strokeLinejoin="round" d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z" /><path strokeLinecap="round" d="M9 21h6" /></>,
+  rocket: <><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z" /></>,
+  org: <><circle cx="12" cy="5" r="3" /><path strokeLinecap="round" d="M12 8v4M6 16a2 2 0 100-4 2 2 0 000 4zM18 16a2 2 0 100-4 2 2 0 000 4zM12 12l-6 2M12 12l6 2" /></>,
+  report: <><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path strokeLinecap="round" d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></>,
 };
 
 export function AppSidebar() {
