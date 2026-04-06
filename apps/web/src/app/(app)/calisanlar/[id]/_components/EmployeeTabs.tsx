@@ -149,12 +149,229 @@ function InfoRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-/* ─── Tükenmişlik Tab (DERİN) ─── */
+/* ─── Circular Gauge Component ─── */
+
+function CircularGauge({ value, size = 160, strokeWidth = 14 }: { value: number; size?: number; strokeWidth?: number }) {
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const progress = (value / 100) * circumference;
+  const center = size / 2;
+
+  const getColor = (v: number) => {
+    if (v >= 70) return '#DC2626';
+    if (v >= 45) return '#D97706';
+    return '#059669';
+  };
+
+  const getLabel = (v: number) => {
+    if (v >= 70) return 'Kritik';
+    if (v >= 45) return 'Orta Risk';
+    return 'Düşük';
+  };
+
+  const color = getColor(value);
+
+  return (
+    <div className="group relative flex flex-col items-center" title={`Tükenmişlik risk skoru: ${value}/100`}>
+      <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke="#f0f0f0"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={center}
+          cy={center}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={`${progress} ${circumference - progress}`}
+          strokeLinecap="round"
+          style={{ transition: 'stroke-dasharray 0.8s ease' }}
+        />
+      </svg>
+      <div className="absolute inset-0 flex flex-col items-center justify-center" style={{ width: size, height: size }}>
+        <span style={{ fontSize: 32, fontWeight: 800, color: '#111', lineHeight: 1 }}>{value}</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color, marginTop: 2 }}>{getLabel(value)}</span>
+      </div>
+      {/* Hover tooltip */}
+      <div className="pointer-events-none absolute -bottom-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#0A0A0A] px-3 py-1.5 text-[11px] font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+        BAT-12 tabanlı bileşik risk hesaplaması
+      </div>
+    </div>
+  );
+}
+
+/* ─── JD-R Factor Bar Component ─── */
+
+interface JDRFactor {
+  label: string;
+  score: number;
+  max: number;
+  type: 'demand' | 'resource';
+  status: 'red' | 'yellow' | 'green';
+}
+
+function JDRFactorBar({ factor }: { factor: JDRFactor }) {
+  const pct = (factor.score / factor.max) * 100;
+  const statusEmoji = factor.status === 'red' ? '🔴' : factor.status === 'yellow' ? '🟡' : '🟢';
+  const barColor = factor.status === 'red' ? '#DC2626' : factor.status === 'yellow' ? '#D97706' : '#059669';
+  const isDragging = factor.status === 'red';
+
+  return (
+    <div className="group relative flex items-center gap-3" title={`${factor.label}: ${factor.score}/${factor.max}`}>
+      <span style={{ fontSize: 12, color: isDragging ? '#DC2626' : '#555', fontWeight: isDragging ? 600 : 400, width: 140, flexShrink: 0 }}>
+        {factor.label}
+      </span>
+      <div style={{ flex: 1, height: 10, background: '#f0f0f0', borderRadius: 5, overflow: 'hidden', position: 'relative' }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 5, transition: 'width 0.6s ease' }} />
+      </div>
+      <span style={{ fontSize: 12, fontWeight: 600, color: '#111', width: 50, textAlign: 'right' }}>
+        {factor.score.toFixed(1)}/{factor.max}
+      </span>
+      <span style={{ fontSize: 12, width: 20 }}>{statusEmoji}</span>
+      {isDragging && (
+        <div className="pointer-events-none absolute -top-7 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-[#DC2626] px-2 py-1 text-[10px] font-medium text-white opacity-0 shadow transition-opacity group-hover:opacity-100">
+          Dengeyi olumsuz etkiliyor
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ─── Intervention Timeline Component ─── */
+
+interface Intervention {
+  date: string;
+  action: string;
+  metric: string;
+  before: number;
+  after: number;
+  improved: boolean;
+}
+
+function InterventionTimeline({ interventions }: { interventions: Intervention[] }) {
+  return (
+    <div className="flex flex-col">
+      {interventions.map((item, i) => {
+        const delta = item.after - item.before;
+        const deltaStr = delta > 0 ? `+${delta.toFixed(1)}` : delta.toFixed(1);
+        const deltaColor = item.improved ? '#059669' : '#DC2626';
+
+        return (
+          <div key={i} className="group relative flex gap-4" style={{ paddingBottom: i < interventions.length - 1 ? 20 : 0 }}>
+            {i < interventions.length - 1 && (
+              <div style={{ position: 'absolute', left: 11, top: 24, bottom: 0, width: 2, background: item.improved ? '#D1FAE5' : '#FEE2E2' }} />
+            )}
+            <div
+              style={{
+                width: 24, height: 24, borderRadius: '50%',
+                background: item.improved ? '#D1FAE5' : '#FEE2E2',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, flexShrink: 0, zIndex: 1,
+              }}
+            >
+              {item.improved ? '✓' : '→'}
+            </div>
+            <div className="flex-1">
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{item.action}</div>
+              <div style={{ fontSize: 12, color: '#555', marginTop: 2 }}>
+                {item.metric}: {item.before.toFixed(1)} → {item.after.toFixed(1)}{' '}
+                <span style={{ fontWeight: 600, color: deltaColor }}>({deltaStr})</span>
+                {item.improved && <span style={{ marginLeft: 4, color: '#059669' }}>iyileşme</span>}
+              </div>
+              <div style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{item.date}</div>
+            </div>
+            {/* Hover tooltip */}
+            <div className="pointer-events-none absolute -top-6 right-0 whitespace-nowrap rounded-md bg-[#0A0A0A] px-3 py-1 text-[10px] font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100">
+              {item.improved ? 'Başarılı müdahale' : 'Kısmi etki'}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─── Peer Comparison Bar Component ─── */
+
+function PeerComparisonBar({ employeeScore, departmentAvg, companyAvg }: { employeeScore: number; departmentAvg: number; companyAvg: number }) {
+  const maxVal = 5;
+  const empPct = (employeeScore / maxVal) * 100;
+  const deptPct = (departmentAvg / maxVal) * 100;
+  const compPct = (companyAvg / maxVal) * 100;
+  const diffFromDept = ((employeeScore - departmentAvg) / departmentAvg * 100).toFixed(0);
+  const isAbove = employeeScore > departmentAvg;
+
+  return (
+    <div className="flex flex-col gap-4">
+      {[
+        { label: 'Bu çalışan', value: employeeScore, pct: empPct, color: employeeScore >= 3.02 ? '#DC2626' : employeeScore >= 2.59 ? '#D97706' : '#059669' },
+        { label: 'Departman ort.', value: departmentAvg, pct: deptPct, color: '#5E5CE6' },
+        { label: 'Şirket ort.', value: companyAvg, pct: compPct, color: '#A3A3A3' },
+      ].map((row) => (
+        <div key={row.label} className="group relative flex items-center gap-3" title={`${row.label}: ${row.value.toFixed(2)}`}>
+          <span style={{ fontSize: 12, color: '#555', width: 110, flexShrink: 0 }}>{row.label}</span>
+          <div style={{ flex: 1, height: 12, background: '#f0f0f0', borderRadius: 6, overflow: 'hidden' }}>
+            <div style={{ width: `${row.pct}%`, height: '100%', background: row.color, borderRadius: 6, transition: 'width 0.6s' }} />
+          </div>
+          <span style={{ fontSize: 12, fontWeight: 600, color: '#111', width: 35, textAlign: 'right' }}>{row.value.toFixed(2)}</span>
+        </div>
+      ))}
+      <div style={{
+        background: isAbove ? '#FEE2E2' : '#D1FAE5',
+        borderRadius: 8, padding: 12, fontSize: 13,
+        color: isAbove ? '#991B1B' : '#065F46',
+        fontWeight: 500,
+      }}>
+        {isAbove
+          ? `⚠️ Bu çalışanın BAT skoru departman ortalamasının %${Math.abs(Number(diffFromDept))} üzerinde`
+          : `✓ Bu çalışanın BAT skoru departman ortalamasının %${Math.abs(Number(diffFromDept))} altında`
+        }
+      </div>
+    </div>
+  );
+}
+
+/* ─── Trajectory Sparkline Component ─── */
+
+function TrajectorySparkline({ points, predicted }: { points: number[]; predicted: number }) {
+  const width = 200;
+  const height = 48;
+  const padding = 4;
+  const allPoints = [...points, predicted];
+  const minY = Math.min(...allPoints) - 0.3;
+  const maxY = Math.max(...allPoints) + 0.3;
+
+  const getX = (i: number) => padding + (i / (allPoints.length - 1)) * (width - padding * 2);
+  const getY = (v: number) => height - padding - ((v - minY) / (maxY - minY)) * (height - padding * 2);
+
+  const solidPath = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${getX(i).toFixed(1)} ${getY(p).toFixed(1)}`).join(' ');
+  const dashPath = `M ${getX(points.length - 1).toFixed(1)} ${getY(points[points.length - 1]!).toFixed(1)} L ${getX(points.length).toFixed(1)} ${getY(predicted).toFixed(1)}`;
+
+  return (
+    <svg width={width} height={height} style={{ overflow: 'visible' }}>
+      <path d={solidPath} fill="none" stroke="#D97706" strokeWidth={2} />
+      <path d={dashPath} fill="none" stroke="#DC2626" strokeWidth={2} strokeDasharray="4 3" />
+      {points.map((p, i) => (
+        <circle key={i} cx={getX(i)} cy={getY(p)} r={3} fill="#D97706" />
+      ))}
+      <circle cx={getX(points.length)} cy={getY(predicted)} r={4} fill="#DC2626" stroke="#fff" strokeWidth={1.5} />
+    </svg>
+  );
+}
+
+/* ─── Tükenmişlik Tab (DERİN — ENTERPRISE 360°) ─── */
 
 function TukenmislikTab({ employee }: { employee: EmployeeView }) {
-  // Simulated BAT-12-TR scores (will come from API when connected)
+  // Static data — will be replaced with API call
   const bat = { exhaustion: 3.2, mentalDistance: 2.8, cognitive: 2.1, emotional: 2.5, total: 2.65 };
-  const jdr = { demands: 78, resources: 56 };
+  const riskScore = 62; // Composite 0-100 risk score
+
   const level = bat.total >= 3.02 ? 'red' : bat.total >= 2.59 ? 'amber' : 'green';
   const levelLabel = level === 'red' ? 'Yüksek Risk' : level === 'amber' ? 'Orta Risk' : 'Düşük Risk';
   const levelColor = level === 'red' ? '#DC2626' : level === 'amber' ? '#D97706' : '#059669';
@@ -167,81 +384,209 @@ function TukenmislikTab({ employee }: { employee: EmployeeView }) {
     { label: 'Duygusal Bozulma', score: bat.emotional, max: 5 },
   ];
 
-  const weeklyTrend = [2.1, 2.3, 2.5, 2.65];
+  // Static data — will be replaced with API call
+  const jdrFactors: JDRFactor[] = [
+    // Talepler (demands) — yüksek = kötü
+    { label: 'İş Yükü', score: 8.1, max: 10, type: 'demand', status: 'red' },
+    { label: 'Zaman Baskısı', score: 7.5, max: 10, type: 'demand', status: 'red' },
+    { label: 'Duygusal Talep', score: 6.2, max: 10, type: 'demand', status: 'yellow' },
+    { label: 'Rol Belirsizliği', score: 4.0, max: 10, type: 'demand', status: 'green' },
+    { label: 'İş-Ev Çatışması', score: 5.8, max: 10, type: 'demand', status: 'yellow' },
+    { label: 'Fiziksel Talep', score: 3.2, max: 10, type: 'demand', status: 'green' },
+    // Kaynaklar (resources) — düşük = kötü
+    { label: 'Özerklik', score: 4.2, max: 10, type: 'resource', status: 'red' },
+    { label: 'Sosyal Destek', score: 6.8, max: 10, type: 'resource', status: 'green' },
+    { label: 'Geri Bildirim', score: 5.1, max: 10, type: 'resource', status: 'yellow' },
+    { label: 'Gelişim Fırsatı', score: 3.5, max: 10, type: 'resource', status: 'red' },
+    { label: 'Anlam Duygusu', score: 7.2, max: 10, type: 'resource', status: 'green' },
+    { label: 'Takdir', score: 4.8, max: 10, type: 'resource', status: 'yellow' },
+  ];
+
+  const demands = jdrFactors.filter(f => f.type === 'demand');
+  const resources = jdrFactors.filter(f => f.type === 'resource');
+  const draggingFactors = jdrFactors.filter(f => f.status === 'red');
+
+  // Static data — will be replaced with API call
+  const interventions: Intervention[] = [
+    { date: '15 Mart 2026', action: 'Haftalık 1:1 koçluk başlatıldı', metric: 'BAT skoru', before: 3.2, after: 2.8, improved: true },
+    { date: '01 Şubat 2026', action: 'İş yükü yeniden dağıtıldı', metric: 'Talep skoru', before: 8.5, after: 7.2, improved: true },
+    { date: '10 Ocak 2026', action: 'Esnek çalışma saatleri tanındı', metric: 'Özerklik', before: 3.0, after: 4.2, improved: true },
+    { date: '15 Aralık 2025', action: 'Mentorluk programına dahil edildi', metric: 'Gelişim Fırsatı', before: 2.8, after: 3.5, improved: true },
+    { date: '01 Aralık 2025', action: 'Takım yapısı değişikliği', metric: 'Sosyal Destek', before: 5.5, after: 6.8, improved: true },
+  ];
+
+  // Static data — will be replaced with API call
+  const peerData = { employeeScore: bat.total, departmentAvg: 1.96, companyAvg: 2.12 };
+
+  // Trajectory prediction
+  const trendPoints = [2.1, 2.3, 2.5, 2.65];
+  const predictedScore = 2.85;
+  const burnoutProbability = 68;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Overall Score */}
+      {/* ─── SECTION 1: Risk Score Gauge + BAT Score ─── */}
       <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>BAT-12-TR Skoru</h3>
-            <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Son pulse survey sonucu · Koçak, Gençay & Schaufeli (2022)</p>
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:gap-10">
+          {/* Gauge */}
+          <div className="flex flex-col items-center gap-3">
+            <CircularGauge value={riskScore} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: '#555' }}>Risk Skoru</span>
           </div>
-          <div className="flex items-center gap-3">
-            <span style={{ fontSize: 28, fontWeight: 800, color: '#111' }}>{bat.total.toFixed(2)}</span>
-            <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: levelBg, color: levelColor }}>{levelLabel}</span>
-          </div>
-        </div>
 
-        {/* Subscale bars */}
-        <div className="mt-6 flex flex-col gap-3">
-          {subscales.map(s => {
-            const pct = (s.score / s.max) * 100;
-            const barColor = s.score >= 3.02 ? '#DC2626' : s.score >= 2.59 ? '#D97706' : '#059669';
-            return (
-              <div key={s.label} className="flex items-center gap-3">
-                <span style={{ fontSize: 12, color: '#555', width: 150, flexShrink: 0 }}>{s.label}</span>
-                <div style={{ flex: 1, height: 8, background: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 4, transition: 'width 0.5s' }} />
-                </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#111', width: 35, textAlign: 'right' }}>{s.score.toFixed(1)}</span>
+          {/* BAT Details */}
+          <div className="flex-1">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>BAT-12-TR Skoru</h3>
+                <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Son pulse survey sonucu · Koçak, Gençay & Schaufeli (2022)</p>
               </div>
-            );
-          })}
+              <div className="flex items-center gap-3">
+                <span style={{ fontSize: 28, fontWeight: 800, color: '#111' }}>{bat.total.toFixed(2)}</span>
+                <span style={{ fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 20, background: levelBg, color: levelColor }}>{levelLabel}</span>
+              </div>
+            </div>
+
+            {/* Subscale bars */}
+            <div className="mt-6 flex flex-col gap-3">
+              {subscales.map(s => {
+                const pct = (s.score / s.max) * 100;
+                const barColor = s.score >= 3.02 ? '#DC2626' : s.score >= 2.59 ? '#D97706' : '#059669';
+                return (
+                  <div key={s.label} className="group relative flex items-center gap-3" title={`${s.label}: ${s.score.toFixed(2)} / ${s.max}`}>
+                    <span style={{ fontSize: 12, color: '#555', width: 150, flexShrink: 0 }}>{s.label}</span>
+                    <div style={{ flex: 1, height: 8, background: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
+                      <div style={{ width: `${pct}%`, height: '100%', background: barColor, borderRadius: 4, transition: 'width 0.5s' }} />
+                    </div>
+                    <span style={{ fontSize: 12, fontWeight: 600, color: '#111', width: 35, textAlign: 'right' }}>{s.score.toFixed(1)}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* JD-R Balance */}
+      {/* ─── SECTION 2: JD-R Factor Breakdown (12 factors) ─── */}
       <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
-        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 16 }}>JD-R Dengesi</h3>
-        <p style={{ fontSize: 12, color: '#888', marginBottom: 16 }}>Bakker & Demerouti (2007) — İş Talepleri vs Kaynaklar</p>
-        <div className="flex flex-col gap-4">
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 4 }}>JD-R Faktör Analizi</h3>
+        <p style={{ fontSize: 12, color: '#888', marginBottom: 20 }}>Bakker & Demerouti (2007) — 12 Faktör Detay Dökümü</p>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          {/* Demands */}
           <div>
-            <div className="flex justify-between" style={{ fontSize: 12, marginBottom: 4 }}>
-              <span style={{ color: '#555' }}>Talepler (iş yükü, baskı, belirsizlik)</span>
-              <span style={{ fontWeight: 600, color: '#DC2626' }}>{jdr.demands}%</span>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#DC2626', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Talepler (Demands)
             </div>
-            <div style={{ height: 10, background: '#f0f0f0', borderRadius: 5 }}>
-              <div style={{ width: `${jdr.demands}%`, height: '100%', background: '#DC2626', borderRadius: 5 }} />
+            <div className="flex flex-col gap-3">
+              {demands.map(f => <JDRFactorBar key={f.label} factor={f} />)}
             </div>
           </div>
+          {/* Resources */}
           <div>
-            <div className="flex justify-between" style={{ fontSize: 12, marginBottom: 4 }}>
-              <span style={{ color: '#555' }}>Kaynaklar (özerklik, destek, gelişim)</span>
-              <span style={{ fontWeight: 600, color: '#059669' }}>{jdr.resources}%</span>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#059669', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 1 }}>
+              Kaynaklar (Resources)
             </div>
-            <div style={{ height: 10, background: '#f0f0f0', borderRadius: 5 }}>
-              <div style={{ width: `${jdr.resources}%`, height: '100%', background: '#059669', borderRadius: 5 }} />
+            <div className="flex flex-col gap-3">
+              {resources.map(f => <JDRFactorBar key={f.label} factor={f} />)}
             </div>
           </div>
-          <div style={{ background: '#FEF3C7', borderRadius: 8, padding: 12, fontSize: 13, color: '#92400E', marginTop: 4 }}>
-            ⚠️ Denge bozuk — talepler kaynakların %{jdr.demands - jdr.resources} üzerinde. Müdahale önerilir.
+        </div>
+
+        {/* Dragging factors warning */}
+        {draggingFactors.length > 0 && (
+          <div style={{ background: '#FEF3C7', borderRadius: 8, padding: 14, fontSize: 13, color: '#92400E', marginTop: 20 }}>
+            ⚠️ <strong>Dengeyi bozan faktörler:</strong>{' '}
+            {draggingFactors.map(f => f.label).join(', ')}
+            {' — '}
+            Toplam {draggingFactors.length} faktör kritik seviyede. Öncelikli müdahale alanları olarak değerlendirilmeli.
+          </div>
+        )}
+      </div>
+
+      {/* ─── SECTION 3: Intervention History Timeline ─── */}
+      <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
+        <div className="mb-5 flex items-center justify-between">
+          <div>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>Müdahale Geçmişi</h3>
+            <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>Uygulanan aksiyonlar ve sonuçları</p>
+          </div>
+          <div style={{
+            background: '#D1FAE5', borderRadius: 20, padding: '4px 12px',
+            fontSize: 11, fontWeight: 700, color: '#059669',
+          }}>
+            {interventions.filter(i => i.improved).length}/{interventions.length} başarılı
+          </div>
+        </div>
+        <InterventionTimeline interventions={interventions} />
+      </div>
+
+      {/* ─── SECTION 4: Peer Comparison ─── */}
+      <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 4 }}>Departman Karşılaştırması</h3>
+        <p style={{ fontSize: 12, color: '#888', marginBottom: 16 }}>Anonim BAT-12 karşılaştırması (kişi bilgisi paylaşılmaz)</p>
+        <PeerComparisonBar
+          employeeScore={peerData.employeeScore}
+          departmentAvg={peerData.departmentAvg}
+          companyAvg={peerData.companyAvg}
+        />
+      </div>
+
+      {/* ─── SECTION 5: Predicted Trajectory ─── */}
+      <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 4 }}>Tahmin Edilen Gidişat</h3>
+        <p style={{ fontSize: 12, color: '#888', marginBottom: 20 }}>Mevcut trende dayalı 30 günlük projeksiyon</p>
+
+        <div className="flex flex-col items-start gap-6 lg:flex-row lg:items-center lg:gap-10">
+          {/* Sparkline */}
+          <div className="group relative" title="Son 4 hafta + 30 günlük tahmin">
+            <TrajectorySparkline points={trendPoints} predicted={predictedScore} />
+            <div className="mt-2 flex justify-between" style={{ width: 200 }}>
+              <span style={{ fontSize: 10, color: '#888' }}>4 hafta önce</span>
+              <span style={{ fontSize: 10, color: '#DC2626', fontWeight: 600 }}>+30 gün</span>
+            </div>
+          </div>
+
+          {/* Prediction details */}
+          <div className="flex-1">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-3">
+                <div style={{
+                  width: 48, height: 48, borderRadius: '50%', background: '#FEE2E2',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16, fontWeight: 800, color: '#DC2626',
+                }}>
+                  %{burnoutProbability}
+                </div>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: '#111' }}>
+                    30 gün sonra tahmini: %{burnoutProbability} tükenmişlik olasılığı
+                  </div>
+                  <div style={{ fontSize: 12, color: '#DC2626', fontWeight: 600 }}>↑ Yükselen trend</div>
+                </div>
+              </div>
+              <div style={{ fontSize: 12, color: '#555' }}>
+                Tahmini BAT skoru: <strong>{predictedScore.toFixed(2)}</strong> (şu an: {bat.total.toFixed(2)})
+              </div>
+              <div style={{ background: '#FEE2E2', borderRadius: 8, padding: 12, fontSize: 13, color: '#991B1B' }}>
+                🚨 Müdahale yapılmazsa 30 gün içinde kırmızı bölgeye geçme riski yüksek. Acil aksiyon önerilir.
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 4-Week Trend */}
+      {/* ─── 4-Week Trend (kept from original) ─── */}
       <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
         <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 16 }}>4 Haftalık Trend</h3>
         <div className="flex items-end gap-3" style={{ height: 80 }}>
-          {weeklyTrend.map((score, i) => {
+          {trendPoints.map((score, i) => {
             const h = (score / 5) * 100;
             const color = score >= 3.02 ? '#DC2626' : score >= 2.59 ? '#D97706' : '#059669';
             return (
-              <div key={i} className="flex flex-1 flex-col items-center gap-1">
+              <div key={i} className="group relative flex flex-1 flex-col items-center gap-1" title={`Hafta ${i + 1}: ${score.toFixed(2)}`}>
                 <span style={{ fontSize: 11, fontWeight: 600, color: '#111' }}>{score.toFixed(1)}</span>
-                <div style={{ width: '100%', maxWidth: 40, height: `${h}%`, background: color, borderRadius: 4, minHeight: 8 }} />
+                <div style={{ width: '100%', maxWidth: 40, height: `${h}%`, background: color, borderRadius: 4, minHeight: 8, transition: 'height 0.4s' }} />
                 <span style={{ fontSize: 10, color: '#888' }}>Hf {i + 1}</span>
               </div>
             );

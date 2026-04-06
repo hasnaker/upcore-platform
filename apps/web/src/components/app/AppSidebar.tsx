@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 
 const NAV_ITEMS = [
   { href: '/panel', label: 'Aksiyon Merkezi', icon: 'zap' },
+  { href: '/executive', label: 'Yönetici Paneli', icon: 'bar-chart' },
   { href: '/calisanlar', label: 'Çalışanlar', icon: 'users' },
   { href: '/departmanlar', label: 'Departmanlar', icon: 'building' },
   { href: '/izinler', label: 'İzinler', icon: 'calendar' },
@@ -12,6 +13,7 @@ const NAV_ITEMS = [
   { href: '/tukenmislik', label: 'Tükenmişlik', icon: 'activity' },
   { href: '/anketler', label: 'Anketler', icon: 'clipboard' },
   { href: '/degerlendirmeler', label: 'Değerlendirmeler', icon: 'target' },
+  { href: '/analytics', label: 'Analitik', icon: 'trending-up' },
   { href: '/aksiyonlar', label: 'Aksiyonlar', icon: 'list' },
   { href: '/ayarlar', label: 'Ayarlar', icon: 'settings' },
 ];
@@ -27,6 +29,8 @@ const ICONS: Record<string, React.ReactNode> = {
   target: <><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></>,
   list: <><path strokeLinecap="round" strokeLinejoin="round" d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" /></>,
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
+  'bar-chart': <><path strokeLinecap="round" strokeLinejoin="round" d="M18 20V10M12 20V4M6 20v-6" /></>,
+  'trending-up': <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></>,
 };
 
 export function AppSidebar() {

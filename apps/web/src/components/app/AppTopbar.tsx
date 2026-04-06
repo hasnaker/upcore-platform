@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation';
 
 const PAGE_TITLES: Record<string, string> = {
   '/panel': 'Aksiyon Merkezi',
+  '/executive': 'Yönetici Paneli',
   '/calisanlar': 'Çalışanlar',
   '/departmanlar': 'Departmanlar',
   '/izinler': 'İzinler',
@@ -11,6 +12,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/tukenmislik': 'Tükenmişlik',
   '/anketler': 'Anketler',
   '/degerlendirmeler': 'Değerlendirmeler',
+  '/analytics': 'Analitik',
   '/aksiyonlar': 'Aksiyonlar',
   '/ayarlar': 'Ayarlar',
 };

@@ -11,7 +11,9 @@ import {
   Building2,
   MapPin,
   User,
+  BarChart3,
 } from 'lucide-react';
+import { DepartmentAnalytics } from './_components/DepartmentAnalytics';
 
 interface Department {
   id: string;
@@ -249,6 +251,7 @@ export default function DepartmanlarPage() {
   const [formName, setFormName] = useState('');
   const [formHead, setFormHead] = useState('');
   const [toast, setToast] = useState<string | null>(null);
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   useEffect(() => {
     fetch('/api/departments')
@@ -442,12 +445,26 @@ export default function DepartmanlarPage() {
           {selected ? (
             <>
               <div className="border-b border-[#EDEDED] px-6 py-5">
-                <div className="flex items-center gap-3">
-                  <span
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: selected.color }}
-                  />
-                  <h2 className="text-lg font-semibold text-[#0A0A0A]">{selected.name}</h2>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span
+                      className="h-3 w-3 rounded-full"
+                      style={{ backgroundColor: selected.color }}
+                    />
+                    <h2 className="text-lg font-semibold text-[#0A0A0A]">{selected.name}</h2>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowAnalytics(!showAnalytics)}
+                    className={`inline-flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+                      showAnalytics
+                        ? 'bg-[#5E5CE6] text-white'
+                        : 'border border-[#EDEDED] text-[#525252] hover:bg-[#F5F5F5]'
+                    }`}
+                  >
+                    <BarChart3 className="h-3.5 w-3.5" />
+                    Analitik
+                  </button>
                 </div>
               </div>
               <div className="grid gap-6 p-6 sm:grid-cols-2">
@@ -480,7 +497,7 @@ export default function DepartmanlarPage() {
                   </div>
                 </div>
               </div>
-              {selected.children.length > 0 && (
+              {selected.children.length > 0 && !showAnalytics && (
                 <div className="border-t border-[#EDEDED] px-6 py-4">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#A3A3A3]">Alt Departmanlar</p>
                   <div className="flex flex-col gap-2">
@@ -497,6 +514,15 @@ export default function DepartmanlarPage() {
                       </button>
                     ))}
                   </div>
+                </div>
+              )}
+              {/* Department Analytics Panel */}
+              {showAnalytics && (
+                <div className="border-t border-[#EDEDED] p-6">
+                  <DepartmentAnalytics
+                    departmentId={selected.id}
+                    departmentName={selected.name}
+                  />
                 </div>
               )}
             </>

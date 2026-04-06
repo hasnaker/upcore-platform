@@ -13,6 +13,7 @@ import {
   Sun,
   Globe,
   Shield,
+  ShieldCheck,
   Mail,
   Key,
   Copy,
@@ -21,10 +22,18 @@ import {
   UserPlus,
   X,
   ChevronDown,
+  ChevronRight,
   FileText,
+  AlertTriangle,
+  Eye,
+  Trash2,
+  Edit3,
+  Plus,
+  Network,
+  Download,
 } from 'lucide-react';
 
-type TabKey = 'profile' | 'company' | 'modules' | 'notifications' | 'billing' | 'team' | 'developer' | 'audit';
+type TabKey = 'profile' | 'company' | 'modules' | 'notifications' | 'billing' | 'team' | 'developer' | 'audit' | 'kvkk';
 
 interface Toggle {
   id: string;
@@ -76,6 +85,35 @@ export default function AyarlarPage() {
   const [companyDomain, setCompanyDomain] = useState('upcore.io');
   const [companySize, setCompanySize] = useState('50-100');
   const [companySector, setCompanySector] = useState('Teknoloji');
+
+  // Multi-Entity / Holding state
+  const [isHolding, setIsHolding] = useState(false);
+  const [consolidatedReporting, setConsolidatedReporting] = useState(true);
+  const [entities, setEntities] = useState([
+    { id: '1', name: 'Acme Teknoloji A.S.', vkn: '1234567890', employees: 48, modules: ['Tukenmislik', 'Izin', 'Belgeler', 'Degerlendirme'], active: true },
+    { id: '2', name: 'Acme Danismanlik Ltd.', vkn: '9876543210', employees: 22, modules: ['Izin', 'Belgeler'], active: true },
+    { id: '3', name: 'Acme Lojistik A.S.', vkn: '5678901234', employees: 65, modules: ['Tukenmislik', 'Izin', 'Belgeler', 'OKR'], active: true },
+  ]);
+  const [addEntityOpen, setAddEntityOpen] = useState(false);
+  const [newEntityName, setNewEntityName] = useState('');
+  const [newEntityVkn, setNewEntityVkn] = useState('');
+
+  // KVKK state
+  const [kvkkScore] = useState(78);
+  const [dsrRequests, setDsrRequests] = useState<
+    { id: string; date: string; requester: string; type: string; status: string; slaRemaining: number }[]
+  >([
+    { id: '1', date: '2026-03-28', requester: 'Elif Demir', type: 'Erisim', status: 'Tamamlandi', slaRemaining: 0 },
+    { id: '2', date: '2026-04-01', requester: 'Ahmet Yilmaz', type: 'Silme', status: 'Isleniyor', slaRemaining: 18 },
+    { id: '3', date: '2026-04-03', requester: 'Merve Koc', type: 'Duzeltme', status: 'Beklemede', slaRemaining: 27 },
+  ]);
+  const [kvkkAuditLog] = useState([
+    { id: '1', actor: 'Hasan Aker', action: 'Calisan verisine eristi', target: 'Tum bordro verileri', time: '2 saat once', type: 'read' as const },
+    { id: '2', actor: 'Ayse Kara', action: 'Calisan bilgisi guncelledi', target: 'Elif Demir - Adres', time: '4 saat once', type: 'update' as const },
+    { id: '3', actor: 'Mehmet B.', action: 'Belge indirdi', target: 'Is Sozlesmesi - Can D.', time: '6 saat once', type: 'read' as const },
+    { id: '4', actor: 'Sistem', action: 'Toplu veri aktarimi', target: 'Aylik bordro raporu', time: '1 gun once', type: 'export' as const },
+    { id: '5', actor: 'Selin Ozturk', action: 'Calisan silme talebi isledi', target: 'Eski calisan - ID:4521', time: '2 gun once', type: 'delete' as const },
+  ]);
 
   // Modules with pricing
   const [modules, setModules] = useState<ModuleToggle[]>([
@@ -184,6 +222,7 @@ export default function AyarlarPage() {
     { key: 'billing', label: 'Abonelik', icon: <CreditCard className="h-4 w-4" /> },
     { key: 'developer', label: 'Gelistirici', icon: <Key className="h-4 w-4" /> },
     { key: 'audit', label: 'Islem Kaydi', icon: <FileText className="h-4 w-4" /> },
+    { key: 'kvkk', label: 'KVKK Uyum', icon: <ShieldCheck className="h-4 w-4" /> },
   ];
 
   const roleColors: Record<string, string> = {
@@ -331,9 +370,10 @@ export default function AyarlarPage() {
         </div>
       )}
 
-      {/* Company Tab */}
+      {/* Company Tab — Enhanced with Multi-Entity / Holding Support */}
       {activeTab === 'company' && (
-        <div className="max-w-2xl">
+        <div className="max-w-3xl">
+          {/* Company info card */}
           <div className="rounded-xl border border-[#EDEDED] bg-white">
             <div className="border-b border-[#EDEDED] px-6 py-4">
               <h2 className="text-base font-semibold text-[#0A0A0A]">Sirket Bilgileri</h2>
@@ -401,6 +441,242 @@ export default function AyarlarPage() {
               </button>
             </div>
           </div>
+
+          {/* Multi-Entity / Holding Section */}
+          <div className="mt-6 rounded-xl border border-[#EDEDED] bg-white">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
+              <div className="flex items-center gap-3">
+                <Network className="h-5 w-5 text-[#5E5CE6]" />
+                <div>
+                  <h2 className="text-base font-semibold text-[#0A0A0A]">
+                    {isHolding ? 'Holding Yapisi' : 'Coklu Sirket Yapisi'}
+                  </h2>
+                  <p className="text-xs text-[#A3A3A3]">
+                    {isHolding
+                      ? `${entities.length} sirket · ${entities.reduce((s, e) => s + e.employees, 0)} toplam calisan`
+                      : 'Holding yapisina gecerek birden fazla sirket yonetin'}
+                  </p>
+                </div>
+              </div>
+              {!isHolding && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsHolding(true);
+                    showToast('Holding yapisi aktif edildi');
+                  }}
+                  className="inline-flex items-center gap-2 rounded-lg bg-[#5E5CE6] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#4B4ACE] active:scale-[0.97]"
+                >
+                  <Network className="h-4 w-4" />
+                  Holding Yapisina Gec
+                </button>
+              )}
+            </div>
+
+            {isHolding ? (
+              <div className="p-6">
+                {/* Consolidated reporting toggle */}
+                <div className="mb-5 flex items-center justify-between rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
+                  <div>
+                    <p className="text-sm font-medium text-[#0A0A0A]">Konsolide Raporlama</p>
+                    <p className="text-xs text-[#A3A3A3]">Tum sirketleri birlestir — tek gorunum</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setConsolidatedReporting(!consolidatedReporting);
+                      showToast(consolidatedReporting ? 'Bireysel gorunum aktif' : 'Konsolide gorunum aktif');
+                    }}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${consolidatedReporting ? 'bg-[#5E5CE6]' : 'bg-[#D4D4D4]'}`}
+                  >
+                    <span className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${consolidatedReporting ? 'translate-x-[22px]' : 'translate-x-0.5'}`} />
+                  </button>
+                </div>
+
+                {/* Entity tree */}
+                <div className="mb-4 flex items-center justify-between">
+                  <p className="text-xs font-medium uppercase tracking-wider text-[#A3A3A3]">Sirket Agaci</p>
+                  <button
+                    type="button"
+                    onClick={() => setAddEntityOpen(true)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-[#EDEDED] px-3 py-1.5 text-xs font-medium text-[#525252] transition-colors hover:bg-[#FAFAFA]"
+                  >
+                    <Plus className="h-3.5 w-3.5" />
+                    Yeni Sirket Ekle
+                  </button>
+                </div>
+
+                {/* Holding root */}
+                <div className="rounded-lg border border-[#5E5CE6]/20 bg-[#F8F7FF] px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#5E5CE6] text-xs font-bold text-white">H</div>
+                    <div>
+                      <p className="text-sm font-semibold text-[#0A0A0A]">{companyName} Holding</p>
+                      <p className="text-[11px] text-[#A3A3A3]">Ana sirket · VKN: 0000000000</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Child entities */}
+                <div className="ml-6 mt-2 flex flex-col gap-2 border-l-2 border-[#EDEDED] pl-4">
+                  {entities.map((entity) => (
+                    <div
+                      key={entity.id}
+                      className={`rounded-lg border bg-white px-4 py-3 transition-colors hover:border-[#D4D4D4] ${entity.active ? 'border-[#EDEDED]' : 'border-[#EDEDED] opacity-50'}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#F5F5F5] text-xs font-semibold text-[#525252]">
+                            {entity.name.charAt(0)}
+                          </div>
+                          <div>
+                            <p className="text-sm font-medium text-[#0A0A0A]">{entity.name}</p>
+                            <p className="text-[11px] text-[#A3A3A3]">VKN: {entity.vkn} · {entity.employees} calisan</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className={`inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold ${entity.active ? 'bg-[#F0FDF4] text-[#059669]' : 'bg-[#F5F5F5] text-[#A3A3A3]'}`}>
+                            {entity.active ? 'Aktif' : 'Pasif'}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEntities((prev) => prev.map((e) => e.id === entity.id ? { ...e, active: !e.active } : e));
+                              showToast(`${entity.name} ${entity.active ? 'devre disi birakildi' : 'aktif edildi'}`);
+                            }}
+                            className="rounded-md p-1.5 text-[#A3A3A3] transition-colors hover:bg-[#F5F5F5] hover:text-[#525252]"
+                          >
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                      {/* Active modules for this entity */}
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {entity.modules.map((mod) => (
+                          <span key={mod} className="rounded-full bg-[#F5F5F5] px-2 py-0.5 text-[10px] font-medium text-[#525252]">
+                            {mod}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Summary */}
+                <div className="mt-4 grid grid-cols-3 gap-3">
+                  <div className="rounded-lg bg-[#FAFAFA] p-3 text-center">
+                    <p className="text-lg font-bold tabular-nums text-[#0A0A0A]">{entities.length}</p>
+                    <p className="text-[10px] text-[#A3A3A3]">Sirket</p>
+                  </div>
+                  <div className="rounded-lg bg-[#FAFAFA] p-3 text-center">
+                    <p className="text-lg font-bold tabular-nums text-[#0A0A0A]">{entities.reduce((s, e) => s + e.employees, 0)}</p>
+                    <p className="text-[10px] text-[#A3A3A3]">Toplam Calisan</p>
+                  </div>
+                  <div className="rounded-lg bg-[#FAFAFA] p-3 text-center">
+                    <p className="text-lg font-bold tabular-nums text-[#0A0A0A]">{entities.filter((e) => e.active).length}</p>
+                    <p className="text-[10px] text-[#A3A3A3]">Aktif Sirket</p>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="p-6">
+                <div className="flex flex-col items-center gap-4 rounded-lg border border-dashed border-[#EDEDED] bg-[#FAFAFA] px-8 py-10 text-center">
+                  <Network className="h-10 w-10 text-[#A3A3A3]" />
+                  <div>
+                    <p className="text-sm font-medium text-[#0A0A0A]">Holding Yapisi</p>
+                    <p className="mt-1 max-w-sm text-xs leading-relaxed text-[#A3A3A3]">
+                      Birden fazla tüzel kisilik (sirket, belediye birimleri, baglilar) yonetin.
+                      Konsolide raporlama, merkezi KVKK yonetimi ve sirketler arasi
+                      karsilastirmali analizler icin holding yapisina gecin.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsHolding(true);
+                      showToast('Holding yapisi aktif edildi');
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#5E5CE6] px-5 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#4B4ACE] active:scale-[0.97]"
+                  >
+                    <Network className="h-4 w-4" />
+                    Holding Yapisina Gec
+                  </button>
+                  <p className="text-[11px] text-[#A3A3A3]">Enterprise planinda dahil · Fiyatlandirma icin iletisime gecin</p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Add Entity Modal */}
+          {addEntityOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A]/50 p-4">
+              <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+                <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
+                  <h3 className="text-base font-semibold text-[#0A0A0A]">Yeni Sirket Ekle</h3>
+                  <button type="button" onClick={() => setAddEntityOpen(false)} className="text-[#A3A3A3] hover:text-[#525252]">
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+                <div className="flex flex-col gap-4 p-6">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[#525252]">Sirket Adi</label>
+                    <input
+                      type="text"
+                      value={newEntityName}
+                      onChange={(e) => setNewEntityName(e.target.value)}
+                      placeholder="Acme Yeni Sirket A.S."
+                      className="w-full rounded-lg border border-[#EDEDED] px-3 py-2.5 text-sm text-[#0A0A0A] outline-none focus:border-[#5E5CE6] focus:ring-1 focus:ring-[#5E5CE6]"
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-[#525252]">Vergi Kimlik No (VKN)</label>
+                    <input
+                      type="text"
+                      value={newEntityVkn}
+                      onChange={(e) => setNewEntityVkn(e.target.value)}
+                      placeholder="1234567890"
+                      maxLength={10}
+                      className="w-full rounded-lg border border-[#EDEDED] px-3 py-2.5 text-sm text-[#0A0A0A] outline-none focus:border-[#5E5CE6] focus:ring-1 focus:ring-[#5E5CE6]"
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-end gap-2 border-t border-[#EDEDED] px-6 py-4">
+                  <button
+                    type="button"
+                    onClick={() => setAddEntityOpen(false)}
+                    className="rounded-lg border border-[#EDEDED] px-4 py-2 text-sm font-medium text-[#525252] hover:bg-[#FAFAFA]"
+                  >
+                    Iptal
+                  </button>
+                  <button
+                    type="button"
+                    disabled={!newEntityName || !newEntityVkn}
+                    onClick={() => {
+                      setEntities((prev) => [
+                        ...prev,
+                        {
+                          id: String(Date.now()),
+                          name: newEntityName,
+                          vkn: newEntityVkn,
+                          employees: 0,
+                          modules: [],
+                          active: true,
+                        },
+                      ]);
+                      showToast(`${newEntityName} eklendi`);
+                      setNewEntityName('');
+                      setNewEntityVkn('');
+                      setAddEntityOpen(false);
+                    }}
+                    className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Sirket Ekle
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -749,6 +1025,238 @@ export default function AyarlarPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KVKK Compliance Tab */}
+      {activeTab === 'kvkk' && (
+        <div className="max-w-3xl">
+          {/* Compliance Score */}
+          <div className="mb-6 flex items-start gap-6 rounded-xl border border-[#EDEDED] bg-white p-6">
+            <div className="relative flex h-28 w-28 shrink-0 items-center justify-center">
+              <svg className="h-28 w-28 -rotate-90" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="42" fill="none" stroke="#EDEDED" strokeWidth="8" />
+                <circle
+                  cx="50" cy="50" r="42" fill="none"
+                  stroke={kvkkScore >= 80 ? '#059669' : kvkkScore >= 60 ? '#D97706' : '#DC2626'}
+                  strokeWidth="8" strokeLinecap="round"
+                  strokeDasharray={`${(kvkkScore / 100) * 264} 264`}
+                />
+              </svg>
+              <div className="absolute inset-0 flex flex-col items-center justify-center">
+                <span className="text-2xl font-bold tabular-nums text-[#0A0A0A]">{kvkkScore}</span>
+                <span className="text-[10px] text-[#A3A3A3]">/100</span>
+              </div>
+            </div>
+            <div className="flex-1">
+              <h2 className="text-base font-semibold text-[#0A0A0A]">KVKK Uyum Skoru</h2>
+              <p className="mt-1 text-xs text-[#A3A3A3]">6698 sayili Kisisel Verilerin Korunmasi Kanunu uyum durumu</p>
+              <div className="mt-3 flex flex-wrap gap-2">
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#F0FDF4] px-2.5 py-0.5 text-[11px] font-semibold text-[#059669]">
+                  <Check className="h-3 w-3" />4 tamamlandi
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#FFFBEB] px-2.5 py-0.5 text-[11px] font-semibold text-[#D97706]">
+                  <AlertTriangle className="h-3 w-3" />2 uyari
+                </span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF2F2] px-2.5 py-0.5 text-[11px] font-semibold text-[#DC2626]">
+                  <X className="h-3 w-3" />2 eksik
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Checklist */}
+          <div className="mb-6 rounded-xl border border-[#EDEDED] bg-white">
+            <div className="border-b border-[#EDEDED] px-6 py-4">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">Uyum Kontrol Listesi</h3>
+            </div>
+            <div className="divide-y divide-[#EDEDED]">
+              {[
+                { status: 'done' as const, text: 'Acik riza formu aktif (calisan onboarding\'de)', detail: 'Son guncelleme: 15 Mart 2026' },
+                { status: 'done' as const, text: 'Aydinlatma metni yayinda', detail: 'upcore.io/kvkk-aydinlatma' },
+                { status: 'done' as const, text: 'Veri envanteri (VERBIS) guncel', detail: 'Son senkronizasyon: 1 Nisan 2026' },
+                { status: 'done' as const, text: 'Calisan acik riza kayitlari arsivlendi', detail: '127 calisan · %100 riza orani' },
+                { status: 'warn' as const, text: 'Veri saklama politikasi: 3 belge suresi dolmak uzere', detail: '2 sozlesme, 1 saglik raporu · 30 gun icinde islenmeli' },
+                { status: 'warn' as const, text: 'Erisim loglari: son 30 gun', detail: '1.247 erisim kaydi · Anormallik tespit edilmedi' },
+                { status: 'fail' as const, text: 'Veri ihlali bildirimi proseduru: tanimlanmadi', detail: 'KVKK md. 12 geregi 72 saat icinde bildirim zorunlu' },
+                { status: 'fail' as const, text: 'Veri koruma etki degerlendirmesi (DPIA): yapilmadi', detail: 'Yuksek riskli isleme faaliyetleri icin gerekli' },
+              ].map((item, idx) => (
+                <div key={idx} className="flex items-start gap-3 px-6 py-4 transition-colors hover:bg-[#FAFAFA]">
+                  {item.status === 'done' && (
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#059669]">
+                      <Check className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                  {item.status === 'warn' && (
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#D97706]">
+                      <AlertTriangle className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                  {item.status === 'fail' && (
+                    <div className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#DC2626]">
+                      <X className="h-3 w-3 text-white" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-sm text-[#0A0A0A]">{item.text}</p>
+                    <p className="mt-0.5 text-[11px] text-[#A3A3A3]">{item.detail}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Data Subject Requests (DSR) */}
+          <div className="mb-6 rounded-xl border border-[#EDEDED] bg-white">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
+              <div>
+                <h3 className="text-sm font-semibold text-[#0A0A0A]">Veri Sahibi Basvurulari (DSR)</h3>
+                <p className="mt-0.5 text-[11px] text-[#A3A3A3]">KVKK md. 13 — 30 gun zorunlu SLA</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const newId = String(Date.now());
+                  setDsrRequests((prev) => [
+                    { id: newId, date: '2026-04-04', requester: 'Yeni Talep', type: 'Erisim', status: 'Beklemede', slaRemaining: 30 },
+                    ...prev,
+                  ]);
+                  showToast('Yeni DSR talebi olusturuldu');
+                }}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-[#EDEDED] px-3 py-1.5 text-xs font-medium text-[#525252] transition-colors hover:bg-[#FAFAFA]"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Yeni Talep
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#EDEDED] text-xs font-medium text-[#A3A3A3]">
+                    <th className="px-6 py-3">Tarih</th>
+                    <th className="px-4 py-3">Talep Eden</th>
+                    <th className="px-4 py-3">Talep Tipi</th>
+                    <th className="px-4 py-3">Durum</th>
+                    <th className="px-4 py-3 text-right">SLA</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EDEDED]">
+                  {dsrRequests.map((req) => (
+                    <tr key={req.id} className="transition-colors hover:bg-[#FAFAFA]">
+                      <td className="px-6 py-3.5 text-[#525252]">{req.date}</td>
+                      <td className="px-4 py-3.5 font-medium text-[#0A0A0A]">{req.requester}</td>
+                      <td className="px-4 py-3.5">
+                        <span className="inline-flex items-center gap-1 text-[#525252]">
+                          {req.type === 'Erisim' && <Eye className="h-3.5 w-3.5" />}
+                          {req.type === 'Silme' && <Trash2 className="h-3.5 w-3.5" />}
+                          {req.type === 'Duzeltme' && <Edit3 className="h-3.5 w-3.5" />}
+                          {req.type}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                          req.status === 'Tamamlandi' ? 'bg-[#F0FDF4] text-[#059669]' :
+                          req.status === 'Isleniyor' ? 'bg-[#EFF6FF] text-[#5E5CE6]' :
+                          'bg-[#FFFBEB] text-[#D97706]'
+                        }`}>
+                          {req.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3.5 text-right">
+                        {req.status === 'Tamamlandi' ? (
+                          <span className="text-xs text-[#059669]">Tamamlandi</span>
+                        ) : (
+                          <span className={`text-xs tabular-nums font-medium ${req.slaRemaining <= 5 ? 'text-[#DC2626]' : req.slaRemaining <= 15 ? 'text-[#D97706]' : 'text-[#525252]'}`}>
+                            {req.slaRemaining} gun kaldi
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Retention Policy Overview */}
+          <div className="mb-6 rounded-xl border border-[#EDEDED] bg-white">
+            <div className="border-b border-[#EDEDED] px-6 py-4">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">Veri Saklama Politikasi</h3>
+              <p className="mt-0.5 text-[11px] text-[#A3A3A3]">Belge tipine gore yasal saklama suresi ve aktif belge durumu</p>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm">
+                <thead>
+                  <tr className="border-b border-[#EDEDED] text-xs font-medium text-[#A3A3A3]">
+                    <th className="px-6 py-3">Belge Tipi</th>
+                    <th className="px-4 py-3">Saklama Suresi</th>
+                    <th className="px-4 py-3">Yasal Dayanak</th>
+                    <th className="px-4 py-3 text-right">Aktif Belge</th>
+                    <th className="px-4 py-3 text-right">Suresi Dolan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-[#EDEDED]">
+                  {[
+                    { type: 'Is Sozlesmesi', period: '7 yil', basis: '4857 Is Kanunu', active: 45, expired: 2 },
+                    { type: 'Bordro', period: '10 yil', basis: 'VUK', active: 120, expired: 0 },
+                    { type: 'Saglik Raporu', period: '10 yil', basis: '6331 ISG Kanunu', active: 15, expired: 1 },
+                    { type: 'Izin Kaydi', period: '5 yil', basis: '4857 Is Kanunu', active: 340, expired: 0 },
+                    { type: 'Disiplin Kaydi', period: '2 yil', basis: 'Is Yonetmeligi', active: 8, expired: 3 },
+                    { type: 'Performans Degerlendirmesi', period: '3 yil', basis: 'Ic Politika', active: 67, expired: 0 },
+                  ].map((row, idx) => (
+                    <tr key={idx} className="transition-colors hover:bg-[#FAFAFA]">
+                      <td className="px-6 py-3.5 font-medium text-[#0A0A0A]">{row.type}</td>
+                      <td className="px-4 py-3.5 text-[#525252]">{row.period}</td>
+                      <td className="px-4 py-3.5 text-[#525252]">{row.basis}</td>
+                      <td className="px-4 py-3.5 text-right tabular-nums text-[#525252]">{row.active}</td>
+                      <td className="px-4 py-3.5 text-right">
+                        <span className={`tabular-nums font-medium ${row.expired > 0 ? 'text-[#DC2626]' : 'text-[#059669]'}`}>
+                          {row.expired}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Audit Trail Summary */}
+          <div className="rounded-xl border border-[#EDEDED] bg-white">
+            <div className="border-b border-[#EDEDED] px-6 py-4">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">Veri Erisim Denetim Kaydi</h3>
+              <p className="mt-0.5 text-[11px] text-[#A3A3A3]">Son 5 kisisel veri erisim olayi</p>
+            </div>
+            <div className="divide-y divide-[#EDEDED]">
+              {kvkkAuditLog.map((event) => (
+                <div key={event.id} className="flex items-start gap-3 px-6 py-4 transition-colors hover:bg-[#FAFAFA]">
+                  <div className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg ${
+                    event.type === 'read' ? 'bg-[#EFF6FF]' :
+                    event.type === 'update' ? 'bg-[#FFFBEB]' :
+                    event.type === 'delete' ? 'bg-[#FEF2F2]' :
+                    'bg-[#F5F5F5]'
+                  }`}>
+                    {event.type === 'read' && <Eye className="h-3.5 w-3.5 text-[#5E5CE6]" />}
+                    {event.type === 'update' && <Edit3 className="h-3.5 w-3.5 text-[#D97706]" />}
+                    {event.type === 'delete' && <Trash2 className="h-3.5 w-3.5 text-[#DC2626]" />}
+                    {event.type === 'export' && <Download className="h-3.5 w-3.5 text-[#525252]" />}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm text-[#0A0A0A]">
+                      <span className="font-medium">{event.actor}</span>{' '}
+                      {event.action}
+                    </p>
+                    <p className="mt-0.5 text-[11px] text-[#A3A3A3]">{event.target} · {event.time}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="border-t border-[#EDEDED] px-6 py-3">
+              <p className="text-[11px] text-[#A3A3A3]">
+                Tum erisim kayitlari KVKK md. 12 geregi 2 yil boyunca saklanir ve degistirilemez.
+              </p>
             </div>
           </div>
         </div>
