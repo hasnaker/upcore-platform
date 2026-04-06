@@ -233,6 +233,7 @@ export default function BAT12CevapPage() {
           },
           total: scored.total,
           level: scored.level,
+          rawResponses: responses, // Send raw answers for backend ML scoring
         }),
       });
     } catch {
