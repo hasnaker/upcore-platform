@@ -15,18 +15,24 @@ interface BurnoutApiData {
 
 export default function PanelPage() {
   const [burnoutData, setBurnoutData] = useState<BurnoutApiData | null>(null);
+  const [actionData, setActionData] = useState<Record<string, unknown> | null>(null);
 
   useEffect(() => {
+    // Fetch burnout heatmap data
     fetch('/api/burnout/heatmap')
       .then((r) => r.json())
       .then((data) => {
-        if (data && (data.stats || data.critical)) {
-          setBurnoutData(data);
-        }
+        if (data && (data.stats || data.critical)) setBurnoutData(data);
       })
-      .catch(() => {
-        // Keep using static data in PriorityActions
-      });
+      .catch(() => {});
+
+    // Fetch ML action center data
+    fetch('/api/actions')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data && (data.ml_actions || data.critical_employees)) setActionData(data);
+      })
+      .catch(() => {});
   }, []);
 
   return (
@@ -41,7 +47,7 @@ export default function PanelPage() {
             Oncelikli Aksiyonlar
           </h2>
         </div>
-        <PriorityActions burnoutData={burnoutData} />
+        <PriorityActions burnoutData={burnoutData} actionData={actionData} />
       </section>
 
       {/* Weekly Recap */}
