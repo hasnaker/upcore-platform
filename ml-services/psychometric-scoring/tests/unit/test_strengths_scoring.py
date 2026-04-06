@@ -48,7 +48,7 @@ class TestRankStrengths:
         assert ranked[1].rank == 2
 
     def test_returns_at_most_5(self) -> None:
-        scores = {f"domain_{i}": float(i) for i in range(8)}
+        scores = {f"domain_{i}": 1.0 + (i * 0.5) for i in range(8)}  # scores 1.0-4.5 (within 1-5 range)
         ranked = rank_strengths(scores)
         assert len(ranked) <= 5
 
