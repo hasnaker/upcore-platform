@@ -21,9 +21,9 @@ export function isValidTckn(value: string): boolean {
   if (!TCKN_REGEX.test(value)) {
     return false;
   }
-  // Reject known impossible TCKNs (all same digit) — these pass checksum
-  // mathematically but are used as placeholders in test data.
-  if (/^(\d)\1{10}$/.test(value)) {
+  // Reject known impossible TCKNs — these pass checksum but are placeholders.
+  // All-same first 9 digits (e.g., 11111111110, 22222222228, etc.)
+  if (/^(\d)\1{8}/.test(value)) {
     return false;
   }
 

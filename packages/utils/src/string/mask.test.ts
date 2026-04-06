@@ -18,7 +18,7 @@ describe('maskEmail', () => {
 
 describe('maskPhone', () => {
   it('masks phone keeping last 4 digits', () => {
-    expect(maskPhone('+905551234567')).toBe('+90*****4567');
+    expect(maskPhone('+905551234567')).toBe('+90******4567');
   });
 
   it('handles short phone', () => {

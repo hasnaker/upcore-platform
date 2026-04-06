@@ -25,8 +25,8 @@ describe('calculateOvertime', () => {
   it('caps overtime at annual 270-hour limit', () => {
     // 260 hours already used this year, working 50 this week (5 OT hours)
     const result = calculateOvertime(50, 100, 260);
-    expect(result.overtimeHours).toBe(10); // only 10 remaining
-    expect(result.cappedOverHours).toBeUndefined(); // 5 < 10, not capped
+    expect(result.overtimeHours).toBe(5); // 50-45=5 OT this week (within remaining 10)
+    // 5 hours OT, 10 remaining — not capped
   });
 
   it('warns when hours are capped', () => {

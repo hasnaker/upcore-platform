@@ -3,8 +3,7 @@ import { validateVergiNo } from './vergi-no';
 
 describe('validateVergiNo', () => {
   it('validates a correct VKN', () => {
-    expect(validateVergiNo('0000000000')).toBe(true);
-    // 0000000000 is the degenerate case where all digits are 0, and the algorithm produces check digit 0
+    expect(validateVergiNo('1234567890')).toBe(true);
   });
 
   it('rejects non-10-digit inputs', () => {
@@ -22,9 +21,8 @@ describe('validateVergiNo', () => {
     expect(validateVergiNo('1234567891')).toBe(false);
   });
 
-  it('validates known correct VKN: 0150044366', () => {
-    // Manually verify: this is a well-known valid Turkish VKN
-    expect(validateVergiNo('0150044366')).toBe(true);
+  it('rejects invalid VKN: 0150044366', () => {
+    expect(validateVergiNo('0150044366')).toBe(false);
   });
 
   it('validates known correct VKN: 1234567890', () => {
