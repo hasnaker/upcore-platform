@@ -1,0 +1,23 @@
+{
+  "instrument": "Strengths-TR",
+  "version": "strengths-tr-v0.1",
+  "n": 0,
+  "source_citation": "Upcore custom 24-item Turkish strengths inventory v0.1.",
+  "license": "Proprietary (Upcore).",
+  "collected_at": null,
+  "calibration_status": "provisional",
+  "note": "Norms empty at launch. Will be populated from Upcore customer data as N grows to 500+.",
+  "domains": {
+    "analytical_thinking": {"name_tr": "Analitik Dusunme", "items": ["str_01", "str_02", "str_03"]},
+    "communication": {"name_tr": "Iletisim", "items": ["str_04", "str_05", "str_06"]},
+    "leadership": {"name_tr": "Liderlik", "items": ["str_07", "str_08", "str_09"]},
+    "creativity": {"name_tr": "Yaraticilik", "items": ["str_10", "str_11", "str_12"]},
+    "empathy": {"name_tr": "Empati", "items": ["str_13", "str_14", "str_15"]},
+    "resilience": {"name_tr": "Dayaniklilik", "items": ["str_16", "str_17", "str_18"]},
+    "strategic_vision": {"name_tr": "Stratejik Vizyon", "items": ["str_19", "str_20", "str_21"]},
+    "collaboration": {"name_tr": "Is Birligi", "items": ["str_22", "str_23", "str_24"]}
+  },
+  "subscale_means": {},
+  "subscale_sds": {},
+  "percentile_distributions": {}
+}

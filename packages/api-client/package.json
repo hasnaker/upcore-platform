@@ -1,0 +1,64 @@
+{
+  "name": "@upcore/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Typed fetch client + React Query hooks for Upcore platform",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./hooks": {
+      "types": "./dist/hooks/index.d.ts",
+      "import": "./dist/hooks/index.mjs",
+      "require": "./dist/hooks/index.cjs"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.mjs",
+      "require": "./dist/client/index.cjs"
+    },
+    "./provider": {
+      "types": "./dist/provider/index.d.ts",
+      "import": "./dist/provider/index.mjs",
+      "require": "./dist/provider/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "generate:openapi": "echo 'OpenAPI generation placeholder — run after services are deployed'",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.51.0",
+    "ky": "^1.5.0",
+    "zod": "^3.23.0"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "@upcore/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@testing-library/react": "^15.0.0",
+    "@types/react": "^19.0.0",
+    "msw": "^2.3.0",
+    "react": "^19.0.0",
+    "tsup": "^8.0.2",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  }
+}

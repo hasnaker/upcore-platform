@@ -1,0 +1,50 @@
+{
+  "cases": [
+    {
+      "name": "neutral",
+      "description": "All z-scores zero — baseline",
+      "demands_z": 0.0,
+      "resources_z": 0.0,
+      "personal_resources_z": null,
+      "expected": {
+        "burnout_probability": 0.5,
+        "balance_index": 0.0,
+        "engagement_score": 0.0,
+        "strain_score": 0.0,
+        "interaction_effect": 0.0
+      }
+    },
+    {
+      "name": "high_demands",
+      "description": "High demands, low resources — high burnout risk",
+      "demands_z": 2.0,
+      "resources_z": -1.0,
+      "personal_resources_z": null,
+      "expected": {
+        "balance_index": -3.0
+      }
+    },
+    {
+      "name": "high_resources",
+      "description": "Low demands, high resources — low burnout risk",
+      "demands_z": -1.0,
+      "resources_z": 2.0,
+      "personal_resources_z": 1.0,
+      "expected": {
+        "balance_index": 3.0
+      }
+    },
+    {
+      "name": "balanced_with_personal",
+      "description": "Balanced demands/resources with personal resources",
+      "demands_z": 1.0,
+      "resources_z": 1.0,
+      "personal_resources_z": 1.0,
+      "expected": {
+        "engagement_score": 0.87,
+        "strain_score": 0.19,
+        "interaction_effect": -0.05
+      }
+    }
+  ]
+}

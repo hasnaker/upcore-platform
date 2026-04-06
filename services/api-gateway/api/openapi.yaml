@@ -1,0 +1,302 @@
+openapi: 3.1.0
+info:
+  title: UpCore API Gateway
+  description: |
+    Single public entry point for all UpCore platform APIs.
+    Reverse-proxies requests to downstream microservices with JWT validation,
+    tenant resolution, rate limiting, and CORS handling.
+  version: 1.0.0
+  contact:
+    name: UpCore Platform Team
+
+servers:
+  - url: http://localhost:8080
+    description: Local development
+  - url: https://api.upcore.app
+    description: Production
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      operationId: healthCheck
+      tags: [System]
+      security: []
+      responses:
+        "200":
+          description: Service is alive
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ok
+
+  /ready:
+    get:
+      summary: Readiness probe
+      operationId: readinessCheck
+      tags: [System]
+      security: []
+      responses:
+        "200":
+          description: Service is ready
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: ready
+                  redis:
+                    type: string
+                    example: ok
+        "503":
+          description: Service not ready
+
+  /health/upstream:
+    get:
+      summary: Aggregate upstream health
+      operationId: upstreamHealth
+      tags: [System]
+      security: []
+      responses:
+        "200":
+          description: Upstream health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    enum: [ok, degraded]
+                  upstreams:
+                    type: object
+                    additionalProperties:
+                      type: string
+                      enum: [healthy, unhealthy, circuit_open]
+
+  /api/v1/{service}/{path}:
+    get:
+      summary: Proxy GET request to upstream service
+      operationId: proxyGet
+      tags: [Proxy]
+      parameters:
+        - $ref: "#/components/parameters/ServiceParam"
+        - $ref: "#/components/parameters/PathParam"
+      responses:
+        "200":
+          description: Upstream response (pass-through)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+        "502":
+          $ref: "#/components/responses/BadGateway"
+        "504":
+          $ref: "#/components/responses/GatewayTimeout"
+
+    post:
+      summary: Proxy POST request to upstream service
+      operationId: proxyPost
+      tags: [Proxy]
+      parameters:
+        - $ref: "#/components/parameters/ServiceParam"
+        - $ref: "#/components/parameters/PathParam"
+      responses:
+        "200":
+          description: Upstream response (pass-through)
+        "201":
+          description: Resource created (pass-through)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+    put:
+      summary: Proxy PUT request to upstream service
+      operationId: proxyPut
+      tags: [Proxy]
+      parameters:
+        - $ref: "#/components/parameters/ServiceParam"
+        - $ref: "#/components/parameters/PathParam"
+      responses:
+        "200":
+          description: Upstream response (pass-through)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+    delete:
+      summary: Proxy DELETE request to upstream service
+      operationId: proxyDelete
+      tags: [Proxy]
+      parameters:
+        - $ref: "#/components/parameters/ServiceParam"
+        - $ref: "#/components/parameters/PathParam"
+      responses:
+        "200":
+          description: Upstream response (pass-through)
+        "204":
+          description: Deleted (pass-through)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+    patch:
+      summary: Proxy PATCH request to upstream service
+      operationId: proxyPatch
+      tags: [Proxy]
+      parameters:
+        - $ref: "#/components/parameters/ServiceParam"
+        - $ref: "#/components/parameters/PathParam"
+      responses:
+        "200":
+          description: Upstream response (pass-through)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Clerk-issued JWT token
+
+  parameters:
+    ServiceParam:
+      name: service
+      in: path
+      required: true
+      schema:
+        type: string
+        enum:
+          - auth
+          - tenants
+          - employees
+          - departments
+          - positions
+          - leaves
+          - documents
+          - surveys
+          - interventions
+          - audit
+          - notifications
+          - candidates
+          - assessments
+          - score
+          - actions
+
+    PathParam:
+      name: path
+      in: path
+      required: true
+      schema:
+        type: string
+
+  responses:
+    Unauthorized:
+      description: JWT validation failed
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+            example: Bearer realm="upcore"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: unauthorized
+            message: invalid or expired token
+
+    Forbidden:
+      description: Missing tenant context
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: forbidden
+            message: tenant context required
+
+    RateLimited:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+            example: 60
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: rate_limit_exceeded
+            message: too many requests, please try again later
+
+    BadGateway:
+      description: Upstream service unavailable
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: bad_gateway
+            message: upstream service unavailable
+
+    GatewayTimeout:
+      description: Upstream service timeout
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+          example:
+            error: gateway_timeout
+            message: upstream service did not respond in time
+
+  schemas:
+    Error:
+      type: object
+      required:
+        - error
+        - message
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+security:
+  - BearerAuth: []
+
+tags:
+  - name: System
+    description: Health and readiness endpoints
+  - name: Proxy
+    description: Reverse proxy to upstream services

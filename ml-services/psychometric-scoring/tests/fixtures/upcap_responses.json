@@ -1,0 +1,57 @@
+{
+  "cases": [
+    {
+      "name": "all_maximum",
+      "description": "All items scored 6",
+      "responses": {
+        "upcap_01": 6, "upcap_02": 6, "upcap_03": 6,
+        "upcap_04": 6, "upcap_05": 6, "upcap_06": 6,
+        "upcap_07": 6, "upcap_08": 6, "upcap_09": 6,
+        "upcap_10": 6, "upcap_11": 6, "upcap_12": 6
+      },
+      "expected": {
+        "hope": 6.0,
+        "efficacy": 4.3333,
+        "resilience": 4.3333,
+        "optimism": 4.3333,
+        "reliability_warning": true
+      },
+      "note": "Reverse items (5,8,11) become 1, pulling efficacy/resilience/optimism down"
+    },
+    {
+      "name": "all_minimum",
+      "description": "All items scored 1",
+      "responses": {
+        "upcap_01": 1, "upcap_02": 1, "upcap_03": 1,
+        "upcap_04": 1, "upcap_05": 1, "upcap_06": 1,
+        "upcap_07": 1, "upcap_08": 1, "upcap_09": 1,
+        "upcap_10": 1, "upcap_11": 1, "upcap_12": 1
+      },
+      "expected": {
+        "hope": 1.0,
+        "efficacy": 2.6667,
+        "resilience": 2.6667,
+        "optimism": 2.6667,
+        "reliability_warning": true
+      },
+      "note": "Reverse items (5,8,11) become 6, pushing efficacy/resilience/optimism up"
+    },
+    {
+      "name": "optimal_high_psycap",
+      "description": "High scores with reverse items correctly answered",
+      "responses": {
+        "upcap_01": 6, "upcap_02": 6, "upcap_03": 6,
+        "upcap_04": 6, "upcap_05": 1, "upcap_06": 6,
+        "upcap_07": 6, "upcap_08": 1, "upcap_09": 6,
+        "upcap_10": 6, "upcap_11": 1, "upcap_12": 6
+      },
+      "expected": {
+        "hope": 6.0,
+        "efficacy": 6.0,
+        "resilience": 6.0,
+        "optimism": 6.0,
+        "composite": 6.0
+      }
+    }
+  ]
+}

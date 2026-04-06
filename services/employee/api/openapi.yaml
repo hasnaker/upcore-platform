@@ -1,0 +1,444 @@
+openapi: 3.1.0
+info:
+  title: Upcore Employee Service
+  version: 1.0.0
+  description: |
+    Employee microservice for Upcore V1. Handles employee CRUD, search,
+    bulk CSV import, Turkish TCKN validation, employment history, and
+    emergency contacts.
+  contact:
+    name: Upcore Platform
+servers:
+  - url: http://localhost:8003
+    description: Local development
+  - url: https://api.upcore.dev
+    description: Production (via API gateway)
+
+security:
+  - bearerAuth: []
+  - tenantHeaders: []
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: OK
+  /ready:
+    get:
+      summary: Readiness probe
+      security: []
+      responses:
+        '200':
+          description: Ready
+
+  /api/v1/employees:
+    get:
+      summary: List employees
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 500 } }
+        - { name: search, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { type: string, enum: [active, on_leave, suspended, terminated, retired] } }
+        - { name: department_id, in: query, schema: { type: string, format: uuid } }
+        - { name: position_id, in: query, schema: { type: string, format: uuid } }
+        - { name: manager_id, in: query, schema: { type: string, format: uuid } }
+        - { name: sort_by, in: query, schema: { type: string, enum: [ad, soyad, employee_no, hire_date, created_at] } }
+        - { name: sort_dir, in: query, schema: { type: string, enum: [asc, desc] } }
+      responses:
+        '200':
+          description: List of employees
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Employee' } }
+                  total: { type: integer }
+                  page:  { type: integer }
+                  limit: { type: integer }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+    post:
+      summary: Create an employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateEmployeeRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/employees/search:
+    get:
+      summary: Full-text search employees (pg_trgm)
+      parameters:
+        - { name: q, in: query, required: true, schema: { type: string } }
+        - { name: limit, in: query, schema: { type: integer, default: 20, maximum: 100 } }
+      responses:
+        '200':
+          description: Results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Employee' } }
+                  total: { type: integer }
+
+  /api/v1/employees/me:
+    get:
+      summary: Get self-employee profile (by authenticated user_id)
+      responses:
+        '200':
+          description: The calling user's employee profile
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/employees/import:
+    post:
+      summary: Bulk CSV import (Paraşüt-compatible)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import result
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ImportResult' }
+        '413': { $ref: '#/components/responses/FileTooLarge' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/employees/{id}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: Get employee by id
+      responses:
+        '200':
+          description: Employee
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+    patch:
+      summary: Partial update
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateEmployeeRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    delete:
+      summary: Soft-delete employee
+      responses:
+        '204': { description: Deleted }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/employees/{id}/terminate:
+    post:
+      summary: Terminate employment
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [termination_date]
+              properties:
+                termination_date: { type: string, format: date }
+                reason: { type: string, enum: [istifa, karşılıklı_fesih, iş_sözleşmesi_feshi, emeklilik, işveren_feshi, diğer] }
+      responses:
+        '200':
+          description: Terminated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/v1/employees/{id}/reinstate:
+    post:
+      summary: Reverse a termination
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Reinstated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Employee' }
+
+  /api/v1/employees/{id}/history:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: List employment history entries
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 50 } }
+      responses:
+        '200':
+          description: History
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/HistoryEntry' } }
+                  total: { type: integer }
+    post:
+      summary: Append a history entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AppendHistoryRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HistoryEntry' }
+
+  /api/v1/employees/{id}/contacts:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+    get:
+      summary: List emergency contacts
+      responses:
+        '200':
+          description: Contacts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/EmergencyContact' } }
+    post:
+      summary: Create a contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmergencyContact' }
+
+  /api/v1/employees/{id}/contacts/{cid}:
+    parameters:
+      - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      - { name: cid, in: path, required: true, schema: { type: string, format: uuid } }
+    patch:
+      summary: Update a contact
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ContactRequest' }
+      responses:
+        '200':
+          description: Updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/EmergencyContact' }
+    delete:
+      summary: Delete a contact
+      responses:
+        '204': { description: Deleted }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    tenantHeaders:
+      type: apiKey
+      in: header
+      name: X-Tenant-ID
+  responses:
+    Unauthorized:
+      description: Missing/invalid auth
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Resource conflict
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Field validation error
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    FileTooLarge:
+      description: Uploaded file exceeds size limit
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+        fields:
+          type: object
+          additionalProperties: { type: string }
+    Employee:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        employee_no: { type: string }
+        ad: { type: string }
+        soyad: { type: string }
+        tckn: { type: string }
+        email_is: { type: string, format: email }
+        hire_date: { type: string, format: date }
+        termination_date: { type: string, format: date }
+        employment_status: { type: string, enum: [active, on_leave, suspended, terminated, retired] }
+        employment_type: { type: string, enum: [full_time, part_time, contract, intern, freelance] }
+        department_id: { type: string, format: uuid }
+        position_id: { type: string, format: uuid }
+        manager_id: { type: string, format: uuid }
+        salary_gross: { type: number }
+        salary_currency: { type: string }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    CreateEmployeeRequest:
+      type: object
+      required: [ad, soyad, hire_date]
+      properties:
+        employee_no: { type: string }
+        tckn: { type: string }
+        ad: { type: string }
+        soyad: { type: string }
+        dogum_tarihi: { type: string, format: date }
+        email_is: { type: string, format: email }
+        telefon_is: { type: string }
+        hire_date: { type: string, format: date }
+        department_id: { type: string, format: uuid }
+        position_id: { type: string, format: uuid }
+        manager_id: { type: string, format: uuid }
+        employment_type: { type: string }
+        salary_gross: { type: number }
+        salary_currency: { type: string, default: TRY }
+    UpdateEmployeeRequest:
+      type: object
+      properties:
+        ad: { type: string }
+        soyad: { type: string }
+        email_is: { type: string }
+        telefon_is: { type: string }
+        department_id: { type: string, format: uuid }
+        position_id: { type: string, format: uuid }
+        manager_id: { type: string, format: uuid }
+        employment_status: { type: string }
+        employment_type: { type: string }
+        salary_gross: { type: number }
+    HistoryEntry:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        change_type: { type: string }
+        effective_date: { type: string, format: date }
+        reason: { type: string }
+        old_position_id: { type: string, format: uuid }
+        new_position_id: { type: string, format: uuid }
+        old_salary: { type: number }
+        new_salary: { type: number }
+        created_at: { type: string, format: date-time }
+    AppendHistoryRequest:
+      type: object
+      required: [change_type, effective_date]
+      properties:
+        change_type: { type: string, enum: [hire, promotion, transfer, title_change, department_change, manager_change, salary_change, type_change, termination] }
+        effective_date: { type: string, format: date }
+        old_position_id: { type: string, format: uuid }
+        new_position_id: { type: string, format: uuid }
+        old_department_id: { type: string, format: uuid }
+        new_department_id: { type: string, format: uuid }
+        old_manager_id: { type: string, format: uuid }
+        new_manager_id: { type: string, format: uuid }
+        old_salary: { type: number }
+        new_salary: { type: number }
+        reason: { type: string }
+    EmergencyContact:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        contact_type: { type: string, enum: [emergency, next_of_kin, guardian, partner, other] }
+        full_name: { type: string }
+        relationship: { type: string, enum: [eş, anne, baba, kardeş, çocuk, arkadaş, diğer] }
+        phone_primary: { type: string }
+        phone_secondary: { type: string }
+        email: { type: string, format: email }
+        is_primary: { type: boolean }
+    ContactRequest:
+      type: object
+      required: [full_name, phone_primary]
+      properties:
+        contact_type: { type: string }
+        full_name: { type: string }
+        relationship: { type: string }
+        phone_primary: { type: string }
+        phone_secondary: { type: string }
+        email: { type: string }
+        address: { type: string }
+        notes: { type: string }
+        is_primary: { type: boolean }
+    ImportResult:
+      type: object
+      properties:
+        total: { type: integer }
+        imported: { type: integer }
+        skipped: { type: integer }
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              row: { type: integer }
+              column: { type: string }
+              message: { type: string }
+              value: { type: string }

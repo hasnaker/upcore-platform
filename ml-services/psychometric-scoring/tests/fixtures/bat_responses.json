@@ -1,0 +1,75 @@
+{
+  "cases": [
+    {
+      "name": "all_minimum",
+      "description": "All items scored 1 (no burnout)",
+      "responses": {
+        "bat_01": 1, "bat_02": 1, "bat_03": 1,
+        "bat_04": 1, "bat_05": 1, "bat_06": 1,
+        "bat_07": 1, "bat_08": 1, "bat_09": 1,
+        "bat_10": 1, "bat_11": 1, "bat_12": 1
+      },
+      "expected": {
+        "exhaustion": 1.0,
+        "mental_distance": 1.0,
+        "cognitive_impairment": 1.0,
+        "emotional_impairment": 1.0,
+        "total": 1.0,
+        "classification_total": "GREEN"
+      }
+    },
+    {
+      "name": "all_maximum",
+      "description": "All items scored 5 (maximum burnout)",
+      "responses": {
+        "bat_01": 5, "bat_02": 5, "bat_03": 5,
+        "bat_04": 5, "bat_05": 5, "bat_06": 5,
+        "bat_07": 5, "bat_08": 5, "bat_09": 5,
+        "bat_10": 5, "bat_11": 5, "bat_12": 5
+      },
+      "expected": {
+        "exhaustion": 5.0,
+        "mental_distance": 5.0,
+        "cognitive_impairment": 5.0,
+        "emotional_impairment": 5.0,
+        "total": 5.0,
+        "classification_total": "RED"
+      }
+    },
+    {
+      "name": "mixed_amber",
+      "description": "Mixed scores yielding amber classification",
+      "responses": {
+        "bat_01": 3, "bat_02": 3, "bat_03": 3,
+        "bat_04": 3, "bat_05": 3, "bat_06": 3,
+        "bat_07": 3, "bat_08": 3, "bat_09": 3,
+        "bat_10": 2, "bat_11": 2, "bat_12": 2
+      },
+      "expected": {
+        "exhaustion": 3.0,
+        "mental_distance": 3.0,
+        "cognitive_impairment": 3.0,
+        "emotional_impairment": 2.0,
+        "total": 2.75,
+        "classification_total": "AMBER"
+      }
+    },
+    {
+      "name": "green_boundary",
+      "description": "Total exactly at green boundary 2.58",
+      "responses": {
+        "bat_01": 3, "bat_02": 3, "bat_03": 2,
+        "bat_04": 3, "bat_05": 2, "bat_06": 3,
+        "bat_07": 3, "bat_08": 2, "bat_09": 3,
+        "bat_10": 2, "bat_11": 3, "bat_12": 2
+      },
+      "expected": {
+        "exhaustion": 2.6667,
+        "mental_distance": 2.6667,
+        "cognitive_impairment": 2.6667,
+        "emotional_impairment": 2.3333,
+        "total": 2.5833
+      }
+    }
+  ]
+}

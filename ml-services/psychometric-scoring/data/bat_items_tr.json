@@ -1,0 +1,51 @@
+{
+  "instrument": "BAT-12-TR",
+  "version": "1.0",
+  "language": "tr-TR",
+  "source_citation": "Kocak, O. E., Gencay, F., & Schaufeli, W. B. (2022). Psikoloji Calismalari, 42(3), 509-549. DOI: 10.26650/SP2020-799817",
+  "license": "Free commercial use, citation required (Schaufeli et al. 2020).",
+  "response_scale": {
+    "type": "likert_frequency",
+    "min": 1,
+    "max": 5,
+    "labels_tr": [
+      "Hicbir zaman",
+      "Nadiren",
+      "Bazen",
+      "Sik sik",
+      "Her zaman"
+    ]
+  },
+  "subscales": {
+    "exhaustion": {
+      "name_tr": "Tukenme",
+      "items": ["bat_01", "bat_02", "bat_03"]
+    },
+    "mental_distance": {
+      "name_tr": "Zihinsel Uzaklasma",
+      "items": ["bat_04", "bat_05", "bat_06"]
+    },
+    "cognitive_impairment": {
+      "name_tr": "Bilissel Bozulma",
+      "items": ["bat_07", "bat_08", "bat_09"]
+    },
+    "emotional_impairment": {
+      "name_tr": "Duygusal Bozulma",
+      "items": ["bat_10", "bat_11", "bat_12"]
+    }
+  },
+  "items": [
+    {"id": "bat_01", "subscale": "exhaustion", "text_tr": "Isimde kendimi bitkin hissediyorum.", "reverse_coded": false},
+    {"id": "bat_02", "subscale": "exhaustion", "text_tr": "Is gununun sonunda fiziksel olarak yorgunum.", "reverse_coded": false},
+    {"id": "bat_03", "subscale": "exhaustion", "text_tr": "Guc toplamak icin daha fazla zaman gerekiyor.", "reverse_coded": false},
+    {"id": "bat_04", "subscale": "mental_distance", "text_tr": "Isim hakkinda dusunmek icin guc harcamakta zorlaniyorum.", "reverse_coded": false},
+    {"id": "bat_05", "subscale": "mental_distance", "text_tr": "Isimden zihinsel olarak uzaklasiyorum.", "reverse_coded": false},
+    {"id": "bat_06", "subscale": "mental_distance", "text_tr": "Islerime karsi kayitsiz hissediyorum.", "reverse_coded": false},
+    {"id": "bat_07", "subscale": "cognitive_impairment", "text_tr": "Isimde konsantre olmakta zorlaniyorum.", "reverse_coded": false},
+    {"id": "bat_08", "subscale": "cognitive_impairment", "text_tr": "Isimde dikkat dagilmasi yasiyorum.", "reverse_coded": false},
+    {"id": "bat_09", "subscale": "cognitive_impairment", "text_tr": "Dusunmede yavaslama yasiyorum.", "reverse_coded": false},
+    {"id": "bat_10", "subscale": "emotional_impairment", "text_tr": "Isimde kendimi kolayca sinirli hissediyorum.", "reverse_coded": false},
+    {"id": "bat_11", "subscale": "emotional_impairment", "text_tr": "Isimde kucuk seylerden dolayi uzuluyorum.", "reverse_coded": false},
+    {"id": "bat_12", "subscale": "emotional_impairment", "text_tr": "Duygularimi kontrol etmekte zorlaniyorum.", "reverse_coded": false}
+  ]
+}

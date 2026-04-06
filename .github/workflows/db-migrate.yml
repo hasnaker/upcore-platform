@@ -1,0 +1,168 @@
+# ============================================================================
+# Upcore V1 — Database Migrations
+# Manual trigger: run migrations on target environment
+# ============================================================================
+
+name: Database Migrations
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Target environment"
+        required: true
+        type: choice
+        options:
+          - dev
+          - staging
+          - prod
+      service:
+        description: "Service whose migrations to run (or 'all')"
+        required: false
+        type: string
+        default: "all"
+      action:
+        description: "Migration action"
+        required: true
+        type: choice
+        options:
+          - up
+          - status
+          - down-one
+      dry_run:
+        description: "Dry run (show SQL without executing)"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: db-migrate-${{ inputs.environment }}
+  cancel-in-progress: false
+
+env:
+  GO_VERSION: "1.23"
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Run database migrations
+  # --------------------------------------------------------------------------
+  migrate:
+    name: Migrate (${{ inputs.environment }})
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+
+      - name: Install golang-migrate
+        run: |
+          go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ inputs.environment == 'prod' && secrets.AZURE_CREDENTIALS_PROD || secrets.AZURE_CREDENTIALS_STAGING }}
+
+      - name: Get database connection
+        id: db
+        run: |
+          ENV="${{ inputs.environment }}"
+          RG="upc-${ENV}-rg"
+          SERVER_NAME="upc-${ENV}-pg-flex"
+          DB_NAME="upcore_${ENV}"
+
+          # Get server FQDN
+          FQDN=$(az postgres flexible-server show \
+            --name "$SERVER_NAME" \
+            --resource-group "$RG" \
+            --query "fullyQualifiedDomainName" -o tsv)
+
+          echo "fqdn=$FQDN" >> "$GITHUB_OUTPUT"
+          echo "db_name=$DB_NAME" >> "$GITHUB_OUTPUT"
+          echo "Server: $FQDN"
+
+      - name: Resolve services
+        id: services
+        run: |
+          INPUT="${{ inputs.service }}"
+          if [[ "$INPUT" == "all" ]] || [[ -z "$INPUT" ]]; then
+            # Find all services with migration directories
+            SERVICES=""
+            for dir in services/*/migrations; do
+              if [[ -d "$dir" ]]; then
+                SERVICE=$(echo "$dir" | cut -d'/' -f2)
+                SERVICES="${SERVICES}${SERVICE},"
+              fi
+            done
+            SERVICES="${SERVICES%,}"
+          else
+            SERVICES="$INPUT"
+          fi
+          echo "list=$SERVICES" >> "$GITHUB_OUTPUT"
+          echo "Services: $SERVICES"
+
+      - name: Run migrations
+        env:
+          DATABASE_URL: "postgres://upcoreadmin:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ steps.db.outputs.fqdn }}:5432/${{ steps.db.outputs.db_name }}?sslmode=require"
+        run: |
+          IFS=',' read -ra SERVICES <<< "${{ steps.services.outputs.list }}"
+          ACTION="${{ inputs.action }}"
+          DRY_RUN="${{ inputs.dry_run }}"
+
+          for service in "${SERVICES[@]}"; do
+            MIGRATION_DIR="services/${service}/migrations"
+            if [[ ! -d "$MIGRATION_DIR" ]]; then
+              echo "::warning::No migrations directory for $service, skipping"
+              continue
+            fi
+
+            echo "=== Migrating: $service ==="
+            echo "Directory: $MIGRATION_DIR"
+
+            # Show current status
+            echo "--- Current status ---"
+            migrate -database "$DATABASE_URL" -path "$MIGRATION_DIR" version 2>&1 || true
+
+            if [[ "$DRY_RUN" == "true" ]]; then
+              echo "--- Dry run: showing pending migrations ---"
+              ls -la "$MIGRATION_DIR"/*.up.sql 2>/dev/null || echo "No up migrations found"
+              continue
+            fi
+
+            case "$ACTION" in
+              up)
+                echo "--- Applying all pending migrations ---"
+                migrate -database "$DATABASE_URL" -path "$MIGRATION_DIR" up
+                ;;
+              status)
+                echo "--- Migration status (already shown above) ---"
+                ;;
+              down-one)
+                if [[ "${{ inputs.environment }}" == "prod" ]]; then
+                  echo "::error::down-one is disabled for production. Use a manual process."
+                  exit 1
+                fi
+                echo "--- Rolling back one migration ---"
+                migrate -database "$DATABASE_URL" -path "$MIGRATION_DIR" down 1
+                ;;
+            esac
+
+            echo "--- Final status ---"
+            migrate -database "$DATABASE_URL" -path "$MIGRATION_DIR" version 2>&1 || true
+            echo ""
+          done
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Database Migration Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Environment:** ${{ inputs.environment }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Action:** ${{ inputs.action }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Services:** ${{ steps.services.outputs.list }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Dry run:** ${{ inputs.dry_run }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- **Triggered by:** ${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"

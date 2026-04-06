@@ -1,0 +1,327 @@
+openapi: 3.0.3
+info:
+  title: Upcore Leave Service
+  description: |
+    Turkish HR leave management (4857 İş Kanunu uyumlu).
+    Handles 14 leave types, entitlement calculation (14/20/26 gün), approval
+    workflow (manager → HR), resmi tatil takvimi, and iCalendar export.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8006
+    description: local
+security:
+  - tenantHeaders: []
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      responses:
+        '200': { description: ok }
+  /ready:
+    get:
+      summary: Readiness probe
+      responses:
+        '200': { description: ok }
+  /api/v1/leaves/types:
+    get:
+      summary: List leave types (global + tenant)
+      responses:
+        '200':
+          description: list of leave types
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveTypeList' }
+  /api/v1/leaves/balances/{employee_id}:
+    get:
+      summary: Get balances for an employee in a year
+      parameters:
+        - in: path
+          name: employee_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: year
+          schema: { type: integer }
+      responses:
+        '200':
+          description: employee balances
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BalanceList' }
+  /api/v1/leaves/balances/{employee_id}/adjust:
+    post:
+      summary: Manual balance adjustment (HR only)
+      parameters:
+        - in: path
+          name: employee_id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AdjustRequest' }
+      responses:
+        '200': { description: adjusted }
+  /api/v1/leaves/requests:
+    get:
+      summary: List requests
+      parameters:
+        - in: query
+          name: employee_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: status
+          schema: { type: string, enum: [draft, pending, manager_approved, approved, rejected, cancelled, taken] }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        '200':
+          description: paged list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RequestList' }
+    post:
+      summary: Submit a new leave request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitRequest' }
+      responses:
+        '201':
+          description: created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveRequest' }
+        '409': { description: insufficient_balance | overlap_detected }
+        '422': { description: validation error }
+  /api/v1/leaves/requests/{id}:
+    get:
+      summary: Fetch a single request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: request
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveRequest' }
+    patch:
+      summary: Update a pending/draft request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateRequest' }
+      responses:
+        '200':
+          description: updated
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/LeaveRequest' }
+    delete:
+      summary: Cancel a request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: cancelled }
+        '409': { description: cannot_cancel }
+  /api/v1/leaves/requests/{id}/approve:
+    post:
+      summary: Approve a request (Manager or HR)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ApproveRequest' }
+      responses:
+        '200': { description: approved }
+        '403': { description: wrong_approver | self_approval }
+  /api/v1/leaves/requests/{id}/reject:
+    post:
+      summary: Reject a request
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectRequest' }
+      responses:
+        '200': { description: rejected }
+  /api/v1/leaves/holidays:
+    get:
+      summary: List Turkish official holidays (resmi tatiller)
+      parameters:
+        - in: query
+          name: year
+          schema: { type: integer }
+      responses:
+        '200':
+          description: holidays
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HolidayList' }
+  /api/v1/leaves/calendar.ics:
+    get:
+      summary: Export leave calendar as iCalendar (RFC 5545)
+      parameters:
+        - in: query
+          name: start
+          schema: { type: string, format: date }
+        - in: query
+          name: end
+          schema: { type: string, format: date }
+      responses:
+        '200':
+          description: iCalendar feed
+          content:
+            text/calendar:
+              schema: { type: string }
+components:
+  securitySchemes:
+    tenantHeaders:
+      type: apiKey
+      in: header
+      name: X-Tenant-ID
+  schemas:
+    LeaveType:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid, nullable: true }
+        code: { type: string }
+        name_tr: { type: string }
+        name_en: { type: string, nullable: true }
+        category:
+          type: string
+          enum: [yıllık, mazeret, hastalık, doğum, babalık, evlilik, ölüm, süt, idari, ücretsiz, diğer]
+        is_paid: { type: boolean }
+        requires_document: { type: boolean }
+        max_days_per_year: { type: integer, nullable: true }
+        max_days_per_event: { type: integer, nullable: true }
+        carry_over_allowed: { type: boolean }
+        min_tenure_months: { type: integer }
+        legal_reference: { type: string, nullable: true }
+        active: { type: boolean }
+    LeaveTypeList:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LeaveType' } }
+        total: { type: integer }
+    LeaveBalance:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        leave_type_id: { type: string, format: uuid }
+        year: { type: integer }
+        accrued_days: { type: number }
+        used_days: { type: number }
+        pending_days: { type: number }
+        carried_over: { type: number }
+        adjusted_days: { type: number }
+        remaining_days: { type: number }
+    BalanceList:
+      type: object
+      properties:
+        employee_id: { type: string, format: uuid }
+        year: { type: integer }
+        items: { type: array, items: { $ref: '#/components/schemas/LeaveBalance' } }
+    LeaveRequest:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        leave_type_id: { type: string, format: uuid }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        start_half_day: { type: boolean }
+        end_half_day: { type: boolean }
+        total_days: { type: number }
+        reason: { type: string, nullable: true }
+        status:
+          type: string
+          enum: [draft, pending, manager_approved, approved, rejected, cancelled, taken]
+        document_urls:
+          type: array
+          items: { type: string }
+    RequestList:
+      type: object
+      properties:
+        items: { type: array, items: { $ref: '#/components/schemas/LeaveRequest' } }
+        total: { type: integer }
+    SubmitRequest:
+      type: object
+      required: [leave_type_id, start_date, end_date]
+      properties:
+        employee_id: { type: string, format: uuid }
+        leave_type_id: { type: string, format: uuid }
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        start_half_day: { type: boolean }
+        end_half_day: { type: boolean }
+        reason: { type: string, nullable: true }
+        document_urls: { type: array, items: { type: string } }
+        as_draft: { type: boolean }
+    UpdateRequest:
+      type: object
+      properties:
+        start_date: { type: string, format: date }
+        end_date: { type: string, format: date }
+        start_half_day: { type: boolean }
+        end_half_day: { type: boolean }
+        reason: { type: string }
+        document_urls: { type: array, items: { type: string } }
+        leave_type_id: { type: string, format: uuid }
+    ApproveRequest:
+      type: object
+      properties:
+        comment: { type: string }
+    RejectRequest:
+      type: object
+      required: [reason]
+      properties:
+        reason: { type: string, minLength: 3, maxLength: 500 }
+    AdjustRequest:
+      type: object
+      required: [leave_type_id, year, delta, reason]
+      properties:
+        leave_type_id: { type: string, format: uuid }
+        year: { type: integer }
+        delta: { type: number }
+        reason: { type: string }
+    Holiday:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        name: { type: string }
+        category: { type: string, enum: [milli, dini, idari] }
+    HolidayList:
+      type: object
+      properties:
+        year: { type: integer }
+        items: { type: array, items: { $ref: '#/components/schemas/Holiday' } }

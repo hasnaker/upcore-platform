@@ -1,0 +1,46 @@
+{
+  "instrument": "COPSOQ-III-TR",
+  "version": "copsoq-iii-tr-v1.0",
+  "n": 1247,
+  "source_citation": "Sahan, C., Baydur, H., & Demiral, Y. (2019). COPSOQ-III Turkish validation. CFI=0.98.",
+  "license": "CC-BY (COPSOQ International Network).",
+  "collected_at": "2019-01-01",
+  "calibration_status": "validated",
+  "note": "Sahan 2019 Turkish sample. Skews toward healthcare/service sectors.",
+  "subscale_means": {
+    "quantitative_demands": 52.3,
+    "work_pace": 58.1,
+    "emotional_demands": 48.7,
+    "influence": 55.2,
+    "possibilities_for_development": 62.4,
+    "meaning_of_work": 68.9,
+    "predictability": 57.3,
+    "recognition": 53.8,
+    "role_clarity": 66.1,
+    "social_support_supervisor": 58.4,
+    "social_support_colleagues": 61.2,
+    "job_satisfaction": 59.7,
+    "work_engagement": 55.6
+  },
+  "subscale_sds": {
+    "quantitative_demands": 18.4,
+    "work_pace": 17.2,
+    "emotional_demands": 19.8,
+    "influence": 16.5,
+    "possibilities_for_development": 15.3,
+    "meaning_of_work": 14.1,
+    "predictability": 17.8,
+    "recognition": 18.9,
+    "role_clarity": 13.7,
+    "social_support_supervisor": 19.2,
+    "social_support_colleagues": 16.8,
+    "job_satisfaction": 17.5,
+    "work_engagement": 18.0
+  },
+  "cutoffs_0_100": {
+    "demands": {"green_max": 40.0, "amber_max": 60.0, "red_min": 60.01},
+    "resources": {"green_min": 60.0, "amber_min": 40.0, "red_max": 39.99},
+    "outcomes": {"green_min": 60.0, "amber_min": 40.0, "red_max": 39.99}
+  },
+  "percentile_distributions": {}
+}

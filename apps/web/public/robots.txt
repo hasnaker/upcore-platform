@@ -1,0 +1,16 @@
+User-agent: *
+Allow: /
+Disallow: /panel
+Disallow: /calisanlar
+Disallow: /departmanlar
+Disallow: /izinler
+Disallow: /belgeler
+Disallow: /degerlendirmeler
+Disallow: /anketler
+Disallow: /tukenmislik
+Disallow: /aksiyonlar
+Disallow: /ayarlar
+Disallow: /onboarding
+Disallow: /api/
+
+Sitemap: https://upcore.app/sitemap.xml

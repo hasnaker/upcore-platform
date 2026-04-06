@@ -1,0 +1,66 @@
+{
+  "name": "@upcore/utils",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Shared pure-function helpers — Turkish-language utilities, date/currency formatting, 4857 İş Kanunu helpers",
+  "type": "module",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    },
+    "./turkish": {
+      "types": "./dist/turkish/index.d.ts",
+      "import": "./dist/turkish/index.mjs",
+      "require": "./dist/turkish/index.cjs"
+    },
+    "./date": {
+      "types": "./dist/date/index.d.ts",
+      "import": "./dist/date/index.mjs",
+      "require": "./dist/date/index.cjs"
+    },
+    "./currency": {
+      "types": "./dist/currency/index.d.ts",
+      "import": "./dist/currency/index.mjs",
+      "require": "./dist/currency/index.cjs"
+    },
+    "./labor-law": {
+      "types": "./dist/labor-law/index.d.ts",
+      "import": "./dist/labor-law/index.mjs",
+      "require": "./dist/labor-law/index.cjs"
+    },
+    "./string": {
+      "types": "./dist/string/index.d.ts",
+      "import": "./dist/string/index.mjs",
+      "require": "./dist/string/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist .turbo"
+  },
+  "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^3.6.0",
+    "date-fns-tz": "^3.1.0",
+    "tailwind-merge": "^2.3.0"
+  },
+  "devDependencies": {
+    "tsup": "^8.0.2",
+    "typescript": "^5.5.3",
+    "vitest": "^1.6.0"
+  }
+}

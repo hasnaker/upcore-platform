@@ -1,0 +1,35 @@
+{
+  "name": "upcore-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Upcore — Türkiye'nin ilk bilim-temelli İK platformu",
+  "packageManager": "pnpm@9.12.0",
+  "engines": {
+    "node": ">=20.11.0",
+    "pnpm": ">=9.0.0"
+  },
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev --parallel",
+    "lint": "turbo lint",
+    "test": "turbo test",
+    "test:e2e": "turbo test:e2e",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean && rm -rf node_modules",
+    "format": "prettier --write \"**/*.{ts,tsx,md,json,yaml,yml}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,md,json,yaml,yml}\"",
+    "db:migrate": "cd database && pnpm migrate",
+    "db:seed": "cd database && pnpm seed",
+    "services:up": "docker compose -f infrastructure/docker-compose.yml up -d",
+    "services:down": "docker compose -f infrastructure/docker-compose.yml down",
+    "prepare": "husky"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.30",
+    "husky": "^9.0.11",
+    "lint-staged": "^15.2.7",
+    "prettier": "^3.3.2",
+    "turbo": "^2.0.6",
+    "typescript": "^5.5.3"
+  }
+}

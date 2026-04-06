@@ -1,0 +1,161 @@
+version: "3.9"
+
+# ============================================================================
+# Upcore V1 - Local Development Infrastructure
+# PostgreSQL 16 + pgvector, Redis 7, Azurite (Blob), Mailhog (SMTP)
+# ============================================================================
+# Usage:
+#   docker compose up -d
+#   docker compose ps
+#   docker compose logs -f postgres
+#   docker compose down -v   # destroys volumes
+# ============================================================================
+
+services:
+  # --------------------------------------------------------------------------
+  # PostgreSQL 16 with pgvector extension (via pgvector/pgvector image)
+  # --------------------------------------------------------------------------
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: upcore-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: upcore
+      POSTGRES_PASSWORD: upcore_dev_password
+      POSTGRES_DB: upcore_dev
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C.UTF-8"
+      TZ: Europe/Istanbul
+      PGTZ: Europe/Istanbul
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_preload_libraries=pg_stat_statements"
+      - "-c"
+      - "max_connections=200"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "effective_cache_size=1GB"
+      - "-c"
+      - "work_mem=16MB"
+      - "-c"
+      - "maintenance_work_mem=128MB"
+      - "-c"
+      - "log_statement=none"
+      - "-c"
+      - "log_min_duration_statement=500"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U upcore -d upcore_dev"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+    networks:
+      - upcore-net
+
+  # --------------------------------------------------------------------------
+  # Redis 7 - caching, rate limiting, pub/sub, Bull queues
+  # --------------------------------------------------------------------------
+  redis:
+    image: redis:7-alpine
+    container_name: upcore-redis
+    restart: unless-stopped
+    command:
+      - "redis-server"
+      - "--appendonly"
+      - "yes"
+      - "--maxmemory"
+      - "512mb"
+      - "--maxmemory-policy"
+      - "allkeys-lru"
+      - "--requirepass"
+      - "upcore_redis_dev"
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "upcore_redis_dev", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    networks:
+      - upcore-net
+
+  # --------------------------------------------------------------------------
+  # Azurite - Azure Blob Storage emulator (documents, attachments, ML artifacts)
+  # --------------------------------------------------------------------------
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: upcore-azurite
+    restart: unless-stopped
+    command:
+      - "azurite"
+      - "--blobHost"
+      - "0.0.0.0"
+      - "--queueHost"
+      - "0.0.0.0"
+      - "--tableHost"
+      - "0.0.0.0"
+      - "--location"
+      - "/data"
+      - "--loose"
+      - "--skipApiVersionCheck"
+    ports:
+      - "10000:10000" # Blob
+      - "10001:10001" # Queue
+      - "10002:10002" # Table
+    volumes:
+      - azurite_data:/data
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "10000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - upcore-net
+
+  # --------------------------------------------------------------------------
+  # Mailhog - SMTP test server, inspects outbound emails in a web UI
+  # --------------------------------------------------------------------------
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: upcore-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025" # SMTP
+      - "8025:8025" # Web UI
+    healthcheck:
+      test: ["CMD", "nc", "-z", "127.0.0.1", "1025"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+      start_period: 5s
+    networks:
+      - upcore-net
+
+# ============================================================================
+# Persistent volumes
+# ============================================================================
+volumes:
+  postgres_data:
+    name: upcore_postgres_data
+  redis_data:
+    name: upcore_redis_data
+  azurite_data:
+    name: upcore_azurite_data
+
+# ============================================================================
+# Shared bridge network
+# ============================================================================
+networks:
+  upcore-net:
+    name: upcore-net
+    driver: bridge

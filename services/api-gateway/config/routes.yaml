@@ -1,0 +1,176 @@
+routes:
+  # Authentication service
+  - path_prefix: "/api/v1/auth"
+    upstream: "auth"
+    target: "http://localhost:8001"
+    auth_required: false # auth endpoints handle their own auth
+    timeout: 30s
+    rate_limit:
+      per_user: 10
+      per_tenant: 100
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Clerk webhooks (no JWT)
+  - path_prefix: "/webhooks/clerk"
+    upstream: "auth"
+    target: "http://localhost:8001"
+    auth_required: false
+    timeout: 30s
+    rate_limit:
+      per_user: 0
+      per_tenant: 0
+    methods: ["POST"]
+
+  # Tenant service
+  - path_prefix: "/api/v1/tenants"
+    upstream: "tenant"
+    target: "http://localhost:8002"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service
+  - path_prefix: "/api/v1/employees"
+    upstream: "employee"
+    target: "http://localhost:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Organization service - departments
+  - path_prefix: "/api/v1/departments"
+    upstream: "organization"
+    target: "http://localhost:8004"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Organization service - positions (org positions, not ATS)
+  - path_prefix: "/api/v1/positions"
+    upstream: "organization"
+    target: "http://localhost:8004"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Leave service
+  - path_prefix: "/api/v1/leaves"
+    upstream: "leave"
+    target: "http://localhost:8005"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Document service
+  - path_prefix: "/api/v1/documents"
+    upstream: "document"
+    target: "http://localhost:8006"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 5
+      per_tenant: 100
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Survey service
+  - path_prefix: "/api/v1/surveys"
+    upstream: "survey"
+    target: "http://localhost:8007"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Intervention service
+  - path_prefix: "/api/v1/interventions"
+    upstream: "intervention"
+    target: "http://localhost:8008"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Audit service
+  - path_prefix: "/api/v1/audit"
+    upstream: "audit"
+    target: "http://localhost:8009"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET"]
+
+  # Notification service
+  - path_prefix: "/api/v1/notifications"
+    upstream: "notification"
+    target: "http://localhost:8010"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # ATS service - candidates
+  - path_prefix: "/api/v1/candidates"
+    upstream: "ats"
+    target: "http://localhost:8011"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Assessment service
+  - path_prefix: "/api/v1/assessments"
+    upstream: "assessment"
+    target: "http://localhost:8012"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Psychometric scoring service
+  - path_prefix: "/api/v1/score"
+    upstream: "psychometric-scoring"
+    target: "http://localhost:8021"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 50
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
+  # Action center service
+  - path_prefix: "/api/v1/actions"
+    upstream: "action-center"
+    target: "http://localhost:8024"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]

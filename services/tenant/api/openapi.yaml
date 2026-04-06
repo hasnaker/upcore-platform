@@ -1,0 +1,261 @@
+openapi: 3.1.0
+info:
+  title: Upcore Tenant Service
+  version: "1.0.0"
+  description: Organization signup, subscription plans, billing webhooks, and usage tracking.
+servers:
+  - url: http://localhost:8002
+    description: Local dev
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      responses:
+        "200":
+          description: ok
+  /signup:
+    post:
+      summary: Create a new tenant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SignupRequest"
+      responses:
+        "201":
+          description: Tenant created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SignupResponse"
+        "409":
+          description: slug_taken
+        "422":
+          description: validation_error
+  /plans:
+    get:
+      summary: List active plans
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Plan"
+                  count:
+                    type: integer
+  /plans/{id}:
+    get:
+      summary: Get plan detail
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Plan"
+        "404":
+          description: not_found
+  /tenants/me:
+    get:
+      summary: Current tenant
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+  /tenants/{id}:
+    get:
+      summary: Get tenant by id
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tenant"
+        "404":
+          description: not_found
+    patch:
+      summary: Update tenant profile
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                locale: { type: string }
+      responses:
+        "200":
+          description: ok
+    delete:
+      summary: Schedule tenant deletion (30d grace)
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "202":
+          description: accepted
+  /subscriptions/current:
+    get:
+      summary: Current subscription + plan
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: ok
+  /subscriptions:
+    post:
+      summary: Change plan
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                plan_id: { type: string }
+              required: [plan_id]
+      responses:
+        "200":
+          description: ok
+        "404":
+          description: plan_not_found
+  /subscriptions/cancel:
+    post:
+      summary: Cancel at period end
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: ok
+  /subscriptions/resume:
+    post:
+      summary: Undo cancellation
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: ok
+  /subscriptions/seats:
+    patch:
+      summary: Update seat count
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                seats: { type: integer }
+              required: [seats]
+      responses:
+        "200":
+          description: ok
+        "402":
+          description: seat_cap_reached
+  /usage:
+    get:
+      summary: Current period usage
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200":
+          description: ok
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: integer
+  /webhooks/billing:
+    post:
+      summary: Billing provider webhook
+      parameters:
+        - in: query
+          name: provider
+          schema: { type: string, enum: [stripe, iyzico] }
+      responses:
+        "200":
+          description: ok
+        "401":
+          description: invalid_signature
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    SignupRequest:
+      type: object
+      required: [company_name, company_slug, admin_email, admin_first_name, admin_last_name, plan_id]
+      properties:
+        company_name: { type: string }
+        company_slug: { type: string }
+        admin_email: { type: string, format: email }
+        admin_first_name: { type: string }
+        admin_last_name: { type: string }
+        plan_id: { type: string }
+        country: { type: string }
+        locale: { type: string }
+        vkn: { type: string }
+        tckn: { type: string }
+    SignupResponse:
+      type: object
+      properties:
+        tenant_id: { type: string, format: uuid }
+        subscription_id: { type: string, format: uuid }
+        slug: { type: string }
+        signup_token: { type: string }
+        trial_ends_at: { type: string, format: date-time }
+    Tenant:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        slug: { type: string }
+        country: { type: string }
+        locale: { type: string }
+        status: { type: string, enum: [trial, active, suspended, deleted] }
+        trial_ends_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    Plan:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        tier: { type: string, enum: [free, starter, growth, platform, enterprise] }
+        price_monthly: { type: integer, nullable: true }
+        features: { type: object }
+        is_active: { type: boolean }

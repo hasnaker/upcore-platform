@@ -1,0 +1,32 @@
+{
+  "instrument": "UpCap-TR",
+  "version": "upcap-tr-v0.1",
+  "n": 0,
+  "source_citation": "Upcore internal snapshot. Adapted from Lorenz et al. (2016) CPC-12.",
+  "license": "CC-BY 4.0 (CPC-12 base).",
+  "collected_at": null,
+  "calibration_status": "provisional",
+  "note": "Empty norms at launch. Updated quarterly from Upcore customer data as N grows.",
+  "subscale_means": {
+    "hope": 4.20,
+    "efficacy": 4.35,
+    "resilience": 4.10,
+    "optimism": 4.05,
+    "composite": 4.18
+  },
+  "subscale_sds": {
+    "hope": 0.90,
+    "efficacy": 0.85,
+    "resilience": 0.92,
+    "optimism": 0.95,
+    "composite": 0.78
+  },
+  "cutoffs": {
+    "hope": {"green_min": 4.0, "amber_min": 3.0, "red_max": 2.99},
+    "efficacy": {"green_min": 4.0, "amber_min": 3.0, "red_max": 2.99},
+    "resilience": {"green_min": 4.0, "amber_min": 3.0, "red_max": 2.99},
+    "optimism": {"green_min": 4.0, "amber_min": 3.0, "red_max": 2.99},
+    "composite": {"green_min": 4.0, "amber_min": 3.0, "red_max": 2.99}
+  },
+  "percentile_distributions": {}
+}

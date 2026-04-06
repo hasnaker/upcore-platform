@@ -1,0 +1,1 @@
+"""Psychometric scoring service tests."""

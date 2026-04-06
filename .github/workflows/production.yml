@@ -1,0 +1,289 @@
+# ============================================================================
+# Upcore V1 — Production Deployment
+# Manual trigger: promote staging images to production with approval gate
+# ============================================================================
+
+name: Deploy to Production
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (e.g., staging-sha-abc1234). Defaults to latest staging tag."
+        required: false
+        type: string
+        default: "staging"
+      services:
+        description: "Services to deploy (comma-separated, or 'all')"
+        required: false
+        type: string
+        default: "all"
+      dry_run:
+        description: "Dry run (show what would be deployed without deploying)"
+        required: false
+        type: boolean
+        default: false
+
+concurrency:
+  group: production-deploy
+  cancel-in-progress: false
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_PREFIX: ghcr.io/${{ github.repository_owner }}/upcore
+  AZURE_RESOURCE_GROUP: upc-prod-rg
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Pre-flight: verify staging images exist and are healthy
+  # --------------------------------------------------------------------------
+  preflight:
+    name: Pre-flight Checks
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.resolve.outputs.tag }}
+      services_list: ${{ steps.services.outputs.list }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: resolve
+        run: |
+          TAG="${{ inputs.image_tag }}"
+          if [[ -z "$TAG" ]] || [[ "$TAG" == "staging" ]]; then
+            TAG="staging"
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "Deploying tag: $TAG"
+
+      - name: Resolve services
+        id: services
+        run: |
+          INPUT="${{ inputs.services }}"
+          if [[ "$INPUT" == "all" ]] || [[ -z "$INPUT" ]]; then
+            LIST="api-gateway,auth,tenant,organization,employee,leave,survey,assessment,document,notification,audit,intervention,mobility,ats,burnout-prediction,psychometric-scoring,recommendation,action-center,web,admin"
+          else
+            LIST="$INPUT"
+          fi
+          echo "list=$LIST" >> "$GITHUB_OUTPUT"
+          echo "Services to deploy: $LIST"
+
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Verify images exist
+        run: |
+          TAG="${{ steps.resolve.outputs.tag }}"
+          IFS=',' read -ra SERVICES <<< "${{ steps.services.outputs.list }}"
+          MISSING=0
+          for service in "${SERVICES[@]}"; do
+            if docker manifest inspect "${{ env.IMAGE_PREFIX }}/${service}:${TAG}" > /dev/null 2>&1; then
+              echo "Image found: ${service}:${TAG}"
+            else
+              echo "::error::Image not found: ${service}:${TAG}"
+              MISSING=$((MISSING + 1))
+            fi
+          done
+          if [[ $MISSING -gt 0 ]]; then
+            echo "::error::$MISSING images missing. Build staging first."
+            exit 1
+          fi
+
+  # --------------------------------------------------------------------------
+  # Retag: staging -> prod
+  # --------------------------------------------------------------------------
+  retag:
+    name: Retag Images for Production
+    runs-on: ubuntu-latest
+    needs: preflight
+    steps:
+      - name: Login to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install crane
+        uses: imjasonh/setup-crane@v0.4
+
+      - name: Retag images
+        run: |
+          TAG="${{ needs.preflight.outputs.image_tag }}"
+          PROD_TAG="prod-$(date +%Y%m%d-%H%M%S)"
+          IFS=',' read -ra SERVICES <<< "${{ needs.preflight.outputs.services_list }}"
+
+          echo "Retagging from :${TAG} to :prod and :${PROD_TAG}"
+          for service in "${SERVICES[@]}"; do
+            echo "Retagging $service..."
+            crane copy "${{ env.IMAGE_PREFIX }}/${service}:${TAG}" "${{ env.IMAGE_PREFIX }}/${service}:prod"
+            crane copy "${{ env.IMAGE_PREFIX }}/${service}:${TAG}" "${{ env.IMAGE_PREFIX }}/${service}:${PROD_TAG}"
+          done
+
+          echo "prod_tag=$PROD_TAG" >> "$GITHUB_ENV"
+
+  # --------------------------------------------------------------------------
+  # Deploy to production (requires environment approval)
+  # --------------------------------------------------------------------------
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [preflight, retag]
+    if: inputs.dry_run != true
+    environment:
+      name: production
+      url: https://app.upcore.io
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Create deployment record
+        id: deployment
+        run: |
+          DEPLOY_ID="deploy-$(date +%Y%m%d-%H%M%S)"
+          echo "deploy_id=$DEPLOY_ID" >> "$GITHUB_OUTPUT"
+          echo "## Production Deployment: $DEPLOY_ID" >> "$GITHUB_STEP_SUMMARY"
+          echo "Tag: \`${{ needs.preflight.outputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "Triggered by: ${{ github.actor }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Time: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Snapshot current revisions (for rollback)
+        run: |
+          IFS=',' read -ra SERVICES <<< "${{ needs.preflight.outputs.services_list }}"
+          echo "Saving current revisions for rollback..."
+          mkdir -p /tmp/rollback
+          for service in "${SERVICES[@]}"; do
+            REVISION=$(az containerapp show \
+              --name "upc-prod-${service}" \
+              --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+              --query "properties.latestRevisionName" -o tsv 2>/dev/null || echo "none")
+            echo "$REVISION" > "/tmp/rollback/${service}"
+            echo "Current revision for $service: $REVISION"
+          done
+
+      - name: Upload rollback data
+        uses: actions/upload-artifact@v4
+        with:
+          name: rollback-revisions-${{ steps.deployment.outputs.deploy_id }}
+          path: /tmp/rollback/
+          retention-days: 30
+
+      - name: Deploy services
+        run: |
+          TAG="prod"
+          IFS=',' read -ra SERVICES <<< "${{ needs.preflight.outputs.services_list }}"
+
+          # Deploy in waves: infrastructure first, then business services, then frontend
+          WAVE_1=("api-gateway")
+          WAVE_2=("auth" "tenant" "organization")
+          WAVE_3=("employee" "leave" "survey" "assessment" "document" "notification" "audit" "intervention" "mobility" "ats")
+          WAVE_4=("burnout-prediction" "psychometric-scoring" "recommendation" "action-center")
+          WAVE_5=("web" "admin")
+
+          deploy_wave() {
+            local wave_name=$1
+            shift
+            local services=("$@")
+            echo "--- Deploying wave: $wave_name ---"
+            for service in "${services[@]}"; do
+              # Only deploy if in the requested list
+              if [[ " ${SERVICES[*]} " =~ " ${service} " ]]; then
+                echo "Deploying $service..."
+                az containerapp update \
+                  --name "upc-prod-${service}" \
+                  --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+                  --image "${{ env.IMAGE_PREFIX }}/${service}:${TAG}" \
+                  --output none &
+              fi
+            done
+            wait
+            echo "Wave $wave_name complete"
+          }
+
+          deploy_wave "1-gateway" "${WAVE_1[@]}"
+          deploy_wave "2-core" "${WAVE_2[@]}"
+          deploy_wave "3-business" "${WAVE_3[@]}"
+          deploy_wave "4-ml" "${WAVE_4[@]}"
+          deploy_wave "5-frontend" "${WAVE_5[@]}"
+
+      - name: Verify deployments
+        run: |
+          echo "Verifying production deployments..."
+          IFS=',' read -ra SERVICES <<< "${{ needs.preflight.outputs.services_list }}"
+          FAILED=0
+          for service in "${SERVICES[@]}"; do
+            STATUS=$(az containerapp show \
+              --name "upc-prod-${service}" \
+              --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+              --query "properties.runningStatus" -o tsv 2>/dev/null || echo "Unknown")
+            if [[ "$STATUS" != "Running" ]]; then
+              echo "::error::Service $service status: $STATUS"
+              FAILED=$((FAILED + 1))
+            else
+              echo "Service $service: Running"
+            fi
+          done
+          if [[ $FAILED -gt 0 ]]; then
+            echo "::error::$FAILED services failed. Consider rollback."
+            exit 1
+          fi
+
+      - name: Production smoke test
+        run: |
+          echo "Running production smoke tests..."
+
+          # API Gateway health
+          GATEWAY_FQDN=$(az containerapp show \
+            --name "upc-prod-api-gateway" \
+            --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${GATEWAY_FQDN}/healthz" --max-time 15 || echo "000")
+          if [[ "$HTTP_STATUS" != "200" ]]; then
+            echo "::error::Gateway health check failed: $HTTP_STATUS"
+            exit 1
+          fi
+          echo "API Gateway: healthy"
+
+          # Web app health
+          WEB_FQDN=$(az containerapp show \
+            --name "upc-prod-web" \
+            --resource-group "${{ env.AZURE_RESOURCE_GROUP }}" \
+            --query "properties.configuration.ingress.fqdn" -o tsv)
+
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://${WEB_FQDN}/api/health" --max-time 15 || echo "000")
+          if [[ "$HTTP_STATUS" != "200" ]]; then
+            echo "::error::Web app health check failed: $HTTP_STATUS"
+            exit 1
+          fi
+          echo "Web app: healthy"
+
+  # --------------------------------------------------------------------------
+  # Dry run output
+  # --------------------------------------------------------------------------
+  dry-run:
+    name: Dry Run Report
+    runs-on: ubuntu-latest
+    needs: [preflight, retag]
+    if: inputs.dry_run == true
+    steps:
+      - name: Report
+        run: |
+          echo "## Dry Run Report" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Image tag:** \`${{ needs.preflight.outputs.image_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "**Services:** ${{ needs.preflight.outputs.services_list }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "No changes were made. Remove dry_run to deploy." >> "$GITHUB_STEP_SUMMARY"

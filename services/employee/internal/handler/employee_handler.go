@@ -1,0 +1,176 @@
+package handler
+
+import (
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
+
+	"github.com/upcore/employee/internal/middleware"
+	"github.com/upcore/employee/internal/repository"
+	"github.com/upcore/employee/internal/service"
+)
+
+// EmployeeHandler exposes employee CRUD endpoints.
+type EmployeeHandler struct {
+	svc *service.EmployeeService
+	dep Dependencies
+}
+
+// NewEmployeeHandler constructs an EmployeeHandler.
+func NewEmployeeHandler(svc *service.EmployeeService, dep Dependencies) *EmployeeHandler {
+	return &EmployeeHandler{svc: svc, dep: dep}
+}
+
+// List handles GET /employees.
+func (h *EmployeeHandler) List(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	if tid == uuid.Nil {
+		WriteJSON(w, http.StatusUnauthorized, ErrorResponse{Error: "unauthorized"})
+		return
+	}
+	f := repository.ListFilter{
+		TenantID:     tid,
+		Search:       r.URL.Query().Get("search"),
+		Status:       r.URL.Query().Get("status"),
+		DepartmentID: ParseUUIDQuery(r, "department_id"),
+		PositionID:   ParseUUIDQuery(r, "position_id"),
+		ManagerID:    ParseUUIDQuery(r, "manager_id"),
+		Page:         ParseIntQuery(r, "page", 1),
+		Limit:        ParseIntQuery(r, "limit", 50),
+		SortBy:       r.URL.Query().Get("sort_by"),
+		SortDir:      r.URL.Query().Get("sort_dir"),
+	}
+	items, total, err := h.svc.List(r.Context(), f)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{
+		"items": items,
+		"total": total,
+		"page":  f.Page,
+		"limit": f.Limit,
+	})
+}
+
+// Get handles GET /employees/{id}.
+func (h *EmployeeHandler) Get(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	id, ok := ParseUUID(w, chi.URLParam(r, "id"))
+	if !ok {
+		return
+	}
+	e, err := h.svc.Get(r.Context(), tid, id)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, e)
+}
+
+// GetMe handles GET /employees/me — returns the employee profile of the
+// authenticated user (self-service).
+func (h *EmployeeHandler) GetMe(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	uid := middleware.UserIDFromContext(r.Context())
+	if tid == uuid.Nil || uid == uuid.Nil {
+		WriteJSON(w, http.StatusUnauthorized, ErrorResponse{Error: "unauthorized"})
+		return
+	}
+	e, err := h.svc.GetByUserID(r.Context(), tid, uid)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, e)
+}
+
+// Create handles POST /employees.
+func (h *EmployeeHandler) Create(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	if tid == uuid.Nil {
+		WriteJSON(w, http.StatusUnauthorized, ErrorResponse{Error: "unauthorized"})
+		return
+	}
+	var req service.CreateEmployeeRequest
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteJSON(w, http.StatusBadRequest, ErrorResponse{Error: "bad_request", Message: err.Error()})
+		return
+	}
+	e, err := h.svc.Create(r.Context(), tid, middleware.UserIDFromContext(r.Context()), req)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusCreated, e)
+}
+
+// Patch handles PATCH /employees/{id}.
+func (h *EmployeeHandler) Patch(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	id, ok := ParseUUID(w, chi.URLParam(r, "id"))
+	if !ok {
+		return
+	}
+	var req service.UpdateEmployeeRequest
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteJSON(w, http.StatusBadRequest, ErrorResponse{Error: "bad_request", Message: err.Error()})
+		return
+	}
+	e, err := h.svc.Update(r.Context(), tid, id, req)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, e)
+}
+
+// Terminate handles POST /employees/{id}/terminate.
+func (h *EmployeeHandler) Terminate(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	id, ok := ParseUUID(w, chi.URLParam(r, "id"))
+	if !ok {
+		return
+	}
+	var req service.TerminateRequest
+	if err := DecodeJSON(r, &req); err != nil {
+		WriteJSON(w, http.StatusBadRequest, ErrorResponse{Error: "bad_request", Message: err.Error()})
+		return
+	}
+	e, err := h.svc.Terminate(r.Context(), tid, id, middleware.UserIDFromContext(r.Context()), req)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, e)
+}
+
+// Reinstate handles POST /employees/{id}/reinstate.
+func (h *EmployeeHandler) Reinstate(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	id, ok := ParseUUID(w, chi.URLParam(r, "id"))
+	if !ok {
+		return
+	}
+	e, err := h.svc.Reinstate(r.Context(), tid, id)
+	if err != nil {
+		WriteError(w, err)
+		return
+	}
+	WriteJSON(w, http.StatusOK, e)
+}
+
+// Delete handles DELETE /employees/{id}.
+func (h *EmployeeHandler) Delete(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	id, ok := ParseUUID(w, chi.URLParam(r, "id"))
+	if !ok {
+		return
+	}
+	if err := h.svc.Delete(r.Context(), tid, id); err != nil {
+		WriteError(w, err)
+		return
+	}
+	w.WriteHeader(http.StatusNoContent)
+}

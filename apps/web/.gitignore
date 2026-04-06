@@ -1,0 +1,15 @@
+.next/
+out/
+build/
+dist/
+node_modules/
+.turbo/
+.env
+.env.local
+.env*.local
+*.log
+.DS_Store
+next-env.d.ts
+
+# clerk configuration (can include secrets)
+/.clerk/

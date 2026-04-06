@@ -1,0 +1,52 @@
+{
+  "instrument": "UpCap-TR",
+  "version": "upcap-tr-v0.1",
+  "language": "tr-TR",
+  "source_citation": "Adapted from Lorenz, T., Beer, C., Putz, J., & Heinitz, K. (2016). CPC-12, PLOS ONE 11(4): e0152892.",
+  "license": "CC-BY 4.0 (original CPC-12). Turkish adaptation: Upcore internal, validation ongoing.",
+  "response_scale": {
+    "type": "likert_agreement",
+    "min": 1,
+    "max": 6,
+    "labels_tr": [
+      "Kesinlikle katilmiyorum",
+      "Katilmiyorum",
+      "Biraz katilmiyorum",
+      "Biraz katiliyorum",
+      "Katiliyorum",
+      "Kesinlikle katiliyorum"
+    ]
+  },
+  "subscales": {
+    "hope": {
+      "name_tr": "Umut",
+      "items": ["upcap_01", "upcap_02", "upcap_03"]
+    },
+    "efficacy": {
+      "name_tr": "Oz-yeterlik",
+      "items": ["upcap_04", "upcap_05", "upcap_06"]
+    },
+    "resilience": {
+      "name_tr": "Psikolojik Dayaniklilik",
+      "items": ["upcap_07", "upcap_08", "upcap_09"]
+    },
+    "optimism": {
+      "name_tr": "Iyimserlik",
+      "items": ["upcap_10", "upcap_11", "upcap_12"]
+    }
+  },
+  "items": [
+    {"id": "upcap_01", "subscale": "hope", "text_tr": "Isimde suanki hedeflerime ulasmak icin birden fazla yol dusunebilirim.", "reverse_coded": false},
+    {"id": "upcap_02", "subscale": "hope", "text_tr": "Suanda isimde kendimi oldukca basarili goruyorum.", "reverse_coded": false},
+    {"id": "upcap_03", "subscale": "hope", "text_tr": "Isimdeki hedeflerime enerjik bir sekilde ulasiyorum.", "reverse_coded": false},
+    {"id": "upcap_04", "subscale": "efficacy", "text_tr": "Is problemlerine cozum bulmakta kendime guveniyorum.", "reverse_coded": false},
+    {"id": "upcap_05", "subscale": "efficacy", "text_tr": "Stratejik konularda tartisirken kendime guveniyorum.", "reverse_coded": true},
+    {"id": "upcap_06", "subscale": "efficacy", "text_tr": "Uzun vadeli is hedefleri belirlerken kendime guveniyorum.", "reverse_coded": false},
+    {"id": "upcap_07", "subscale": "resilience", "text_tr": "Isimdeki zorluklari genellikle bir sekilde atlatabilirim.", "reverse_coded": false},
+    {"id": "upcap_08", "subscale": "resilience", "text_tr": "Istersem gerekiyorsa isimde kendi basima olabilirim.", "reverse_coded": true},
+    {"id": "upcap_09", "subscale": "resilience", "text_tr": "Isimdeki zor dususleri atlatabilirim.", "reverse_coded": false},
+    {"id": "upcap_10", "subscale": "optimism", "text_tr": "Isimde belirsiz zamanlarda en iyisini umuyorum.", "reverse_coded": false},
+    {"id": "upcap_11", "subscale": "optimism", "text_tr": "Eger isimde bir sey ters gidebiliyorsa gidecek.", "reverse_coded": true},
+    {"id": "upcap_12", "subscale": "optimism", "text_tr": "Isimde her seyin iyi tarafina bakiyorum.", "reverse_coded": false}
+  ]
+}

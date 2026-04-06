@@ -1,0 +1,1 @@
+"""Action center tests."""

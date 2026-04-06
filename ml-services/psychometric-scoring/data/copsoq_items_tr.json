@@ -1,0 +1,116 @@
+{
+  "instrument": "COPSOQ-III-TR",
+  "version": "copsoq-iii-tr-v1.0",
+  "language": "tr-TR",
+  "source_citation": "Sahan, C., Baydur, H., & Demiral, Y. (2019). COPSOQ-III Turkish validation. CFI=0.98.",
+  "license": "CC-BY (COPSOQ International Network).",
+  "response_scale": {
+    "type": "likert_frequency",
+    "min": 1,
+    "max": 5,
+    "labels_tr": [
+      "Hicbir zaman / Neredeyse hic",
+      "Nadiren",
+      "Bazen",
+      "Cogu zaman",
+      "Her zaman"
+    ]
+  },
+  "subscales": {
+    "quantitative_demands": {
+      "name_tr": "Niceliksel Talepler",
+      "dimension": "demands",
+      "items": ["copsoq_01", "copsoq_02", "copsoq_03", "copsoq_04"],
+      "reverse_items": []
+    },
+    "work_pace": {
+      "name_tr": "Calisma Tempo",
+      "dimension": "demands",
+      "items": ["copsoq_05", "copsoq_06", "copsoq_07"],
+      "reverse_items": []
+    },
+    "emotional_demands": {
+      "name_tr": "Duygusal Talepler",
+      "dimension": "demands",
+      "items": ["copsoq_08", "copsoq_09", "copsoq_10"],
+      "reverse_items": []
+    },
+    "influence": {
+      "name_tr": "Etki / Kontrol",
+      "dimension": "resources",
+      "items": ["copsoq_11", "copsoq_12", "copsoq_13", "copsoq_14"],
+      "reverse_items": []
+    },
+    "possibilities_for_development": {
+      "name_tr": "Gelisim Olanaklari",
+      "dimension": "resources",
+      "items": ["copsoq_15", "copsoq_16", "copsoq_17"],
+      "reverse_items": []
+    },
+    "meaning_of_work": {
+      "name_tr": "Isin Anlami",
+      "dimension": "resources",
+      "items": ["copsoq_18", "copsoq_19", "copsoq_20"],
+      "reverse_items": []
+    },
+    "predictability": {
+      "name_tr": "Ongorulebilirlik",
+      "dimension": "resources",
+      "items": ["copsoq_21", "copsoq_22"],
+      "reverse_items": []
+    },
+    "recognition": {
+      "name_tr": "Takdir",
+      "dimension": "resources",
+      "items": ["copsoq_23", "copsoq_24", "copsoq_25"],
+      "reverse_items": []
+    },
+    "role_clarity": {
+      "name_tr": "Rol Netligi",
+      "dimension": "resources",
+      "items": ["copsoq_26", "copsoq_27", "copsoq_28"],
+      "reverse_items": []
+    },
+    "social_support_supervisor": {
+      "name_tr": "Yonetici Destegi",
+      "dimension": "resources",
+      "items": ["copsoq_29", "copsoq_30", "copsoq_31"],
+      "reverse_items": []
+    },
+    "social_support_colleagues": {
+      "name_tr": "Meslektas Destegi",
+      "dimension": "resources",
+      "items": ["copsoq_32", "copsoq_33", "copsoq_34"],
+      "reverse_items": []
+    },
+    "job_satisfaction": {
+      "name_tr": "Is Tatmini",
+      "dimension": "outcomes",
+      "items": ["copsoq_35", "copsoq_36", "copsoq_37"],
+      "reverse_items": []
+    },
+    "work_engagement": {
+      "name_tr": "Ise Baglilik",
+      "dimension": "outcomes",
+      "items": ["copsoq_38", "copsoq_39", "copsoq_40"],
+      "reverse_items": []
+    }
+  },
+  "cutoffs_0_100": {
+    "demands": {
+      "green_max": 40.0,
+      "amber_max": 60.0,
+      "red_min": 60.01
+    },
+    "resources": {
+      "green_min": 60.0,
+      "amber_min": 40.0,
+      "red_max": 39.99
+    },
+    "outcomes": {
+      "green_min": 60.0,
+      "amber_min": 40.0,
+      "red_max": 39.99
+    }
+  }
+}

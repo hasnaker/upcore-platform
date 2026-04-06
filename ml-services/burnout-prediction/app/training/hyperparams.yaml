@@ -1,0 +1,48 @@
+# Burnout LSTM training hyperparameters (v0.1)
+# Versioned in git for reproducibility
+
+seed: 42
+batch_size: 256
+learning_rate: 0.001
+weight_decay: 0.0001
+epochs: 50
+patience: 7  # Early stopping patience on val AUROC avg
+
+# Model architecture
+input_dim: 42
+hidden_dim: 128
+num_layers: 2
+num_heads: 4
+dropout: 0.2
+
+# Horizons
+horizons: [30, 60, 90]
+horizon_weights: {30: 1.0, 60: 0.8, 90: 0.6}
+
+# Loss
+loss_type: "focal"
+focal_gamma: 2.0
+focal_alpha: 0.25
+
+# MC-Dropout
+mc_samples: 30
+confidence_level: 0.95
+
+# Optimizer
+optimizer: "adamw"
+warmup_epochs: 5
+scheduler: "cosine_annealing"
+
+# Data
+sequence_length: 12
+stride: 1
+val_split: 0.15
+test_split: 0.15
+
+# Calibration
+calibration_bins: 15
+target_ece: 0.05
+
+# Fairness
+fairness_tolerance: 0.10
+fairness_groups: ["gender", "tenure_band", "department_tier"]

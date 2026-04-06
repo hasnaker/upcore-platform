@@ -1,0 +1,284 @@
+openapi: 3.0.3
+info:
+  title: Upcore Document Service
+  version: 1.0.0
+  description: |
+    Document storage (Azure Blob), versioning, Turkish e-imza integration,
+    KVKK-compliant retention and expiring-document alerts.
+servers:
+  - url: http://localhost:8006
+    description: Local
+  - url: https://api.upcore.app
+    description: Production
+security:
+  - GatewayAuth: []
+paths:
+  /health:
+    get:
+      tags: [ops]
+      summary: Liveness probe
+      security: []
+      responses:
+        "200":
+          description: OK
+  /ready:
+    get:
+      tags: [ops]
+      summary: Readiness probe
+      security: []
+      responses:
+        "200": { description: OK }
+  /api/v1/documents:
+    get:
+      tags: [documents]
+      summary: List documents
+      parameters:
+        - { in: query, name: owner_employee_id, schema: { type: string, format: uuid } }
+        - { in: query, name: type, schema: { $ref: '#/components/schemas/DocType' } }
+        - { in: query, name: is_signed, schema: { type: boolean } }
+        - { in: query, name: expiring_within_days, schema: { type: integer, minimum: 1 } }
+        - { in: query, name: search, schema: { type: string } }
+        - { in: query, name: page, schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 50, maximum: 200 } }
+      responses:
+        "200":
+          description: Page of documents
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Document' } }
+                  total: { type: integer }
+                  page:  { type: integer }
+                  limit: { type: integer }
+    post:
+      tags: [documents]
+      summary: Upload a new document (multipart/form-data)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file, type]
+              properties:
+                file: { type: string, format: binary }
+                type: { $ref: '#/components/schemas/DocType' }
+                name: { type: string }
+                description: { type: string }
+                owner_employee_id: { type: string, format: uuid }
+                tags: { type: string, description: "comma-separated" }
+                is_confidential: { type: boolean }
+                expires_at: { type: string, format: date }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id: { type: string, format: uuid }
+                  version: { type: integer }
+                  blob_path: { type: string }
+                  size_bytes: { type: integer }
+                  checksum: { type: string }
+                  mime_type: { type: string }
+                  retention: { type: string, format: date-time }
+        "413": { description: File too large }
+        "415": { description: Unsupported type }
+  /api/v1/documents/expiring:
+    get:
+      tags: [documents]
+      summary: List documents expiring within N days
+      parameters:
+        - { in: query, name: within_days, schema: { type: integer, default: 30 } }
+      responses:
+        "200":
+          description: Items
+  /api/v1/documents/expiring/notify:
+    post:
+      tags: [documents]
+      summary: Trigger expiring-document notifications (idempotent)
+      responses:
+        "200": { description: OK }
+  /api/v1/documents/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [documents]
+      summary: Get document metadata
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Document' }
+        "404": { description: Not found }
+    patch:
+      tags: [documents]
+      summary: Update document metadata
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DocumentPatch' }
+      responses:
+        "200": { description: Updated }
+    delete:
+      tags: [documents]
+      summary: Soft-delete a document
+      responses:
+        "204": { description: Deleted }
+  /api/v1/documents/{id}/download:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      - { in: query, name: redirect, schema: { type: boolean, default: true } }
+    get:
+      tags: [documents]
+      summary: Get a SAS URL for the current version
+      responses:
+        "302": { description: Redirect to signed URL }
+        "200":
+          description: Signed URL in JSON (when redirect=false)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string }
+  /api/v1/documents/{id}/versions:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [versions]
+      summary: List document versions
+      responses:
+        "200": { description: OK }
+    post:
+      tags: [versions]
+      summary: Upload a new version (multipart/form-data)
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+                notes: { type: string }
+      responses:
+        "201": { description: Created }
+  /api/v1/documents/{id}/versions/{version}/download:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      - { in: path, name: version, required: true, schema: { type: integer, minimum: 1 } }
+    get:
+      tags: [versions]
+      summary: Download a specific version
+      responses:
+        "302": { description: Redirect to SAS URL }
+  /api/v1/documents/{id}/versions/{version}/restore:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      - { in: path, name: version, required: true, schema: { type: integer, minimum: 1 } }
+    post:
+      tags: [versions]
+      summary: Restore an earlier version
+      responses:
+        "200": { description: OK }
+  /api/v1/documents/{id}/signature:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    post:
+      tags: [signatures]
+      summary: Initiate an e-signature flow
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [signer_employee_id, provider]
+              properties:
+                signer_employee_id: { type: string, format: uuid }
+                provider: { $ref: '#/components/schemas/SignProvider' }
+                signer_name: { type: string }
+                signer_tckn: { type: string }
+                signer_email: { type: string }
+                callback_url: { type: string }
+      responses:
+        "201": { description: Created }
+  /api/v1/documents/{id}/signature/status:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+      - { in: query, name: signature_id, required: true, schema: { type: string, format: uuid } }
+    get:
+      tags: [signatures]
+      summary: Poll signature status
+      responses:
+        "200": { description: OK }
+  /api/v1/signatures/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: string, format: uuid } }
+    delete:
+      tags: [signatures]
+      summary: Cancel a pending signature
+      responses:
+        "200": { description: OK }
+components:
+  securitySchemes:
+    GatewayAuth:
+      type: apiKey
+      in: header
+      name: X-User-ID
+      description: API gateway injects X-Tenant-ID, X-User-ID, X-User-Role after JWT validation.
+  schemas:
+    DocType:
+      type: string
+      description: >-
+        Category aligned with the `app.documents.category` CHECK constraint.
+        English aliases (contract, payroll, health_report, training_cert,
+        kvkk_consent, cv, etc.) are accepted by the API and normalised.
+      enum:
+        - sözleşme
+        - bordro
+        - kimlik
+        - sertifika
+        - diploma
+        - sağlık_raporu
+        - izin_belgesi
+        - eğitim_belgesi
+        - policy
+        - diğer
+    SignProvider:
+      type: string
+      enum: [eimzala, kamu_sm, edevlet, mobile]
+    Document:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        owner_employee_id: { type: string, format: uuid, nullable: true }
+        category: { $ref: '#/components/schemas/DocType' }
+        title: { type: string }
+        description: { type: string, nullable: true }
+        current_version: { type: integer }
+        tags: { type: array, items: { type: string } }
+        is_confidential: { type: boolean }
+        retention_until: { type: string, format: date, nullable: true }
+        signed_at: { type: string, format: date-time, nullable: true }
+        signed_by: { type: string, format: uuid, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        deleted_at: { type: string, format: date-time, nullable: true }
+    DocumentPatch:
+      type: object
+      properties:
+        title: { type: string }
+        description: { type: string, nullable: true }
+        tags: { type: array, items: { type: string } }
+        is_confidential: { type: boolean }
+        retention_until: { type: string, format: date-time, nullable: true }

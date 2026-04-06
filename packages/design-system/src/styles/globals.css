@@ -1,0 +1,64 @@
+@import 'tailwindcss';
+
+/* ================================================================
+   Upcore Nordic Minimal · Tailwind v4 Theme
+   @theme registers custom colors as first-class Tailwind utilities:
+   text-ink, bg-accent, border-line, bg-bg-2, text-ink-60, etc.
+   ================================================================ */
+@theme {
+  --color-bg: #ffffff;
+  --color-bg-2: #fafafa;
+  --color-bg-3: #f5f5f5;
+  --color-ink: #0a0a0a;
+  --color-ink-80: #262626;
+  --color-ink-60: #525252;
+  --color-ink-40: #a3a3a3;
+  --color-ink-20: #d4d4d4;
+  --color-line: #ededed;
+
+  --color-accent: #5e5ce6;
+  --color-accent-soft: #eef0fd;
+
+  --color-red: #dc2626;
+  --color-red-soft: #fee2e2;
+  --color-amber: #d97706;
+  --color-amber-soft: #fef3c7;
+  --color-green: #059669;
+  --color-green-soft: #d1fae5;
+  --color-teal: #0d9488;
+  --color-teal-soft: #ccfbf1;
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 14px;
+}
+
+html {
+  font-family: var(--font-sans);
+  font-feature-settings: 'ss01', 'cv11', 'tnum';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-ink);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+*, *::before, *::after {
+  border-color: var(--color-line);
+}
+
+/* Focus ring — violet accent, always visible on keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}

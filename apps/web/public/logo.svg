@@ -1,0 +1,5 @@
+<svg width="120" height="32" viewBox="0 0 120 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="0" y="4" width="24" height="24" rx="6" fill="#5e5ce6"/>
+  <path d="M8 11l4 6 4-6" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="32" y="22" font-family="Inter, sans-serif" font-size="16" font-weight="600" fill="#0a0a0a">Upcore</text>
+</svg>
