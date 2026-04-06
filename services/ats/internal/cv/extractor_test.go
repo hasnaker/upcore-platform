@@ -34,7 +34,8 @@ func TestExtractExperienceYears(t *testing.T) {
 		{"15 years experience and 3 years managing", 15},
 	}
 	for _, tc := range tests {
-		t.Run(tc.text[:20], func(t *testing.T) {
+		name := tc.text; if len(name) > 20 { name = name[:20] }
+		t.Run(name, func(t *testing.T) {
 			result := ExtractExperienceYears(tc.text)
 			assert.Equal(t, tc.expected, result)
 		})

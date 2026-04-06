@@ -87,7 +87,8 @@ func TestTransition_Success(t *testing.T) {
 	assert.Equal(t, StageScreened, app.CurrentStage)
 	assert.NotNil(t, evt)
 	assert.Equal(t, EventStageChanged, evt.EventType)
-	assert.Equal(t, &StageApplied, evt.FromStage)
+	fromStage := StageApplied
+	assert.Equal(t, &fromStage, evt.FromStage)
 
 	toStage := StageScreened
 	assert.Equal(t, &toStage, evt.ToStage)

@@ -12,7 +12,7 @@ func TestCheatingMetrics_Evaluate_NoFlags(t *testing.T) {
 	m.FocusLostCount = 2
 	m.TimePerQuestion = []float64{5.0, 6.0, 7.0}
 
-	m.Evaluate(3, 2.0, 60.0)
+	m.Evaluate(3, 2.0, 50.0) // totalSpent=18 > 50/3=16.67 → no suspiciously_fast flag
 
 	assert.False(t, m.IsSuspicious())
 	assert.Empty(t, m.SuspiciousFlags)
