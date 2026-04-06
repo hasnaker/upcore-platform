@@ -72,7 +72,7 @@ func (r *Renderer) ValidateVariables(expected []string, vars map[string]any) err
 }
 
 // dangerousTagPattern matches script, iframe, object, embed, and event handler attributes.
-var dangerousTagPattern = regexp.MustCompile(`(?i)<\s*(script|iframe|object|embed|link|style)[^>]*>.*?</\s*\1\s*>|<\s*(script|iframe|object|embed|link|style)[^>]*/?>|on\w+\s*=\s*["'][^"']*["']`)
+var dangerousTagPattern = regexp.MustCompile(`(?i)<\s*(?:script|iframe|object|embed|link|style)[^>]*>.*?</\s*(?:script|iframe|object|embed|link|style)\s*>|<\s*(?:script|iframe|object|embed|link|style)[^>]*/?>|on\w+\s*=\s*["'][^"']*["']`)
 
 func stripDangerousTags(s string) string {
 	return dangerousTagPattern.ReplaceAllString(s, "")
