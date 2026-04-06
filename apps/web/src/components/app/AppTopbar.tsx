@@ -22,6 +22,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/egitim': 'Eğitim & Gelişim',
   '/baglilik': 'Çalışan Bağlılığı',
   '/is-akislari': 'İş Akışları',
+  '/risk-sentez': 'Risk Sentez Paneli',
   '/tahminler': 'AI Tahminler',
   '/onboarding-yonetimi': 'Onboarding Yönetimi',
   '/organizasyon': 'Organizasyon Tasarımı',

@@ -1,8 +1,54 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import type { EmployeeView } from '@/lib/employee-mapper';
+
+/* ── Risk Intelligence Types ── */
+interface RiskSignal {
+  source: string;
+  severity: string;
+}
+
+interface RiskScore {
+  score: number;
+  level: 'low' | 'medium' | 'high' | 'critical';
+  signals: RiskSignal[];
+}
+
+interface EmployeeSynthesis {
+  riskScore: RiskScore;
+  overallHealth: 'good' | 'warning' | 'critical';
+  okrProgress: number;
+  burnoutScore: number;
+}
+
+interface IntelEmployee {
+  id: string;
+  name: string;
+  department: string;
+  synthesis: EmployeeSynthesis;
+}
+
+interface RiskInfo {
+  level: RiskScore['level'];
+  label: string;
+  overallHealth: EmployeeSynthesis['overallHealth'];
+  criticalSource: string | null;
+}
+
+const RISK_BADGE: Record<RiskScore['level'], { bg: string; text: string; label: string }> = {
+  low:      { bg: 'bg-green-soft',  text: 'text-green',  label: 'Düşük' },
+  medium:   { bg: 'bg-amber-soft',  text: 'text-amber',  label: 'Orta' },
+  high:     { bg: 'bg-orange-100',  text: 'text-orange-600', label: 'Yüksek' },
+  critical: { bg: 'bg-red-soft',    text: 'text-red',    label: 'Kritik' },
+};
+
+const HEALTH_DOT: Record<EmployeeSynthesis['overallHealth'], string> = {
+  good:     'bg-green',
+  warning:  'bg-amber',
+  critical: 'bg-red',
+};
 
 interface Props {
   employees: EmployeeView[];
@@ -21,6 +67,59 @@ export function EmployeeListClient({ employees }: Props) {
   const router = useRouter();
   const [search, setSearch] = useState('');
   const [page, setPage] = useState(1);
+  const [riskMap, setRiskMap] = useState<Map<string, RiskInfo>>(new Map());
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadRiskData() {
+      try {
+        const res = await fetch('/api/employee-intelligence');
+        if (!res.ok) return;
+        const json: { employees: IntelEmployee[] } = await res.json();
+        if (cancelled) return;
+
+        const map = new Map<string, RiskInfo>();
+
+        // Build a name-based lookup as fallback
+        const nameToRisk = new Map<string, RiskInfo>();
+
+        for (const emp of json.employees) {
+          const criticalSignal = emp.synthesis.riskScore.signals.find(
+            (s) => s.severity === 'critical' || s.severity === 'error',
+          );
+          const info: RiskInfo = {
+            level: emp.synthesis.riskScore.level,
+            label: RISK_BADGE[emp.synthesis.riskScore.level]?.label ?? 'Bilinmiyor',
+            overallHealth: emp.synthesis.overallHealth,
+            criticalSource: criticalSignal?.source?.replace(/-TR$/, '') ?? null,
+          };
+          // Primary: match by ID
+          map.set(emp.id, info);
+          // Fallback: match by name (lowercased)
+          nameToRisk.set(emp.name.toLocaleLowerCase('tr-TR'), info);
+        }
+
+        // Also map by employee name for cases where IDs differ between systems
+        for (const employee of employees) {
+          if (!map.has(employee.id)) {
+            const nameLower = employee.tamAd.toLocaleLowerCase('tr-TR');
+            const found = nameToRisk.get(nameLower);
+            if (found) {
+              map.set(employee.id, found);
+            }
+          }
+        }
+
+        setRiskMap(map);
+      } catch {
+        // Silently fail — risk badges are supplementary
+      }
+    }
+
+    loadRiskData();
+    return () => { cancelled = true; };
+  }, [employees]);
 
   const filtered = useMemo(() => {
     if (!search.trim()) return employees;
@@ -64,13 +163,14 @@ export function EmployeeListClient({ employees }: Props) {
               <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 md:table-cell">Sicil No</th>
               <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 lg:table-cell">Email</th>
               <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 sm:table-cell">Başlama</th>
+              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 sm:table-cell">Risk</th>
               <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40">Durum</th>
             </tr>
           </thead>
           <tbody>
             {paginated.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-12 text-center">
+                <td colSpan={6} className="px-4 py-12 text-center">
                   <div className="flex flex-col items-center gap-2">
                     <svg className="h-10 w-10 text-ink-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128H5.228A2 2 0 013 17.208V5.802A2 2 0 015.228 4h8.544A2 2 0 0116 5.802V12" />
@@ -92,6 +192,9 @@ export function EmployeeListClient({ employees }: Props) {
             ) : (
               paginated.map((emp) => {
                 const renk = RENK_MAP[emp.durumRenk] ?? RENK_MAP['gray']!;
+                const risk = riskMap.get(emp.id);
+                const badge = risk ? RISK_BADGE[risk.level] : null;
+                const healthDot = risk ? HEALTH_DOT[risk.overallHealth] : null;
                 return (
                   <tr
                     key={emp.id}
@@ -101,11 +204,28 @@ export function EmployeeListClient({ employees }: Props) {
                     {/* Çalışan */}
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
+                        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
                           {emp.initials}
+                          {/* Health dot on avatar */}
+                          {healthDot && (
+                            <span
+                              className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-bg ${healthDot}`}
+                              title={`Sağlık: ${risk?.overallHealth}`}
+                            />
+                          )}
                         </div>
                         <div className="min-w-0">
-                          <div className="truncate text-sm font-medium text-ink">{emp.tamAd}</div>
+                          <div className="flex items-center gap-2">
+                            <span className="truncate text-sm font-medium text-ink">{emp.tamAd}</span>
+                            {/* Inline risk badge on mobile (column hidden on sm-) */}
+                            {badge && (
+                              <span
+                                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:hidden ${badge.bg} ${badge.text}`}
+                              >
+                                {badge.label}
+                              </span>
+                            )}
+                          </div>
                           <div className="truncate text-xs text-ink-40 md:hidden">{emp.email}</div>
                         </div>
                       </div>
@@ -126,6 +246,26 @@ export function EmployeeListClient({ employees }: Props) {
                       {emp.iseBaslama
                         ? new Date(emp.iseBaslama).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
                         : '—'}
+                    </td>
+
+                    {/* Risk */}
+                    <td className="hidden px-4 py-3 sm:table-cell">
+                      {badge ? (
+                        <div className="flex items-center gap-1.5">
+                          <span
+                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${badge.bg} ${badge.text}`}
+                          >
+                            {badge.label}
+                          </span>
+                          {risk?.criticalSource && (
+                            <span className="rounded bg-red-soft px-1 py-0.5 text-[10px] font-medium text-red">
+                              {risk.criticalSource}
+                            </span>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-xs text-ink-20">—</span>
+                      )}
                     </td>
 
                     {/* Durum */}

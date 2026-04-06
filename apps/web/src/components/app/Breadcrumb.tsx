@@ -28,6 +28,7 @@ const PATH_LABELS: Record<string, string> = {
   'egitim': 'Eğitim & Gelişim',
   'baglilik': 'Bağlılık',
   'is-akislari': 'İş Akışları',
+  'risk-sentez': 'Risk Sentez',
   'tahminler': 'AI Tahminler',
   'onboarding-yonetimi': 'Onboarding',
   'organizasyon': 'Organizasyon',
