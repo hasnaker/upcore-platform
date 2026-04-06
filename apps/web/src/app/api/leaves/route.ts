@@ -1,21 +1,18 @@
 import { NextResponse } from 'next/server';
+import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
 
-const LEAVE_URL = 'http://localhost:8005';
 const HEADERS = {
-  'X-Tenant-Id': '11111111-1111-1111-1111-111111111111',
-  'X-User-Id': '00000000-0000-0000-0000-000000000001',
-  'X-User-Role': 'hr_director',
+  ...DEV_HEADERS,
   'X-Employee-Id': '64731864-b6eb-4af9-9448-00bb5d9ae74b',
-  'Content-Type': 'application/json',
 };
 
 // GET /api/leaves — list types + balance + requests
 export async function GET() {
   try {
     const [typesRes, balanceRes, requestsRes] = await Promise.all([
-      fetch(`${LEAVE_URL}/api/v1/leaves/types`, { headers: HEADERS }),
-      fetch(`${LEAVE_URL}/api/v1/leaves/balances/64731864-b6eb-4af9-9448-00bb5d9ae74b`, { headers: HEADERS }),
-      fetch(`${LEAVE_URL}/api/v1/leaves/requests`, { headers: HEADERS }),
+      fetch(`${SERVICES.leave}/api/v1/leaves/types`, { headers: HEADERS }),
+      fetch(`${SERVICES.leave}/api/v1/leaves/balances/64731864-b6eb-4af9-9448-00bb5d9ae74b`, { headers: HEADERS }),
+      fetch(`${SERVICES.leave}/api/v1/leaves/requests`, { headers: HEADERS }),
     ]);
 
     const types = typesRes.ok ? await typesRes.json() : { items: [] };
@@ -32,7 +29,7 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const res = await fetch(`${LEAVE_URL}/api/v1/leaves/requests`, {
+    const res = await fetch(`${SERVICES.leave}/api/v1/leaves/requests`, {
       method: 'POST',
       headers: HEADERS,
       body: JSON.stringify(body),

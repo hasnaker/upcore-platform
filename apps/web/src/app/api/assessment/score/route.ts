@@ -1,6 +1,5 @@
 import { NextResponse } from 'next/server';
-
-const SCORING_URL = 'http://127.0.0.1:8025';
+import { SERVICES, TENANT_ID } from '@/lib/service-urls';
 
 // Score an assessment via Python psychometric-scoring service
 export async function POST(request: Request) {
@@ -10,7 +9,7 @@ export async function POST(request: Request) {
 
     let endpoint = '/v1/score/bat12';
     let payload: Record<string, unknown> = {
-      tenant_id: tenantId || '11111111-1111-1111-1111-111111111111',
+      tenant_id: tenantId || TENANT_ID,
       employee_id: employeeId || '00000000-0000-0000-0000-000000000000',
       assessment_id: assessmentId || '00000000-0000-0000-0000-000000000000',
       responses,
@@ -29,7 +28,7 @@ export async function POST(request: Request) {
       };
     }
 
-    const res = await fetch(`${SCORING_URL}${endpoint}`, {
+    const res = await fetch(`${SERVICES.scoring}${endpoint}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),

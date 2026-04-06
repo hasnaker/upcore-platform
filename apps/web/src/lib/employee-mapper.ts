@@ -1,3 +1,5 @@
+import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
+
 /**
  * Employee API ↔ Frontend mapping layer
  * TEK KAYNAK — tüm field dönüşümleri burada
@@ -121,17 +123,6 @@ function getInitials(ad: string, soyad: string): string {
   return `${a}${s}`;
 }
 
-// API base URL
-const API_BASE = process.env['NEXT_PUBLIC_API_URL'] || 'http://localhost:8003';
-
-// Default headers for dev (tenant + user context)
-const DEV_HEADERS = {
-  'X-Tenant-Id': '11111111-1111-1111-1111-111111111111',
-  'X-User-Id': '00000000-0000-0000-0000-000000000001',
-  'X-User-Role': 'hr_director',
-  'Content-Type': 'application/json',
-};
-
 // API fonksiyonları — server-side fetch
 export async function fetchEmployees(params?: {
   page?: number;
@@ -147,7 +138,7 @@ export async function fetchEmployees(params?: {
   if (params?.department_id) searchParams.set('department_id', params.department_id);
   if (params?.employment_status) searchParams.set('employment_status', params.employment_status);
 
-  const url = `${API_BASE}/api/v1/employees?${searchParams.toString()}`;
+  const url = `${SERVICES.employee}/api/v1/employees?${searchParams.toString()}`;
   const res = await fetch(url, { headers: DEV_HEADERS, cache: 'no-store' });
 
   if (!res.ok) {
@@ -162,7 +153,7 @@ export async function fetchEmployees(params?: {
 }
 
 export async function fetchEmployee(id: string): Promise<EmployeeView> {
-  const res = await fetch(`${API_BASE}/api/v1/employees/${id}`, {
+  const res = await fetch(`${SERVICES.employee}/api/v1/employees/${id}`, {
     headers: DEV_HEADERS,
     cache: 'no-store',
   });
@@ -172,7 +163,7 @@ export async function fetchEmployee(id: string): Promise<EmployeeView> {
 }
 
 export async function createEmployee(data: CreateEmployeeRequest): Promise<ApiEmployee> {
-  const res = await fetch(`${API_BASE}/api/v1/employees`, {
+  const res = await fetch(`${SERVICES.employee}/api/v1/employees`, {
     method: 'POST',
     headers: DEV_HEADERS,
     body: JSON.stringify(data),
@@ -185,7 +176,7 @@ export async function createEmployee(data: CreateEmployeeRequest): Promise<ApiEm
 }
 
 export async function updateEmployee(id: string, data: Partial<CreateEmployeeRequest>): Promise<ApiEmployee> {
-  const res = await fetch(`${API_BASE}/api/v1/employees/${id}`, {
+  const res = await fetch(`${SERVICES.employee}/api/v1/employees/${id}`, {
     method: 'PATCH',
     headers: DEV_HEADERS,
     body: JSON.stringify(data),
@@ -198,7 +189,7 @@ export async function updateEmployee(id: string, data: Partial<CreateEmployeeReq
 }
 
 export async function deleteEmployee(id: string): Promise<void> {
-  const res = await fetch(`${API_BASE}/api/v1/employees/${id}`, {
+  const res = await fetch(`${SERVICES.employee}/api/v1/employees/${id}`, {
     method: 'DELETE',
     headers: DEV_HEADERS,
   });

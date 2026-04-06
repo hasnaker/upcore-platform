@@ -1,18 +1,13 @@
 import { NextResponse } from 'next/server';
-
-const ACTION_URL = 'http://127.0.0.1:8024';
-const BURNOUT_URL = 'http://127.0.0.1:8022';
-const RECOMMEND_URL = 'http://127.0.0.1:8023';
-const DB_URL = process.env['DATABASE_URL'] || 'postgresql://upcore:upcore_dev_password@localhost:5432/upcore_dev';
-const TENANT = '11111111-1111-1111-1111-111111111111';
+import { SERVICES, DB_URL, TENANT_ID } from '@/lib/service-urls';
 
 export async function GET() {
   try {
     // Get actions from ML action-center service
-    const actionsRes = await fetch(`${ACTION_URL}/v1/actions/next`, {
+    const actionsRes = await fetch(`${SERVICES.actionCenter}/v1/actions/next`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: TENANT, user_id: '00000000-0000-0000-0000-000000000001', role: 'hr_director', limit: 5 }),
+      body: JSON.stringify({ tenant_id: TENANT_ID, user_id: '00000000-0000-0000-0000-000000000001', role: 'hr_director', limit: 5 }),
     }).catch(() => null);
 
     let mlActions = [];
@@ -34,17 +29,17 @@ export async function GET() {
       WHERE bs.tenant_id = $1 AND bs.feature_name = 'bat_total'
         AND bs.ts = (SELECT MAX(ts) FROM app.burnout_signals WHERE employee_id = bs.employee_id AND feature_name = 'bat_total')
       ORDER BY bs.feature_value DESC LIMIT 5
-    `, [TENANT]);
+    `, [TENANT_ID]);
 
     // Get recommendations for top critical employee
     let recommendations: unknown[] = [];
     if (criticalRes.rows[0]) {
       const topEmployee = criticalRes.rows[0];
-      const recRes = await fetch(`${RECOMMEND_URL}/v1/recommend/individual`, {
+      const recRes = await fetch(`${SERVICES.recommend}/v1/recommend/individual`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenant_id: TENANT,
+          tenant_id: TENANT_ID,
           employee_id: topEmployee.id,
           burnout_prediction: { '30d': topEmployee.score / 5 },
           top_k: 3,
@@ -59,11 +54,11 @@ export async function GET() {
     // Get burnout prediction for top employee
     let prediction = null;
     if (criticalRes.rows[0]) {
-      const predRes = await fetch(`${BURNOUT_URL}/v1/predict/burnout`, {
+      const predRes = await fetch(`${SERVICES.burnout}/v1/predict/burnout`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          tenant_id: TENANT,
+          tenant_id: TENANT_ID,
           employee_id: criticalRes.rows[0].id,
           features: { bat_total: criticalRes.rows[0].score, jdr_demands_z: 1.2, jdr_resources_z: -0.5, tenure_months: 74 },
         }),

@@ -1,17 +1,11 @@
 import { NextResponse } from 'next/server';
-
-const ORG_URL = 'http://localhost:8004';
-const HEADERS = {
-  'X-Tenant-Id': '11111111-1111-1111-1111-111111111111',
-  'X-User-Id': '00000000-0000-0000-0000-000000000001',
-  'X-User-Role': 'hr_director',
-};
+import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
 
 export async function GET() {
   try {
     const [deptRes, empRes] = await Promise.all([
-      fetch(`${ORG_URL}/api/v1/departments`, { headers: HEADERS, cache: 'no-store' }),
-      fetch('http://localhost:8003/api/v1/employees?limit=100', { headers: HEADERS, cache: 'no-store' }),
+      fetch(`${SERVICES.organization}/api/v1/departments`, { headers: DEV_HEADERS, cache: 'no-store' }),
+      fetch(`${SERVICES.employee}/api/v1/employees?limit=100`, { headers: DEV_HEADERS, cache: 'no-store' }),
     ]);
 
     const departments = deptRes.ok ? await deptRes.json() : { items: [] };

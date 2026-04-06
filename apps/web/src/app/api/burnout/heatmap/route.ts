@@ -1,10 +1,9 @@
 import { NextResponse } from 'next/server';
+import { DB_URL, TENANT_ID } from '@/lib/service-urls';
 
 // This API route queries burnout signals directly from PostgreSQL
 // and returns heatmap data for the frontend.
 // In production, this would call the burnout service API.
-
-const DB_URL = process.env['DATABASE_URL'] || 'postgresql://upcore:upcore_dev_password@localhost:5432/upcore_dev';
 
 export async function GET() {
   try {
@@ -23,7 +22,7 @@ export async function GET() {
       FROM app.burnout_signals bs
       JOIN app.employees e ON e.id = bs.employee_id AND e.tenant_id = bs.tenant_id
       LEFT JOIN app.departments d ON d.id = e.department_id
-      WHERE bs.tenant_id = '11111111-1111-1111-1111-111111111111'
+      WHERE bs.tenant_id = '${TENANT_ID}'
         AND bs.feature_name = 'bat_total'
         AND bs.ts >= CURRENT_DATE - 28
       GROUP BY d.id, d.name_tr, date_trunc('week', bs.ts)
@@ -40,7 +39,7 @@ export async function GET() {
       FROM app.burnout_signals bs
       JOIN app.employees e ON e.id = bs.employee_id AND e.tenant_id = bs.tenant_id
       LEFT JOIN app.departments d ON d.id = e.department_id
-      WHERE bs.tenant_id = '11111111-1111-1111-1111-111111111111'
+      WHERE bs.tenant_id = '${TENANT_ID}'
         AND bs.feature_name = 'bat_total'
         AND bs.ts = (SELECT MAX(ts) FROM app.burnout_signals WHERE employee_id = bs.employee_id AND feature_name = 'bat_total')
       ORDER BY bs.feature_value DESC
@@ -56,7 +55,7 @@ export async function GET() {
       FROM app.burnout_signals bs
       JOIN app.employees e ON e.id = bs.employee_id AND e.tenant_id = bs.tenant_id
       LEFT JOIN app.departments d ON d.id = e.department_id
-      WHERE bs.tenant_id = '11111111-1111-1111-1111-111111111111'
+      WHERE bs.tenant_id = '${TENANT_ID}'
         AND bs.feature_name IN ('jdr_demands', 'jdr_resources')
         AND bs.ts >= CURRENT_DATE - 7
       GROUP BY d.id, d.name_tr
@@ -69,7 +68,7 @@ export async function GET() {
         COUNT(DISTINCT CASE WHEN feature_value >= 3.02 THEN employee_id END) as red_count,
         COUNT(DISTINCT employee_id) as total_employees
       FROM app.burnout_signals
-      WHERE tenant_id = '11111111-1111-1111-1111-111111111111'
+      WHERE tenant_id = '${TENANT_ID}'
         AND feature_name = 'bat_total'
         AND ts >= CURRENT_DATE - 7
     `);

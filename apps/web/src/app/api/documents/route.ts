@@ -1,16 +1,9 @@
 import { NextResponse } from 'next/server';
-
-const DOC_URL = 'http://localhost:8006';
-const HEADERS = {
-  'X-Tenant-Id': '11111111-1111-1111-1111-111111111111',
-  'X-User-Id': '00000000-0000-0000-0000-000000000001',
-  'X-User-Role': 'hr_director',
-  'Content-Type': 'application/json',
-};
+import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
 
 export async function GET() {
   try {
-    const res = await fetch(`${DOC_URL}/api/v1/documents`, { headers: HEADERS, cache: 'no-store' });
+    const res = await fetch(`${SERVICES.document}/api/v1/documents`, { headers: DEV_HEADERS, cache: 'no-store' });
     const data = res.ok ? await res.json() : { items: [] };
     return NextResponse.json(data);
   } catch {
@@ -21,9 +14,9 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const res = await fetch(`${DOC_URL}/api/v1/documents`, {
+    const res = await fetch(`${SERVICES.document}/api/v1/documents`, {
       method: 'POST',
-      headers: HEADERS,
+      headers: DEV_HEADERS,
       body: JSON.stringify(body),
     });
     const data = await res.json();
