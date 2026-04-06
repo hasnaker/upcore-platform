@@ -110,20 +110,69 @@ export default function UcretlendirmePage() {
         </div>
       </div>
 
-      {/* Compa-Ratio Alerts */}
+      {/* Compa-Ratio Alerts with Actions */}
       {alerts.length > 0 && (
-        <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF2F2] p-4">
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#DC2626]" />
-          <div>
-            <div className="text-[13px] font-semibold text-[#DC2626]">Ucret Uyarisi — {alerts.length} Calisan</div>
-            <div className="mt-1 flex flex-wrap gap-2">
-              {alerts.map((a) => (
-                <span key={a.name} className="rounded-full bg-white px-3 py-1 text-[11px] font-medium shadow-sm" style={{ color: a.compaRatio < 0.85 ? '#DC2626' : '#D97706' }}>
-                  {a.name}: {a.compaRatio.toFixed(2)} {a.compaRatio < 0.85 ? '(bant altı)' : '(bant üstü)'}
-                </span>
-              ))}
+        <div className="rounded-xl border border-[#FECACA] bg-[#FEF2F2] p-5">
+          <div className="flex items-start gap-3">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#DC2626]" />
+            <div className="flex-1">
+              <div className="text-[13px] font-semibold text-[#DC2626]">Ucret Uyarisi — {alerts.length} Calisan</div>
+              <div className="mt-1 text-[11px] text-[#991B1B]">Compa-ratio 0.85 altı veya 1.15 üstü olanlar. Acil değerlendirme gerekli.</div>
             </div>
-            <div className="mt-2 text-[11px] text-[#991B1B]">Compa-ratio 0.85 altı veya 1.15 üstü olanlar listelenir. Acil değerlendirme gerekli.</div>
+          </div>
+          <div className="mt-3 flex flex-col gap-2">
+            {alerts.map((a) => {
+              const isBelow = a.compaRatio < 0.85;
+              const band = bands.find((b) => a.baseSalary >= b.min && a.baseSalary <= b.max);
+              const targetSalary = band ? band.mid : Math.round(a.baseSalary * (isBelow ? 1.10 : 0.95));
+              const adjustPct = Math.round(((targetSalary / a.baseSalary) - 1) * 100);
+              return (
+                <div key={a.name} className="flex items-center justify-between rounded-lg bg-white p-3 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 items-center justify-center rounded-full text-[10px] font-bold" style={{ background: isBelow ? '#FEE2E2' : '#FEF3C7', color: isBelow ? '#DC2626' : '#D97706' }}>
+                      {a.name.split(' ').map((n) => n[0]).join('')}
+                    </div>
+                    <div>
+                      <span className="text-[12px] font-medium text-[#111]">{a.name}</span>
+                      <span className="ml-2 text-[11px] text-[#888]">{a.department}</span>
+                    </div>
+                    <span className="rounded-full px-2 py-0.5 text-[10px] font-bold" style={{ background: isBelow ? '#FEE2E2' : '#FEF3C7', color: isBelow ? '#DC2626' : '#D97706' }}>
+                      CR: {a.compaRatio.toFixed(2)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="text-right">
+                      <div className="text-[10px] text-[#888]">Mevcut: {formatCurrency(a.baseSalary)}</div>
+                      <div className="text-[10px] font-semibold text-[#5E5CE6]">Önerilen: {formatCurrency(targetSalary)} ({adjustPct > 0 ? '+' : ''}{adjustPct}%)</div>
+                    </div>
+                    <button
+                      onClick={() => {
+                        fetch('/api/compensation', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            employeeName: a.name,
+                            currentSalary: a.baseSalary,
+                            proposedSalary: targetSalary,
+                            increasePct: adjustPct,
+                            reason: isBelow ? 'equity' : 'market',
+                          }),
+                        }).then(() => fetchData()).catch(() => {});
+                      }}
+                      className="rounded-lg bg-[#5E5CE6] px-3 py-1.5 text-[11px] font-semibold text-white transition hover:bg-[#4B49B6]"
+                    >
+                      {isBelow ? 'Düzeltme Teklifi' : 'İncele'}
+                    </button>
+                    <button
+                      onClick={() => { setShowReviewModal(true); }}
+                      className="rounded-lg border border-[#e5e5e5] px-3 py-1.5 text-[11px] font-medium text-[#525252] hover:bg-[#fafafa]"
+                    >
+                      Manuel
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
