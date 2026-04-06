@@ -17,7 +17,6 @@ import {
   ArrowRight,
   Users,
   BarChart3,
-  TrendingUp,
   Flag,
   ChevronUp,
 } from 'lucide-react';
@@ -284,19 +283,28 @@ const HOLIDAYS_DISPLAY_LIST = [
 ];
 
 /* ─── Leave Request Detail Approval Steps ─── */
-const getApprovalTimeline = (status: LeaveStatus) => {
-  const steps = [
-    { label: 'Talep Olusturuldu', status: 'done' as const, date: '02 Nis 2026, 09:15' },
-    { label: 'Yonetici Onayi', status: status === 'pending' ? 'current' as const : 'done' as const, date: status === 'pending' ? 'Bekliyor...' : '02 Nis 2026, 14:30', approver: 'Ayse Kara (Yonetici)' },
-    { label: 'IK Onayi', status: status === 'approved' ? 'done' as const : 'pending' as const, date: status === 'approved' ? '03 Nis 2026, 10:00' : '-', approver: 'Hasan Aker (IK Direktoru)' },
-    { label: 'Tamamlandi', status: status === 'approved' ? 'done' as const : 'pending' as const, date: status === 'approved' ? '03 Nis 2026, 10:00' : '-' },
-  ];
+interface ApprovalStep {
+  label: string;
+  status: 'done' | 'current' | 'pending';
+  date: string;
+  approver?: string;
+}
+
+const getApprovalTimeline = (status: LeaveStatus): ApprovalStep[] => {
   if (status === 'rejected') {
-    steps[1] = { ...steps[1], status: 'done' as const, date: '02 Nis 2026, 14:30', approver: 'Ayse Kara (Yonetici)' };
-    steps[2] = { label: 'Reddedildi', status: 'done' as const, date: '02 Nis 2026, 15:00', approver: 'Red sebebi: Ekip yogunlugu' };
-    steps[3] = { label: 'Tamamlandi', status: 'pending' as const, date: '-', approver: undefined };
+    return [
+      { label: 'Talep Olusturuldu', status: 'done', date: '02 Nis 2026, 09:15' },
+      { label: 'Yonetici Onayi', status: 'done', date: '02 Nis 2026, 14:30', approver: 'Ayse Kara (Yonetici)' },
+      { label: 'Reddedildi', status: 'done', date: '02 Nis 2026, 15:00', approver: 'Red sebebi: Ekip yogunlugu' },
+      { label: 'Tamamlandi', status: 'pending', date: '-' },
+    ];
   }
-  return steps;
+  return [
+    { label: 'Talep Olusturuldu', status: 'done', date: '02 Nis 2026, 09:15' },
+    { label: 'Yonetici Onayi', status: status === 'pending' ? 'current' : 'done', date: status === 'pending' ? 'Bekliyor...' : '02 Nis 2026, 14:30', approver: 'Ayse Kara (Yonetici)' },
+    { label: 'IK Onayi', status: status === 'approved' ? 'done' : 'pending', date: status === 'approved' ? '03 Nis 2026, 10:00' : '-', approver: 'Hasan Aker (IK Direktoru)' },
+    { label: 'Tamamlandi', status: status === 'approved' ? 'done' : 'pending', date: status === 'approved' ? '03 Nis 2026, 10:00' : '-' },
+  ];
 };
 
 /* ─── API Types ─── */
