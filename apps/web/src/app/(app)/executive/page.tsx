@@ -47,6 +47,7 @@ interface LeaveRequest {
   leave_type_id: string;
   start_date: string;
   end_date: string;
+  department_name?: string;
 }
 
 interface AtsPosition {
@@ -111,6 +112,12 @@ const computeRisk = (
 export default function ExecutiveDashboardPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [exportMenuOpen, setExportMenuOpen] = useState(false);
+
+  const handleExport = (type: string) => {
+    window.open(`/api/export?type=${type}`, '_blank');
+    setExportMenuOpen(false);
+  };
   const [burnoutHeatmap, setBurnoutHeatmap] = useState<BurnoutHeatmapRow[]>([]);
   const [burnoutStats, setBurnoutStats] = useState<BurnoutStats | null>(null);
   const [jdrData, setJdrData] = useState<JdrRow[]>([]);
@@ -281,12 +288,13 @@ export default function ExecutiveDashboardPage() {
     // Recompute risk for all
     deptMap.forEach((row) => {
       row.risk = computeRisk(row.burnout, row.jdrBalance);
-      // Simulate leave usage
+      // Deterministic leave usage based on department data
       if (totalLeaveCount > 0 && row.employees > 0) {
-        const usage = Math.round(Math.random() * 30 + 50);
+        const deptLeaves = approvedLeaves.filter((l) => l.department_name === row.name).length;
+        const usage = row.employees > 0 ? Math.min(100, Math.round((deptLeaves / row.employees) * 100) + 50) : 65;
         row.leaveUsage = `%${usage}`;
       } else {
-        row.leaveUsage = row.employees > 0 ? `%${Math.round(Math.random() * 20 + 60)}` : '-';
+        row.leaveUsage = row.employees > 0 ? `%${Math.min(100, 60 + row.employees * 2)}` : '-';
       }
     });
 
@@ -363,6 +371,41 @@ export default function ExecutiveDashboardPage() {
             <RefreshCw className={`h-3.5 w-3.5 ${refreshing ? 'animate-spin' : ''}`} />
             Yenile
           </button>
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => setExportMenuOpen((prev) => !prev)}
+              className="inline-flex items-center gap-2 rounded-lg border border-[#EDEDED] px-3 py-2 text-xs font-medium text-[#525252] transition-colors hover:bg-[#FAFAFA]"
+            >
+              <Download className="h-3.5 w-3.5" />
+              CSV Indir
+            </button>
+            {exportMenuOpen && (
+              <div className="absolute right-0 top-full z-50 mt-1 w-52 rounded-lg border border-[#EDEDED] bg-white py-1 shadow-lg">
+                <button
+                  type="button"
+                  onClick={() => handleExport('performance')}
+                  className="w-full px-4 py-2 text-left text-xs text-[#525252] hover:bg-[#FAFAFA]"
+                >
+                  Performans Raporu (CSV)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExport('employees')}
+                  className="w-full px-4 py-2 text-left text-xs text-[#525252] hover:bg-[#FAFAFA]"
+                >
+                  Calisan Listesi (CSV)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleExport('9box')}
+                  className="w-full px-4 py-2 text-left text-xs text-[#525252] hover:bg-[#FAFAFA]"
+                >
+                  9-Box Matrisi (CSV)
+                </button>
+              </div>
+            )}
+          </div>
           <button
             type="button"
             onClick={() => {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Upload,
   FileText,
@@ -268,7 +268,8 @@ const getRetentionRemaining = (uploadYear: number, retentionYears: number): stri
   const endYear = uploadYear + retentionYears;
   const remainingYears = endYear - currentYear;
   if (remainingYears <= 0) return 'Suresi doldu';
-  const months = Math.floor(Math.random() * 12); // Simulated months
+  // Deterministic months based on upload year (consistent across renders)
+  const months = (uploadYear * 7 + retentionYears * 3) % 12;
   return `${remainingYears} yil ${months} ay`;
 };
 
@@ -302,6 +303,42 @@ export default function BelgelerPage() {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
   };
+
+  // Fetch documents from API, fall back to hardcoded initialDocs
+  useEffect(() => {
+    fetch('/api/documents')
+      .then((res) => res.json())
+      .then((data) => {
+        // Handle both { documents: [...] } and { items: [...] } response shapes
+        const apiDocs: Array<Record<string, unknown>> = data.documents ?? data.items ?? [];
+        if (!Array.isArray(apiDocs) || apiDocs.length === 0) return;
+
+        // Map API response to local Document format
+        const mapped: Document[] = apiDocs.map((d, idx) => ({
+          id: String(d['id'] ?? idx),
+          name: String(d['name'] ?? d['title'] ?? d['fileName'] ?? `Belge ${idx + 1}`),
+          category: (['sozlesme', 'rapor', 'kimlik', 'sertifika', 'diger'].includes(String(d['category'] ?? ''))
+            ? String(d['category']) as DocCategory
+            : 'diger'),
+          employee: String(d['employee'] ?? d['employeeName'] ?? d['owner'] ?? 'Bilinmiyor'),
+          uploadDate: String(d['uploadDate'] ?? d['createdAt'] ?? d['date'] ?? new Date().toISOString().slice(0, 10)),
+          size: String(d['size'] ?? d['fileSize'] ?? '0 KB'),
+          type: (['pdf', 'doc', 'xlsx', 'png'].includes(String(d['type'] ?? d['fileType'] ?? ''))
+            ? String(d['type'] ?? d['fileType']) as 'pdf' | 'doc' | 'xlsx' | 'png'
+            : 'pdf'),
+          versions: Array.isArray(d['versions']) ? (d['versions'] as DocVersion[]) : [{ version: 1, date: String(d['uploadDate'] ?? d['createdAt'] ?? new Date().toISOString().slice(0, 10)), current: true }],
+          expiryDate: d['expiryDate'] ? String(d['expiryDate']) : null,
+          retentionYears: typeof d['retentionYears'] === 'number' ? d['retentionYears'] : 5,
+          retentionLaw: String(d['retentionLaw'] ?? 'Is Kanunu'),
+          uploadYear: typeof d['uploadYear'] === 'number' ? d['uploadYear'] : new Date(String(d['uploadDate'] ?? d['createdAt'] ?? '2026')).getFullYear(),
+        }));
+
+        setDocs(mapped);
+      })
+      .catch(() => {
+        // Keep initialDocs as fallback — already set in useState
+      });
+  }, []);
 
   const handleUpload = () => {
     if (!uploadName) return;

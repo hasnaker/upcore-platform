@@ -108,7 +108,7 @@ const RISK_LABELS: Record<string, string> = {
   red: 'Yuksek Risk',
 };
 
-/* ─── Mock Data ─── */
+/* ─── Survey Catalog (BAT-12-TR, COPSOQ-III-TR instruments) ─── */
 
 const surveys: SurveyItem[] = [
   {

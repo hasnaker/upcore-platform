@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { fetchEmployee } from '@/lib/employee-mapper';
 import { EmployeeHeader } from './_components/EmployeeHeader';
 import { EmployeeTabs } from './_components/EmployeeTabs';
+import { EmployeeCrossModuleView } from './_components/EmployeeCrossModuleView';
 
 interface EmployeeDetailPageProps {
   params: Promise<{ id: string }>;
@@ -31,6 +32,7 @@ export default async function EmployeeDetailPage({ params }: EmployeeDetailPageP
     <div style={{ fontFamily: 'Inter, sans-serif' }} className="flex flex-col gap-0">
       <EmployeeHeader employee={employee} />
       <EmployeeTabs employee={employee} />
+      <EmployeeCrossModuleView employeeId={id} />
     </div>
   );
 }

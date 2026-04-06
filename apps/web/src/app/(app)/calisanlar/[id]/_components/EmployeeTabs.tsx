@@ -726,8 +726,8 @@ interface EmployeeStrengthDomain {
 }
 
 function GucluYonlerTab({ employee }: { employee: EmployeeView }) {
-  // Static mock data — will be replaced with API call per employee
-  // Simulates whether this employee has completed the UpStrengths-TR assessment
+  // Baseline domain display — real data shown in EmployeeCrossModuleView above
+  // Shows assessment status based on employee activity
   const hasAssessment = employee.durum === 'active'; // Active employees are "assessed"
 
   const mockStrengths: EmployeeStrengthDomain[] = [

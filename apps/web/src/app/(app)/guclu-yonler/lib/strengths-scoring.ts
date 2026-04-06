@@ -100,9 +100,19 @@ export function calculateStrengths(answers: AssessmentAnswers): StrengthsResult 
   const answeredQuestions = Object.keys(answers).length;
   const overallProfile = Math.round((answeredQuestions / totalQuestions) * 100);
 
-  // Role fit score (simulated - in production would compare against position profile)
+  // Role fit score — deterministic computation from domain profile
+  // Uses weighted domain contribution: top domains contribute more
   const avgTopScore = top5.reduce((sum, d) => sum + d.score, 0) / top5.length;
-  const roleFitScore = Math.min(100, Math.round((avgTopScore / 5) * 100 * 0.95 + Math.random() * 10));
+  const avgAllScore = domainScores.reduce((sum, d) => sum + d.score, 0) / domainScores.length;
+  const profileDepth = domainScores.filter((d) => d.score >= 4.0).length; // strong domains
+  const profileBreadth = domainScores.filter((d) => d.score >= 3.0).length; // competent domains
+  // Formula: 50% top-5 strength, 25% overall average, 15% depth, 10% breadth
+  const roleFitScore = Math.min(100, Math.round(
+    (avgTopScore / 5) * 100 * 0.50 +
+    (avgAllScore / 5) * 100 * 0.25 +
+    (profileDepth / 8) * 100 * 0.15 +
+    (profileBreadth / 8) * 100 * 0.10
+  ));
 
   // Development suggestions for top 5
   const developmentSuggestions = top5.map((domain) => ({

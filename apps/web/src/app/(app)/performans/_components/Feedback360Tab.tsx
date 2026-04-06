@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Plus, X, Users, Clock, CheckCircle2 } from 'lucide-react';
 
 /* ─── Types ─── */
@@ -371,6 +371,49 @@ const NewCycleModal = ({
 export const Feedback360Tab = () => {
   const [cycles, setCycles] = useState<FeedbackCycle[]>(INITIAL_CYCLES);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/feedback')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.cycles && data.cycles.length > 0) {
+          const dbCycles: FeedbackCycle[] = data.cycles.map((c: { id: string; name: string; deadline: string; status: string }) => {
+            const cycleResponses = (data.responses || []).filter((r: { cycleId: string }) => r.cycleId === c.id);
+            const completed = cycleResponses.filter((r: { completedAt: string | null }) => r.completedAt).length;
+            const total = cycleResponses.length;
+            const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            // Build scores from summaries
+            const summary = (data.summaries || [])[0];
+            const scores: FeedbackScore[] = summary
+              ? Object.keys(summary.avgScores).map((dim) => ({
+                  dimension: dim.charAt(0).toUpperCase() + dim.slice(1),
+                  manager: summary.avgScores[dim],
+                  peer: summary.avgScores[dim],
+                  self: summary.avgScores[dim],
+                  average: summary.avgScores[dim],
+                }))
+              : [];
+
+            return {
+              id: c.id,
+              name: c.name,
+              participants: total,
+              deadline: c.deadline,
+              completionRate,
+              evaluations: cycleResponses.map((r: { evaluator: string; evaluatee: string; completedAt: string | null }) => ({
+                evaluator: r.evaluator,
+                evaluatee: r.evaluatee,
+                completed: !!r.completedAt,
+              })),
+              scores,
+            };
+          });
+          if (dbCycles.length > 0) setCycles(dbCycles);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAdd = useCallback((form: NewCycleForm) => {
     const newCycle: FeedbackCycle = {

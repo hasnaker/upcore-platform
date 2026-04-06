@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 /* ─────────────────────────────────────────────────────────────
  * Workforce Analytics Dashboard — /analytics
@@ -414,28 +414,94 @@ function AnalyticsCard({ title, subtitle, children }: { title: string; subtitle?
  * ═══════════════════════════════════════════════════════ */
 
 function GenelTab() {
-  // Static data — will be replaced with API call
-  const monthlyHeadcount = [65, 66, 68, 70, 72, 70, 71, 72, 72, 73, 74, 74];
-  const monthLabels = ['Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara', 'Oca', 'Şub', 'Mar'];
+  // API-driven summary metrics
+  const [summary, setSummary] = useState<{
+    totalEmployees: number;
+    criticalRisk: number;
+    highRisk: number;
+    avgOkrProgress: number | null;
+    avgBurnout: number | null;
+    nineBoxDistribution: Record<string, number>;
+  } | null>(null);
 
-  // Static data — will be replaced with API call
-  const departmentDist = [
-    { label: 'Satış', value: 34, color: '#DC2626' },
-    { label: 'Mühendislik', value: 26, color: '#5E5CE6' },
-    { label: 'Müşteri Hiz.', value: 14, color: '#D97706' },
-    { label: 'Ürün', value: 11, color: '#059669' },
-    { label: 'Pazarlama', value: 9, color: '#EA580C' },
-    { label: 'İK', value: 6, color: '#2563EB' },
-  ];
+  // API-driven performance trends
+  const [perfTrends, setPerfTrends] = useState<Record<string, Array<{ date: string; okr: number | null; performance: number | null; risk: number | null }>> | null>(null);
 
-  // Static data — will be replaced with API call
+  useEffect(() => {
+    fetch('/api/employee-intelligence')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.summary) setSummary(data.summary);
+      })
+      .catch(() => {});
+
+    fetch('/api/performance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.trends) setPerfTrends(data.trends);
+      })
+      .catch(() => {});
+  }, []);
+
+  // Derive OKR trend from performance trends (average OKR per week across all employees)
+  const okrWeeklyAvg: number[] = [];
+  const okrWeekLabels: string[] = [];
+  if (perfTrends) {
+    const allEmployees = Object.values(perfTrends);
+    if (allEmployees.length > 0) {
+      const maxLen = Math.max(...allEmployees.map((t) => t.length));
+      for (let i = 0; i < maxLen; i++) {
+        let sum = 0;
+        let count = 0;
+        for (const empTrend of allEmployees) {
+          const point = empTrend[i];
+          if (point?.okr !== null && point?.okr !== undefined) {
+            sum += point.okr;
+            count++;
+          }
+        }
+        okrWeeklyAvg.push(count > 0 ? Math.round(sum / count) : 0);
+        okrWeekLabels.push(`H${i + 1}`);
+      }
+    }
+  }
+
+  // Fallback static data
+  const monthlyHeadcount = okrWeeklyAvg.length > 0 ? okrWeeklyAvg : [65, 66, 68, 70, 72, 70, 71, 72, 72, 73, 74, 74];
+  const monthLabels = okrWeeklyAvg.length > 0 ? okrWeekLabels : ['Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara', 'Oca', 'Şub', 'Mar'];
+
+  // Build nine-box distribution donut from API data
+  const nineBoxColors: Record<string, string> = {
+    star: '#059669', growth: '#5E5CE6', solid: '#D97706', average: '#A3A3A3', risk: '#DC2626',
+  };
+  const nineBoxLabels: Record<string, string> = {
+    star: 'Yıldız', growth: 'Gelişim', solid: 'Sabit', average: 'Ortalama', risk: 'Risk',
+  };
+  const departmentDist = summary?.nineBoxDistribution
+    ? Object.entries(summary.nineBoxDistribution)
+        .filter(([, v]) => v > 0)
+        .map(([key, value]) => ({
+          label: nineBoxLabels[key] ?? key,
+          value,
+          color: nineBoxColors[key] ?? '#888',
+        }))
+    : [
+        { label: 'Satış', value: 34, color: '#DC2626' },
+        { label: 'Mühendislik', value: 26, color: '#5E5CE6' },
+        { label: 'Müşteri Hiz.', value: 14, color: '#D97706' },
+        { label: 'Ürün', value: 11, color: '#059669' },
+        { label: 'Pazarlama', value: 9, color: '#EA580C' },
+        { label: 'İK', value: 6, color: '#2563EB' },
+      ];
+
+  // Static data — contract types (no API source for this)
   const contractTypes = [
     { label: 'Belirsiz Süreli', value: 82, max: 100, color: '#5E5CE6', suffix: '%' },
     { label: 'Belirli Süreli', value: 12, max: 100, color: '#D97706', suffix: '%' },
     { label: 'Part-time', value: 6, max: 100, color: '#A3A3A3', suffix: '%' },
   ];
 
-  // Static data — will be replaced with API call
+  // Static data — age distribution (no API source for this)
   const ageDistribution = [
     { label: '20-30 yaş', value: 35, max: 100, color: '#5E5CE6', suffix: '%' },
     { label: '30-40 yaş', value: 42, max: 100, color: '#059669', suffix: '%' },
@@ -443,33 +509,47 @@ function GenelTab() {
     { label: '50+ yaş', value: 5, max: 100, color: '#DC2626', suffix: '%' },
   ];
 
-  // Static data — will be replaced with API call
+  // Static data — gender ratio (no API source for this)
   const genderRatio = [
     { label: 'Kadın', value: 44, color: '#5E5CE6' },
     { label: 'Erkek', value: 56, color: '#0A0A0A' },
   ];
 
+  // Derive stat card values from API
+  const totalEmployees = summary?.totalEmployees ?? 74;
+  const avgOkr = summary?.avgOkrProgress !== null && summary?.avgOkrProgress !== undefined ? `%${summary.avgOkrProgress}` : '%68';
+  const avgBurnout = summary?.avgBurnout !== null && summary?.avgBurnout !== undefined ? `${summary.avgBurnout}` : '2.3';
+  const riskCount = summary ? (summary.criticalRisk + summary.highRisk) : 3;
+
   return (
     <div className="flex flex-col gap-6">
       {/* Stat Cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Toplam Çalışan" value="74" subtitle="Aktif personel" color="#5E5CE6" />
-        <StatCard label="Ortalama Kıdem" value="4.2 yıl" subtitle="Şirket geneli" color="#059669" />
-        <StatCard label="Cinsiyet Oranı" value="K %44 / E %56" subtitle="Çeşitlilik dengesi" color="#D97706" />
-        <StatCard label="Departman Sayısı" value="6" subtitle="Ana birim" color="#DC2626" />
+        <StatCard label="Toplam Çalışan" value={String(totalEmployees)} subtitle="Aktif personel" color="#5E5CE6" />
+        <StatCard label="OKR İlerleme Ort." value={avgOkr} subtitle="Aktif hedefler" color="#059669" />
+        <StatCard label="Tükenmişlik Ort." value={avgBurnout} subtitle="BAT skoru" color="#D97706" />
+        <StatCard label="Risk Altında" value={`${riskCount} kişi`} subtitle="Kritik + Yüksek risk" color="#DC2626" />
       </div>
 
-      {/* Employee Count Trend */}
-      <AnalyticsCard title="Çalışan Sayısı Trendi" subtitle="Son 12 ay personel sayısı değişimi">
+      {/* OKR Trend (API) or Employee Count Trend (fallback) */}
+      <AnalyticsCard
+        title={okrWeeklyAvg.length > 0 ? 'Haftalık OKR İlerleme Trendi' : 'Çalışan Sayısı Trendi'}
+        subtitle={okrWeeklyAvg.length > 0 ? 'Tüm çalışanların ortalama OKR ilerlemesi' : 'Son 12 ay personel sayısı değişimi'}
+      >
         <LineChart data={monthlyHeadcount} labels={monthLabels} color="#5E5CE6" />
         <div style={{ fontSize: 12, color: '#059669', fontWeight: 600, marginTop: 12 }}>
-          +9 kişi net büyüme (son 12 ay) — %13.8 artış
+          {okrWeeklyAvg.length > 0
+            ? `Ortalama OKR: %${summary?.avgOkrProgress ?? '-'} — ${totalEmployees} çalışan`
+            : '+9 kişi net büyüme (son 12 ay) — %13.8 artış'}
         </div>
       </AnalyticsCard>
 
       {/* Two-col: Department + Contract */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <AnalyticsCard title="Departman Dağılımı" subtitle="Aktif çalışan oranı">
+        <AnalyticsCard
+          title={summary?.nineBoxDistribution ? '9-Box Dağılımı' : 'Departman Dağılımı'}
+          subtitle={summary?.nineBoxDistribution ? 'Çalışan performans/potansiyel kategorileri' : 'Aktif çalışan oranı'}
+        >
           <DonutChart segments={departmentDist} />
         </AnalyticsCard>
 
@@ -497,9 +577,55 @@ function GenelTab() {
  * ═══════════════════════════════════════════════════════ */
 
 function TukenmislikAnalyticsTab() {
-  // Static data — will be replaced with API call
-  const burnoutTrend = [2.1, 2.15, 2.2, 2.18, 2.3, 2.28, 2.35, 2.42, 2.38, 2.45, 2.5, 2.48];
-  const monthLabels = ['Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara', 'Oca', 'Şub', 'Mar'];
+  const [apiSummary, setApiSummary] = useState<{
+    avgBurnout: number | null;
+    criticalRisk: number;
+    highRisk: number;
+  } | null>(null);
+
+  const [burnoutWeekly, setBurnoutWeekly] = useState<number[]>([]);
+
+  useEffect(() => {
+    fetch('/api/employee-intelligence')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.summary) setApiSummary(data.summary);
+      })
+      .catch(() => {});
+
+    fetch('/api/performance')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.trends) {
+          // Derive weekly burnout averages across all employees
+          const allEmployees = Object.values(data.trends) as Array<Array<{ date: string; okr: number | null; performance: number | null; risk: number | null }>>;
+          if (allEmployees.length > 0) {
+            const maxLen = Math.max(...allEmployees.map((t: Array<{ date: string }>) => t.length));
+            const weeklyAvg: number[] = [];
+            for (let i = 0; i < maxLen; i++) {
+              let sum = 0;
+              let count = 0;
+              for (const empTrend of allEmployees) {
+                const point = empTrend[i];
+                if (point?.risk !== null && point?.risk !== undefined) {
+                  sum += point.risk;
+                  count++;
+                }
+              }
+              weeklyAvg.push(count > 0 ? Math.round((sum / count) * 100) / 100 : 0);
+            }
+            setBurnoutWeekly(weeklyAvg);
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Use API data or fallback
+  const burnoutTrend = burnoutWeekly.length > 0 ? burnoutWeekly : [2.1, 2.15, 2.2, 2.18, 2.3, 2.28, 2.35, 2.42, 2.38, 2.45, 2.5, 2.48];
+  const monthLabels = burnoutWeekly.length > 0
+    ? burnoutWeekly.map((_, i) => `H${i + 1}`)
+    : ['Nis', 'May', 'Haz', 'Tem', 'Ağu', 'Eyl', 'Eki', 'Kas', 'Ara', 'Oca', 'Şub', 'Mar'];
 
   // Static data — will be replaced with API call
   const deptComparison = [
@@ -519,8 +645,18 @@ function TukenmislikAnalyticsTab() {
     <div className="flex flex-col gap-6">
       {/* Summary cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Şirket BAT Ortalaması" value="2.48" subtitle="12 aylık ortalama" color="#D97706" />
-        <StatCard label="Yüksek Riskli" value="5 kişi" subtitle="BAT > 3.02" color="#DC2626" />
+        <StatCard
+          label="Şirket BAT Ortalaması"
+          value={apiSummary?.avgBurnout !== null && apiSummary?.avgBurnout !== undefined ? String(apiSummary.avgBurnout) : '2.48'}
+          subtitle="Güncel ortalama"
+          color="#D97706"
+        />
+        <StatCard
+          label="Yüksek Riskli"
+          value={apiSummary ? `${apiSummary.criticalRisk + apiSummary.highRisk} kişi` : '5 kişi'}
+          subtitle="Kritik + Yüksek risk"
+          color="#DC2626"
+        />
         <StatCard label="Müdahale Başarısı" value="%72" subtitle="8 müdahaleden 6'sı başarılı" color="#059669" />
         <StatCard label="Verimlilik Kaybı" value="₺1.2M/yıl" subtitle="Tükenmişlik kaynaklı tahmin" color="#DC2626" />
       </div>

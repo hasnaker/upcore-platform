@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /* ─── Types ─── */
 interface CareerNode {
@@ -18,8 +18,8 @@ interface SkillGap {
   detail: string;
 }
 
-/* ─── Data ─── */
-const CURRENT_ROLE: CareerNode = {
+/* ─── Fallback Data ─── */
+const FALLBACK_CURRENT: CareerNode = {
   id: 'current',
   title: 'Satis Uzmani',
   fitScore: 100,
@@ -28,7 +28,7 @@ const CURRENT_ROLE: CareerNode = {
   skillGaps: [],
 };
 
-const NEXT_ROLES: CareerNode[] = [
+const FALLBACK_NEXT: CareerNode[] = [
   {
     id: 'lead',
     title: 'Satis Ekip Lideri',
@@ -51,7 +51,7 @@ const NEXT_ROLES: CareerNode[] = [
   },
 ];
 
-const ADVANCED_ROLES: CareerNode[] = [
+const FALLBACK_ADVANCED: CareerNode[] = [
   {
     id: 'manager',
     title: 'Satis Muduru',
@@ -75,6 +75,47 @@ const fitColor = (score: number) => {
 export const CareerPath = () => {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const [targetSet, setTargetSet] = useState<string | null>(null);
+  const [CURRENT_ROLE, setCurrentRole] = useState<CareerNode>(FALLBACK_CURRENT);
+  const [NEXT_ROLES, setNextRoles] = useState<CareerNode[]>(FALLBACK_NEXT);
+  const [ADVANCED_ROLES, setAdvancedRoles] = useState<CareerNode[]>(FALLBACK_ADVANCED);
+
+  useEffect(() => {
+    fetch('/api/career')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.paths && data.paths.length > 0) {
+          const nextRoles: CareerNode[] = [];
+          const advRoles: CareerNode[] = [];
+          for (const p of data.paths) {
+            const gaps: SkillGap[] = p.skillGaps
+              ? Object.entries(p.skillGaps as Record<string, number>).map(([name, level]) => ({
+                  name: name.replace(/_/g, ' '),
+                  type: (level as number) >= 3 ? 'new' as const : 'improve' as const,
+                  detail: (level as number) >= 3 ? 'Yeni yetkinlik' : `+${level} puan gerekli`,
+                }))
+              : [];
+            const node: CareerNode = {
+              id: p.id,
+              title: p.toTitle || p.name,
+              fitScore: p.fitScore ?? 70,
+              prepTime: p.avgTenureMonths ? `${Math.round(p.avgTenureMonths / 12)} yıl` : '1 yıl',
+              skillGaps: gaps,
+            };
+            if (p.avgTenureMonths && p.avgTenureMonths > 30) {
+              advRoles.push(node);
+            } else {
+              nextRoles.push(node);
+            }
+          }
+          if (nextRoles.length > 0) setNextRoles(nextRoles);
+          if (advRoles.length > 0) setAdvancedRoles(advRoles);
+          if (data.paths[0]?.fromTitle) {
+            setCurrentRole({ ...FALLBACK_CURRENT, title: data.paths[0].fromTitle });
+          }
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const allNodes = [...NEXT_ROLES, ...ADVANCED_ROLES];
   const selectedRole = allNodes.find((n) => n.id === selectedNode);

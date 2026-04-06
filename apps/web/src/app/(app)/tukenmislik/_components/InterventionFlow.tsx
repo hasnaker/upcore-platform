@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
 const interventionCategories = [
@@ -39,17 +39,65 @@ export const InterventionFlow = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [category, setCategory] = useState('');
   const [description, setDescription] = useState('');
+  const [interventions, setInterventions] = useState<Intervention[]>(mockInterventions);
+
+  useEffect(() => {
+    fetch('/api/interventions')
+      .then((r) => r.json())
+      .then((data: { items?: Array<{ id: string; title_tr: string; category: string; employee?: string }> }) => {
+        if (data && Array.isArray(data.items) && data.items.length > 0) {
+          const mapped: Intervention[] = data.items.map((item) => ({
+            id: item.id,
+            title: item.title_tr,
+            category: item.category || 'WORKLOAD',
+            status: 'PROPOSED' as const,
+            employee: item.employee || '',
+          }));
+          setInterventions(mapped);
+        }
+      })
+      .catch(() => {
+        // Keep mock data as fallback
+      });
+  }, []);
 
   const handleCreate = async () => {
     if (!category) {
       toast.error('Lutfen bir mudahale kategorisi seciniz');
       return;
     }
-    // TODO: API call
-    toast.success('Mudahale onerisi olusturuldu');
-    setDialogOpen(false);
-    setCategory('');
-    setDescription('');
+    try {
+      const res = await fetch('/api/interventions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, description }),
+      });
+      if (!res.ok) {
+        throw new Error('Mudahale olusturulamadi');
+      }
+      toast.success('Mudahale onerisi olusturuldu');
+      setDialogOpen(false);
+      setCategory('');
+      setDescription('');
+      // Refresh the list
+      fetch('/api/interventions')
+        .then((r) => r.json())
+        .then((data: { items?: Array<{ id: string; title_tr: string; category: string; employee?: string }> }) => {
+          if (data && Array.isArray(data.items) && data.items.length > 0) {
+            const mapped: Intervention[] = data.items.map((item) => ({
+              id: item.id,
+              title: item.title_tr,
+              category: item.category || 'WORKLOAD',
+              status: 'PROPOSED' as const,
+              employee: item.employee || '',
+            }));
+            setInterventions(mapped);
+          }
+        })
+        .catch(() => {});
+    } catch {
+      toast.error('Mudahale olusturulurken hata olustu');
+    }
   };
 
   return (
@@ -70,7 +118,7 @@ export const InterventionFlow = () => {
         </div>
         <div>
           <div className="divide-y divide-[#f0f0f0]">
-            {mockInterventions.map((int) => {
+            {interventions.map((int) => {
               const config = statusConfig[int.status] ?? { label: int.status, color: '#888', bg: '#f0f0f0' };
               const catLabel = interventionCategories.find((c) => c.value === int.category)?.label ?? int.category;
               return (

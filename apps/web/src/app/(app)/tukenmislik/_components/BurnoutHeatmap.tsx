@@ -474,7 +474,8 @@ export const BurnoutHeatmap = ({ apiData }: BurnoutHeatmapProps) => {
 
   const handleExport = () => {
     setExportClicked(true);
-    // Simulate PDF generation
+    // Trigger CSV export via API
+    window.open('/api/export?type=9box', '_blank');
     setTimeout(() => setExportClicked(false), 2000);
   };
 

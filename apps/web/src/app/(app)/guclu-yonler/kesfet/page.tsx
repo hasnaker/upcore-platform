@@ -66,11 +66,31 @@ export default function KesfetPage() {
     if (!allAnswered) return;
     setIsSubmitting(true);
 
-    // Simulate a brief processing delay
-    await new Promise((resolve) => setTimeout(resolve, 800));
-
     const results = calculateStrengths(answers);
     saveResults(results);
+
+    // POST to API for DB persistence
+    try {
+      const domainScores: Record<string, number> = {};
+      for (const d of results.domains) {
+        domainScores[d.domainId] = d.score;
+      }
+      await fetch('/api/strengths', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          employeeId: '5e7f34b4-2906-4a2b-96f4-a7e689b6e33e', // current user
+          answers,
+          domainScores,
+          top5: results.top5.map((d) => d.domainId),
+          shadow: results.shadow.map((d) => d.domainId),
+          weaknesses: results.weaknesses.map((d) => d.domainId),
+          roleFitScore: results.roleFitScore,
+        }),
+      });
+    } catch {
+      // API save failed, results still in localStorage
+    }
 
     router.push('/guclu-yonler/sonuclar');
   }, [allAnswered, answers, router]);

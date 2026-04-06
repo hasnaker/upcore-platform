@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Plus, X, User, Calendar, Target } from 'lucide-react';
 
 /* ─── Types ─── */
@@ -23,9 +23,9 @@ interface OkrItem {
   keyResults: KeyResult[];
 }
 
-/* ─── Static Data ─── */
+/* ─── Fallback Data (used if API unavailable) ─── */
 
-const INITIAL_OKRS: OkrItem[] = [
+const FALLBACK_OKRS: OkrItem[] = [
   {
     id: 'o1',
     objective: 'Musteri memnuniyetini artir',
@@ -152,7 +152,7 @@ const ProgressBar = ({ progress, height = 8 }: { progress: number; height?: numb
 
 /* ─── OKR Card ─── */
 
-const OkrCard = ({ okr }: { okr: OkrItem }) => {
+const OkrCard = ({ okr, onProgressUpdate }: { okr: OkrItem; onProgressUpdate: (krId: string, progress: number) => void }) => {
   const [expanded, setExpanded] = useState(false);
 
   return (
@@ -212,8 +212,24 @@ const OkrCard = ({ okr }: { okr: OkrItem }) => {
                       %{kr.progress}
                     </span>
                   </div>
-                  <div className="mt-1.5">
-                    <ProgressBar progress={kr.progress} height={6} />
+                  <div className="mt-1.5 flex items-center gap-2">
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={kr.progress}
+                      onChange={(e) => onProgressUpdate(kr.id, Number(e.target.value))}
+                      className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-[#f0f0f0] accent-[#5E5CE6]"
+                      style={{ accentColor: progressColor(kr.progress) }}
+                    />
+                    <input
+                      type="number"
+                      min={0}
+                      max={100}
+                      value={kr.progress}
+                      onChange={(e) => onProgressUpdate(kr.id, Math.min(100, Math.max(0, Number(e.target.value))))}
+                      className="w-[52px] rounded-md border border-[#e5e5e5] px-2 py-1 text-center text-[11px] font-semibold text-[#525252] outline-none focus:border-[#5E5CE6]"
+                    />
                   </div>
                 </div>
               </div>
@@ -388,8 +404,50 @@ const NewOkrModal = ({
 /* ─── Main OKR Tab ─── */
 
 export const OkrTab = () => {
-  const [okrs, setOkrs] = useState<OkrItem[]>(INITIAL_OKRS);
+  const [okrs, setOkrs] = useState<OkrItem[]>(FALLBACK_OKRS);
   const [showModal, setShowModal] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/okr')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.okrs && data.okrs.length > 0) {
+          setOkrs(data.okrs);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  // Debounced progress update — persists to DB via PATCH /api/okr
+  const progressTimers = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+
+  const handleProgressUpdate = useCallback((krId: string, newProgress: number) => {
+    // Update local state immediately
+    setOkrs((prev) =>
+      prev.map((okr) => {
+        const updatedKrs = okr.keyResults.map((kr) =>
+          kr.id === krId ? { ...kr, progress: newProgress } : kr
+        );
+        const hasKr = updatedKrs.some((kr) => kr.id === krId);
+        if (!hasKr) return okr;
+        // Auto-calculate objective progress from KR average
+        const avgProgress = Math.round(updatedKrs.reduce((sum, kr) => sum + kr.progress, 0) / updatedKrs.length);
+        return { ...okr, keyResults: updatedKrs, progress: avgProgress };
+      })
+    );
+
+    // Debounce the API call (500ms)
+    const existing = progressTimers.current.get(krId);
+    if (existing) clearTimeout(existing);
+    progressTimers.current.set(krId, setTimeout(() => {
+      fetch('/api/okr', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ keyResultId: krId, progress: newProgress }),
+      }).catch(() => {});
+      progressTimers.current.delete(krId);
+    }, 500));
+  }, []);
 
   const companyOkrs = okrs.filter((o) => o.level === 'company');
   const teamOkrs = okrs.filter((o) => o.level === 'team');
@@ -427,7 +485,7 @@ export const OkrTab = () => {
       </div>
       <div className="space-y-3">
         {items.map((okr) => (
-          <OkrCard key={okr.id} okr={okr} />
+          <OkrCard key={okr.id} okr={okr} onProgressUpdate={handleProgressUpdate} />
         ))}
       </div>
     </div>

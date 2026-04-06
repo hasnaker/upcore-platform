@@ -1,8 +1,11 @@
 'use client';
 
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import type { EmployeeView } from '@/lib/employee-mapper';
+import { toast } from 'sonner';
+import { updateEmployee } from '@/lib/employee-mapper';
+import type { EmployeeView, CreateEmployeeRequest } from '@/lib/employee-mapper';
 
 interface EmployeeHeaderProps {
   employee: EmployeeView;
@@ -17,6 +20,7 @@ const STATUS_PILL_STYLES: Record<string, { bg: string; text: string }> = {
 
 export const EmployeeHeader = ({ employee }: EmployeeHeaderProps) => {
   const router = useRouter();
+  const [isDeactivating, setIsDeactivating] = useState(false);
   const pill = STATUS_PILL_STYLES[employee.durumRenk] ?? STATUS_PILL_STYLES['gray']!;
 
   return (
@@ -129,10 +133,22 @@ export const EmployeeHeader = ({ employee }: EmployeeHeaderProps) => {
             color: '#DC2626',
           }}
           className="hover:bg-red-50 transition-colors"
-          onClick={() => {
-            // Devre disi birak - confirmation could be added
+          disabled={isDeactivating}
+          onClick={async () => {
             if (window.confirm('Bu çalışanı devre dışı bırakmak istediğinize emin misiniz?')) {
-              // TODO: integrate deactivation API call
+              setIsDeactivating(true);
+              try {
+                const deactivatePayload: Partial<CreateEmployeeRequest> & { employment_status: string } = {
+                  employment_status: 'inactive',
+                };
+                await updateEmployee(employee.id, deactivatePayload as Partial<CreateEmployeeRequest>);
+                toast.success('Calisan devre disi birakildi');
+                router.push('/calisanlar');
+              } catch (error) {
+                toast.error(error instanceof Error ? error.message : 'Devre disi birakma basarisiz');
+              } finally {
+                setIsDeactivating(false);
+              }
             }
           }}
         >

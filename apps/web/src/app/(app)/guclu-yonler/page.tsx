@@ -1,43 +1,81 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
+import { Download } from 'lucide-react';
 import Link from 'next/link';
-import { MOCK_EMPLOYEE_STRENGTHS, STRENGTH_DOMAINS } from './lib/strengths-data';
+import { STRENGTH_DOMAINS } from './lib/strengths-data';
 import type { EmployeeStrengthSummary } from './lib/strengths-data';
 
 function getDomainInfo(domainId: string) {
   return STRENGTH_DOMAINS.find((d) => d.id === domainId);
 }
 
-const DEPARTMENTS = ['Tümü', 'Mühendislik', 'Pazarlama', 'İnsan Kaynakları', 'Finans', 'Satış'];
+const DEPARTMENTS = ['Tümü', 'Mühendislik', 'Pazarlama', 'İnsan Kaynakları', 'Finans', 'Satış', 'Ürün', 'Müşteri Hizmetleri'];
+
+interface ApiEmployee {
+  id: string;
+  name: string;
+  department: string;
+  domainScores: Record<string, number> | null;
+  top5: string[] | null;
+  roleFitScore: number | null;
+  assessmentDate: string | null;
+}
+
+function apiToSummary(emp: ApiEmployee): EmployeeStrengthSummary {
+  const scores = emp.domainScores || {};
+  const sorted = Object.entries(scores).sort(([, a], [, b]) => b - a);
+  const top3 = sorted.slice(0, 3).map(([domainId, score]) => ({ domainId, score }));
+  const totalDomains = STRENGTH_DOMAINS.length;
+  const filledDomains = Object.keys(scores).length;
+  const profileCompleteness = emp.assessmentDate ? Math.round((filledDomains / totalDomains) * 100) : 0;
+
+  return {
+    id: emp.id,
+    name: emp.name,
+    department: emp.department || '',
+    top3,
+    profileCompleteness,
+    assessmentDate: emp.assessmentDate,
+  };
+}
 
 export default function GucluYonlerPage() {
   const [search, setSearch] = useState('');
   const [departmentFilter, setDepartmentFilter] = useState('Tümü');
+  const [employees, setEmployees] = useState<EmployeeStrengthSummary[]>([]);
+  const [apiStats, setApiStats] = useState({ total: 0, assessed: 0, pending: 0, avgFitScore: 0 });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch('/api/strengths')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.employees) {
+          setEmployees(data.employees.map(apiToSummary));
+          setApiStats(data.stats);
+        }
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
 
   const filtered = useMemo(() => {
-    return MOCK_EMPLOYEE_STRENGTHS.filter((emp) => {
+    return employees.filter((emp) => {
       const matchSearch = emp.name.toLocaleLowerCase('tr-TR').includes(search.toLocaleLowerCase('tr-TR'));
       const matchDept = departmentFilter === 'Tümü' || emp.department === departmentFilter;
       return matchSearch && matchDept;
     });
-  }, [search, departmentFilter]);
+  }, [search, departmentFilter, employees]);
 
   const stats = useMemo(() => {
-    const total = MOCK_EMPLOYEE_STRENGTHS.length;
-    const assessed = MOCK_EMPLOYEE_STRENGTHS.filter((e) => e.assessmentDate !== null).length;
-    const pending = total - assessed;
-    const avgCompleteness =
-      assessed > 0
-        ? Math.round(
-            MOCK_EMPLOYEE_STRENGTHS.filter((e) => e.assessmentDate !== null).reduce(
-              (sum, e) => sum + e.profileCompleteness,
-              0
-            ) / assessed
-          )
-        : 0;
-    return { total, assessed, pending, avgCompleteness };
-  }, []);
+    return {
+      total: apiStats.total,
+      assessed: apiStats.assessed,
+      pending: apiStats.pending,
+      avgCompleteness: apiStats.avgFitScore,
+    };
+  }, [apiStats]);
 
   return (
     <div style={{ fontFamily: 'Inter, sans-serif' }} className="flex flex-col gap-8">
@@ -51,32 +89,57 @@ export default function GucluYonlerPage() {
             UpStrengths-TR ile çalışan güçlü yön keşfi ve profil yönetimi
           </p>
         </div>
-        <Link
-          href="/guclu-yonler/kesfet"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 8,
-            height: 40,
-            padding: '0 20px',
-            background: '#5E5CE6',
-            color: '#fff',
-            borderRadius: 10,
-            fontSize: 14,
-            fontWeight: 600,
-            transition: 'all 150ms',
-          }}
-          className="shrink-0 hover:opacity-90"
-        >
-          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
-            />
-          </svg>
-          Güçlü Yön Keşfi Başlat
-        </Link>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            type="button"
+            onClick={() => window.open('/api/export?type=strengths', '_blank')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              height: 40,
+              padding: '0 16px',
+              background: '#fff',
+              color: '#525252',
+              borderRadius: 10,
+              fontSize: 13,
+              fontWeight: 500,
+              border: '1px solid #f0f0f0',
+              transition: 'all 150ms',
+              cursor: 'pointer',
+            }}
+            className="hover:bg-[#FAFAFA]"
+          >
+            <Download className="h-4 w-4" />
+            CSV Indir
+          </button>
+          <Link
+            href="/guclu-yonler/kesfet"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 8,
+              height: 40,
+              padding: '0 20px',
+              background: '#5E5CE6',
+              color: '#fff',
+              borderRadius: 10,
+              fontSize: 14,
+              fontWeight: 600,
+              transition: 'all 150ms',
+            }}
+            className="hover:opacity-90"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+              />
+            </svg>
+            Güçlü Yön Keşfi Başlat
+          </Link>
+        </div>
       </div>
 
       {/* Stats */}

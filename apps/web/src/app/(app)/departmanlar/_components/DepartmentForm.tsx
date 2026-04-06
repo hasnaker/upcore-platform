@@ -46,14 +46,26 @@ export const DepartmentForm = ({ open, onOpenChange }: DepartmentFormProps) => {
 
   const onSubmit = async (data: DepartmentFormData) => {
     try {
-      // TODO: Replace with actual API call
-      console.log('Department data:', data);
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      const res = await fetch('/api/departments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: data.name,
+          code: data.code,
+          parent_id: data.parentId && data.parentId !== 'none' ? data.parentId : undefined,
+          description: data.description,
+          cost_center: data.costCenter,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Bilinmeyen hata' }));
+        throw new Error(err.error || 'Departman olusturulamadi');
+      }
       toast.success('Departman basariyla olusturuldu');
       reset();
       onOpenChange(false);
-    } catch {
-      toast.error('Departman olusturulurken hata olustu');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Departman olusturulurken hata olustu');
     }
   };
 

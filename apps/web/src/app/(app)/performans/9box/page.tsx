@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { ArrowLeft, GripVertical, ChevronDown, Users, TrendingUp } from 'lucide-react';
 import Link from 'next/link';
 
@@ -252,26 +252,109 @@ export default function NineBoxPage() {
   const [employees, setEmployees] = useState<Employee[]>(INITIAL_EMPLOYEES);
   const [selectedCell, setSelectedCell] = useState<string | null>(null);
   const [draggedEmployee, setDraggedEmployee] = useState<Employee | null>(null);
+  const [useAutoMode, setUseAutoMode] = useState(true);
+  const [calibrationLocked, setCalibrationLocked] = useState(false);
+  const [pipCandidates, setPipCandidates] = useState<string[]>([]);
+
+  useEffect(() => {
+    fetch('/api/performance')
+      .then((r) => r.json())
+      .then((data) => {
+        // Prefer auto-categorized data from scoring engine
+        if (useAutoMode && data.autoNineBox && data.autoNineBox.length > 0) {
+          const mapped: Employee[] = data.autoNineBox.map((nb: { employee: string; department: string; performance: string; potential: string; performanceScore: number; potentialScore: number }, idx: number) => {
+            const nameParts = nb.employee.split(' ');
+            return {
+              id: `auto-${idx}`,
+              name: nb.employee,
+              department: nb.department || '',
+              performance: nb.performance as 'low' | 'medium' | 'high',
+              potential: nb.potential as 'low' | 'medium' | 'high',
+              score: nb.performanceScore,
+              avatar: nameParts.map((n: string) => n[0]).join('').toUpperCase(),
+            };
+          });
+          if (mapped.length > 0) {
+            setEmployees(mapped);
+            // Auto-detect PIP candidates: low performance
+            const pip = mapped.filter((e) => e.performance === 'low').map((e) => e.name);
+            setPipCandidates(pip);
+          }
+        } else if (data.nineBox && data.nineBox.length > 0) {
+          const mapped: Employee[] = data.nineBox.map((nb: { id: string; employee: string; department: string; performanceScore: number; potentialScore: number; category: string }) => {
+            const perfLevel = nb.performanceScore >= 80 ? 'high' : nb.performanceScore >= 65 ? 'medium' : 'low';
+            const potLevel = nb.potentialScore >= 75 ? 'high' : nb.potentialScore >= 60 ? 'medium' : 'low';
+            const nameParts = nb.employee.split(' ');
+            return {
+              id: nb.id,
+              name: nb.employee,
+              department: nb.department || '',
+              performance: perfLevel as 'low' | 'medium' | 'high',
+              potential: potLevel as 'low' | 'medium' | 'high',
+              score: nb.performanceScore,
+              avatar: nameParts.map((n: string) => n[0]).join('').toUpperCase(),
+            };
+          });
+          if (mapped.length > 0) setEmployees(mapped);
+        }
+      })
+      .catch(() => {});
+  }, [useAutoMode]);
 
   const handleDragStart = useCallback((_e: React.DragEvent, emp: Employee) => {
     setDraggedEmployee(emp);
   }, []);
 
+  const persistNineBox = useCallback((employeeId: string, perf: string, pot: string) => {
+    const perfScore = perf === 'high' ? 85 : perf === 'medium' ? 65 : 40;
+    const potScore = pot === 'high' ? 85 : pot === 'medium' ? 60 : 35;
+    const categoryMap: Record<string, string> = {
+      'high-high': 'star', 'high-medium': 'growth', 'high-low': 'solid',
+      'medium-high': 'growth', 'medium-medium': 'average', 'medium-low': 'average',
+      'low-high': 'risk', 'low-medium': 'risk', 'low-low': 'risk',
+    };
+    fetch('/api/nine-box', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        employeeId,
+        performanceScore: perfScore,
+        potentialScore: potScore,
+        category: categoryMap[`${perf}-${pot}`] || 'solid',
+      }),
+    }).catch(() => {});
+  }, []);
+
+  const [pendingDrop, setPendingDrop] = useState<{ emp: Employee; perf: Employee['performance']; pot: Employee['potential'] } | null>(null);
+
   const handleDrop = useCallback((_e: React.DragEvent, perf: Employee['performance'], pot: Employee['potential']) => {
-    if (!draggedEmployee) return;
+    if (!draggedEmployee || calibrationLocked) return;
+    // Show confirmation before persisting
+    setPendingDrop({ emp: draggedEmployee, perf, pot });
+    setDraggedEmployee(null);
+  }, [draggedEmployee, calibrationLocked]);
+
+  const confirmDrop = useCallback(() => {
+    if (!pendingDrop) return;
     setEmployees((prev) =>
       prev.map((emp) =>
-        emp.id === draggedEmployee.id ? { ...emp, performance: perf, potential: pot } : emp
+        emp.id === pendingDrop.emp.id ? { ...emp, performance: pendingDrop.perf, potential: pendingDrop.pot } : emp
       )
     );
-    setDraggedEmployee(null);
-  }, [draggedEmployee]);
+    persistNineBox(pendingDrop.emp.id, pendingDrop.perf, pendingDrop.pot);
+    setPendingDrop(null);
+  }, [pendingDrop, persistNineBox]);
+
+  const cancelDrop = useCallback(() => setPendingDrop(null), []);
 
   const handleReassign = useCallback((empId: string, perf: Employee['performance'], pot: Employee['potential']) => {
+    if (calibrationLocked) return;
     setEmployees((prev) =>
       prev.map((emp) => (emp.id === empId ? { ...emp, performance: perf, potential: pot } : emp))
     );
-  }, []);
+    // Persist to DB
+    persistNineBox(empId, perf, pot);
+  }, [calibrationLocked, persistNineBox]);
 
   const getEmployeesForCell = (perf: Employee['performance'], pot: Employee['potential']) =>
     employees.filter((e) => e.performance === perf && e.potential === pot);
@@ -300,6 +383,64 @@ export default function NineBoxPage() {
           </p>
         </div>
       </div>
+
+      {/* Calibration Toolbar */}
+      <div className="flex items-center gap-3 rounded-xl border border-[#f0f0f0] bg-white p-4">
+        <div className="flex items-center gap-2">
+          <span className="text-[12px] font-medium text-[#525252]">Veri Kaynagi:</span>
+          <button
+            onClick={() => setUseAutoMode(true)}
+            className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition ${useAutoMode ? 'bg-[#5E5CE6] text-white' : 'bg-[#f5f5f5] text-[#737373] hover:bg-[#eee]'}`}
+          >
+            Algoritmik (OKR + 360 + Yetkinlik)
+          </button>
+          <button
+            onClick={() => setUseAutoMode(false)}
+            className={`rounded-lg px-3 py-1.5 text-[12px] font-medium transition ${!useAutoMode ? 'bg-[#5E5CE6] text-white' : 'bg-[#f5f5f5] text-[#737373] hover:bg-[#eee]'}`}
+          >
+            Manuel (DB)
+          </button>
+        </div>
+        <div className="mx-2 h-6 w-px bg-[#f0f0f0]" />
+        <button
+          onClick={() => setCalibrationLocked(!calibrationLocked)}
+          className={`flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-[12px] font-medium transition ${calibrationLocked ? 'bg-[#FEF2F2] text-[#DC2626]' : 'bg-[#ECFDF5] text-[#059669]'}`}
+        >
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            {calibrationLocked
+              ? <><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></>
+              : <><rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 9.9-1" /></>}
+          </svg>
+          {calibrationLocked ? 'Kalibrasyon Kilitli' : 'Kalibrasyon Acik'}
+        </button>
+        {calibrationLocked && (
+          <span className="text-[11px] text-[#DC2626]">Surukle-birak devre disi</span>
+        )}
+      </div>
+
+      {/* PIP Alert */}
+      {pipCandidates.length > 0 && (
+        <div className="flex items-start gap-3 rounded-xl border border-[#FECACA] bg-[#FEF2F2] p-4">
+          <svg className="mt-0.5 h-5 w-5 shrink-0 text-[#DC2626]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+          </svg>
+          <div>
+            <div className="text-[13px] font-semibold text-[#DC2626]">
+              Performans Iyilestirme Plani (PIP) Onerisi
+            </div>
+            <div className="mt-1 text-[12px] text-[#991B1B]">
+              Asagidaki calisanlar dusuk performans bolgesinde. PIP sureci baslatilmasi oneriliyor:
+            </div>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {pipCandidates.map((name) => (
+                <span key={name} className="rounded-full bg-white px-3 py-1 text-[11px] font-medium text-[#DC2626] shadow-sm">
+                  {name}
+                </span>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Summary Cards */}
       <div className="grid grid-cols-4 gap-4">
@@ -369,6 +510,34 @@ export default function NineBoxPage() {
           </div>
         </div>
       </div>
+
+      {/* Confirmation Dialog */}
+      {pendingDrop && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+          <div className="w-full max-w-[400px] rounded-2xl bg-white p-6 shadow-2xl">
+            <h3 className="text-[15px] font-semibold text-[#0A0A0A]">9-Box Degisikligi Onayla</h3>
+            <p className="mt-2 text-[13px] text-[#525252]">
+              <strong>{pendingDrop.emp.name}</strong> calisanini{' '}
+              <span className="font-semibold text-[#5E5CE6]">
+                {pendingDrop.perf === 'high' ? 'Yuksek' : pendingDrop.perf === 'medium' ? 'Orta' : 'Dusuk'} Performans
+              </span>{' / '}
+              <span className="font-semibold text-[#D97706]">
+                {pendingDrop.pot === 'high' ? 'Yuksek' : pendingDrop.pot === 'medium' ? 'Orta' : 'Dusuk'} Potansiyel
+              </span>{' '}
+              bolgesine tasimak istediginize emin misiniz?
+            </p>
+            <p className="mt-2 text-[11px] text-[#888]">Bu degisiklik veritabanina kaydedilecek ve audit log&apos;a yazilacaktir.</p>
+            <div className="mt-4 flex items-center justify-end gap-3">
+              <button onClick={cancelDrop} className="rounded-lg border border-[#e5e5e5] px-4 py-2 text-[13px] font-medium text-[#525252] hover:bg-[#f5f5f5]">
+                Vazgec
+              </button>
+              <button onClick={confirmDrop} className="rounded-lg bg-[#5E5CE6] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#4B49B6]">
+                Onayla ve Kaydet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Employee Detail List */}
       <div className="rounded-2xl border border-[#f0f0f0] bg-white">

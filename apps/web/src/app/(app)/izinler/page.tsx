@@ -526,7 +526,7 @@ export default function IzinlerPage() {
   const monthNames = ['Ocak', 'Subat', 'Mart', 'Nisan', 'Mayis', 'Haziran', 'Temmuz', 'Agustos', 'Eylul', 'Ekim', 'Kasim', 'Aralik'];
   const daysInMonth = new Date(calendarYear, calendarMonth + 1, 0).getDate();
   const firstDayOfWeek = (new Date(calendarYear, calendarMonth, 1).getDay() + 6) % 7; // Monday-based
-  const todayStr = '2026-04-04'; // Simulated today
+  const todayStr = new Date().toISOString().slice(0, 10);
 
   const prevMonth = () => setCalendarMonth((m) => (m === 0 ? 11 : m - 1));
   const nextMonth = () => setCalendarMonth((m) => (m === 11 ? 0 : m + 1));

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /* ─── Types ─── */
 interface CraftingSuggestion {
@@ -113,6 +113,25 @@ const STATUS_CONFIG = {
 
 export const JobCrafting = () => {
   const [suggestions, setSuggestions] = useState<CraftingSuggestion[]>(INITIAL_SUGGESTIONS);
+
+  useEffect(() => {
+    fetch('/api/career')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.crafting && data.crafting.length > 0) {
+          const mapped: CraftingSuggestion[] = data.crafting.map((c: { id: string; type: string; suggestion: string; rationale: string; status: string; employee: string }) => ({
+            id: c.id,
+            category: c.type === 'relationship' ? 'relational' : c.type as 'task' | 'cognitive',
+            title: c.suggestion,
+            description: c.suggestion,
+            rationale: c.rationale || `${c.employee} için AI tarafından önerildi.`,
+            status: c.status as 'pending' | 'accepted' | 'rejected',
+          }));
+          setSuggestions(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const handleDecision = (id: string, decision: 'accepted' | 'rejected') => {
     setSuggestions((prev) =>

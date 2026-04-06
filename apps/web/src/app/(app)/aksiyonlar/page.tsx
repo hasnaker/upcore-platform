@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface ActionEmployeeProfile {
   name: string;
@@ -124,6 +124,52 @@ const ACTION_METRICS = {
   successRate: 72,
 };
 
+/* ─── API Response Types ─── */
+interface IntelligenceEmployee {
+  id: string;
+  name: string;
+  department: string;
+  synthesis: {
+    riskScore: {
+      score: number;
+      level: 'critical' | 'high' | 'medium' | 'low';
+      signals: string[];
+      recommendations: string[];
+    };
+    nineBox: { performance: string; potential: string };
+    okrProgress: number | null;
+    burnoutScore: number | null;
+    feedbackAvg: number | null;
+    strengthsDepth: number;
+    overallHealth: string;
+  };
+}
+
+function mapEmployeeToAction(emp: IntelligenceEmployee, index: number): Action {
+  const risk = emp.synthesis.riskScore;
+  const urgency: Action['urgency'] =
+    risk.level === 'critical' ? 'critical' : risk.level === 'high' ? 'warning' : 'info';
+  const burnout = emp.synthesis.burnoutScore;
+  const description = risk.signals.length > 0
+    ? risk.signals[0] ?? ''
+    : `Risk skoru: ${risk.score}`;
+  const impact = risk.recommendations.length > 0
+    ? risk.recommendations[0] ?? ''
+    : 'Detayli analiz oneriliyor';
+
+  return {
+    id: emp.id || String(index + 100),
+    urgency,
+    type: burnout !== null && burnout > 2.5 ? 'burnout' : 'development',
+    title: `${emp.name} — ${risk.level === 'critical' ? 'kritik risk' : risk.level === 'high' ? 'yuksek risk' : 'orta risk'} (${emp.department})`,
+    description,
+    impact,
+    reasoning: risk.signals.length > 0 ? risk.signals : ['Veri analizi devam ediyor'],
+    date: 'Simdi',
+    status: 'pending',
+  };
+}
+
 const URGENCY = { critical: { bg: '#FEE2E2', text: '#DC2626', label: 'Acil', stripe: '#DC2626' }, warning: { bg: '#FEF3C7', text: '#D97706', label: 'Uyarı', stripe: '#D97706' }, info: { bg: '#EEF0FD', text: '#5E5CE6', label: 'Bilgi', stripe: '#5E5CE6' } };
 const TYPE_LABELS: Record<string, string> = { burnout: 'Tükenmişlik', hiring: 'İşe Alım', leave: 'İzin', development: 'Gelişim' };
 const DECISION_COLORS: Record<string, { bg: string; text: string }> = { 'Onaylandı': { bg: '#D1FAE5', text: '#059669' }, 'Reddedildi': { bg: '#FEE2E2', text: '#DC2626' }, 'Ertelendi': { bg: '#FEF3C7', text: '#D97706' } };
@@ -133,6 +179,26 @@ export default function AksiyonlarPage() {
   const [actions, setActions] = useState(ACTIONS);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [filter, setFilter] = useState<string>('all');
+
+  useEffect(() => {
+    fetch('/api/employee-intelligence')
+      .then((r) => r.json())
+      .then((data: { employees?: IntelligenceEmployee[] }) => {
+        if (data && Array.isArray(data.employees) && data.employees.length > 0) {
+          const atRisk = data.employees.filter(
+            (e) => e.synthesis.riskScore.level === 'critical' || e.synthesis.riskScore.level === 'high' || e.synthesis.riskScore.level === 'medium',
+          );
+          if (atRisk.length > 0) {
+            const apiActions = atRisk.map(mapEmployeeToAction);
+            setActions(apiActions);
+          }
+          // If no at-risk employees found, keep ACTIONS as fallback
+        }
+      })
+      .catch(() => {
+        // API failed — keep hardcoded ACTIONS as fallback
+      });
+  }, []);
 
   const filtered = filter === 'all' ? actions.filter(a => a.status === 'pending') : actions.filter(a => a.status === 'pending' && a.type === filter);
 

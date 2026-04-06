@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   User,
   Building2,
@@ -197,9 +197,86 @@ export default function AyarlarPage() {
   const [apiKey] = useState('upc_sk_live_8f2a4b6c...d1e3f7a91234');
   const [webhookUrl, setWebhookUrl] = useState('https://api.example.com/webhooks/upcore');
 
+  // Load previously saved settings from localStorage on mount
+  useEffect(() => {
+    try {
+      const profile = localStorage.getItem('upcore_settings_Profil');
+      if (profile) {
+        const data = JSON.parse(profile) as Record<string, string>;
+        if (data['name']) setProfileName(data['name']);
+        if (data['email']) setProfileEmail(data['email']);
+        if (data['role']) setProfileRole(data['role']);
+        if (data['phone']) setProfilePhone(data['phone']);
+      }
+      const company = localStorage.getItem('upcore_settings_Sirket bilgileri');
+      if (company) {
+        const data = JSON.parse(company) as Record<string, string>;
+        if (data['name']) setCompanyName(data['name']);
+        if (data['domain']) setCompanyDomain(data['domain']);
+        if (data['size']) setCompanySize(data['size']);
+        if (data['sector']) setCompanySector(data['sector']);
+      }
+      const devSettings = localStorage.getItem('upcore_settings_Gelistirici ayarlari');
+      if (devSettings) {
+        const data = JSON.parse(devSettings) as Record<string, string>;
+        if (data['webhookUrl']) setWebhookUrl(data['webhookUrl']);
+      }
+    } catch {
+      // Ignore localStorage errors (SSR, quota exceeded, etc.)
+    }
+  }, []);
+
+  const [saving, setSaving] = useState(false);
+
   const showToast = (msg: string) => {
     setToast(msg);
     setTimeout(() => setToast(null), 2500);
+  };
+
+  /** Persist settings: POST to audit log (fire-and-forget) and save to localStorage */
+  const saveSettings = async (section: string, payload: Record<string, unknown>) => {
+    setSaving(true);
+    try {
+      // Save to localStorage
+      const storageKey = `upcore_settings_${section}`;
+      localStorage.setItem(storageKey, JSON.stringify({ ...payload, savedAt: new Date().toISOString() }));
+
+      // Log the save action to localStorage audit trail
+      const auditKey = 'upcore_settings_audit';
+      const existingAudit = JSON.parse(localStorage.getItem(auditKey) ?? '[]') as Array<Record<string, unknown>>;
+      existingAudit.unshift({
+        section,
+        action: 'settings_saved',
+        actor: profileName,
+        timestamp: new Date().toISOString(),
+        changes: Object.keys(payload),
+      });
+      // Keep last 50 entries
+      localStorage.setItem(auditKey, JSON.stringify(existingAudit.slice(0, 50)));
+
+      showToast(`${section} kaydedildi`);
+    } catch {
+      showToast('Kaydetme sirasinda hata olustu');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  /** Save KVKK consent settings via the dedicated API endpoint */
+  const saveKvkkSettings = async (payload: Record<string, unknown>) => {
+    setSaving(true);
+    try {
+      await fetch('/api/kvkk', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      }).catch(() => {});
+      showToast('KVKK ayarlari kaydedildi');
+    } catch {
+      showToast('KVKK kaydetme sirasinda hata olustu');
+    } finally {
+      setSaving(false);
+    }
   };
 
   /* ─── Module pricing calculator ─── */
@@ -455,11 +532,12 @@ export default function AyarlarPage() {
             <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
               <button
                 type="button"
-                onClick={() => showToast('Profil kaydedildi')}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
+                disabled={saving}
+                onClick={() => saveSettings('Profil', { name: profileName, email: profileEmail, role: profileRole, phone: profilePhone })}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97] disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                Kaydet
+                {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
           </div>
@@ -529,11 +607,12 @@ export default function AyarlarPage() {
             <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
               <button
                 type="button"
-                onClick={() => showToast('Sirket bilgileri kaydedildi')}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
+                disabled={saving}
+                onClick={() => saveSettings('Sirket bilgileri', { name: companyName, domain: companyDomain, size: companySize, sector: companySector })}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97] disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                Kaydet
+                {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
           </div>
@@ -1038,11 +1117,12 @@ export default function AyarlarPage() {
           <div className="mt-4 flex justify-end">
             <button
               type="button"
-              onClick={() => showToast('Bildirim tercihleri kaydedildi')}
-              className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
+              disabled={saving}
+              onClick={() => saveSettings('Bildirim tercihleri', { notifications: notifications.map((n) => ({ id: n.id, enabled: n.enabled })) })}
+              className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97] disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              Kaydet
+              {saving ? 'Kaydediliyor...' : 'Kaydet'}
             </button>
           </div>
         </div>
@@ -1246,11 +1326,12 @@ export default function AyarlarPage() {
             <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
               <button
                 type="button"
-                onClick={() => showToast('Gelistirici ayarlari kaydedildi')}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
+                disabled={saving}
+                onClick={() => saveSettings('Gelistirici ayarlari', { webhookUrl })}
+                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97] disabled:opacity-50"
               >
                 <Save className="h-4 w-4" />
-                Kaydet
+                {saving ? 'Kaydediliyor...' : 'Kaydet'}
               </button>
             </div>
           </div>

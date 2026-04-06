@@ -54,8 +54,23 @@ export const DocumentUploadForm = ({ open, onOpenChange }: DocumentUploadFormPro
     }
     setIsUploading(true);
     try {
-      // TODO: Replace with actual API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      const res = await fetch('/api/documents', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          document_type: docType,
+          description,
+          is_confidential: isConfidential,
+          file_name: file.name,
+          file_size: file.size,
+          mime_type: file.type,
+        }),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ error: 'Bilinmeyen hata' }));
+        throw new Error(err.error || 'Belge yuklenemedi');
+      }
       toast.success('Belge basariyla yuklendi');
       setFile(null);
       setTitle('');
@@ -63,8 +78,8 @@ export const DocumentUploadForm = ({ open, onOpenChange }: DocumentUploadFormPro
       setDocType('');
       setIsConfidential(false);
       onOpenChange(false);
-    } catch {
-      toast.error('Belge yuklenirken hata olustu');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Belge yuklenirken hata olustu');
     } finally {
       setIsUploading(false);
     }

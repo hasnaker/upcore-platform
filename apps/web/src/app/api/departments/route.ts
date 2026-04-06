@@ -1,6 +1,21 @@
 import { NextResponse } from 'next/server';
 import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
 
+export async function POST(request: Request) {
+  try {
+    const body = await request.json();
+    const res = await fetch(`${SERVICES.organization}/api/v1/departments`, {
+      method: 'POST',
+      headers: DEV_HEADERS,
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    return NextResponse.json(data, { status: res.status });
+  } catch {
+    return NextResponse.json({ error: 'Departman olusturulamadi' }, { status: 500 });
+  }
+}
+
 export async function GET() {
   try {
     const [deptRes, empRes] = await Promise.all([

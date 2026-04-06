@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /* ─── Types ─── */
 interface CandidateProfile {
@@ -155,9 +155,63 @@ const readinessColor = (score: number) => {
 export default function SuccessionPage() {
   const [selectedCandidate, setSelectedCandidate] = useState<CandidateProfile | null>(null);
   const [showAddModal, setShowAddModal] = useState<string | null>(null);
+  const [positions, setPositions] = useState<CriticalPosition[]>(POSITIONS);
 
-  const highRiskCount = POSITIONS.filter((p) => p.riskLevel === 'high').length;
-  const noSuccessorPositions = POSITIONS.filter(
+  useEffect(() => {
+    fetch('/api/career')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.succession && data.succession.length > 0) {
+          // Group by position
+          const byPosition = new Map<string, typeof data.succession>();
+          for (const s of data.succession) {
+            const list = byPosition.get(s.position) || [];
+            list.push(s);
+            byPosition.set(s.position, list);
+          }
+
+          const mapped: CriticalPosition[] = Array.from(byPosition.entries()).map(([posTitle, candidates], idx) => {
+            const readyNow = candidates.find((c: { readiness: string }) => c.readiness === 'ready_now');
+            const ready1y = candidates.find((c: { readiness: string }) => c.readiness === '1_year');
+            const ready3y = candidates.find((c: { readiness: string }) => c.readiness === '2_year' || c.readiness === '3_year');
+
+            const toCandidateProfile = (c: { candidate: string; department: string; developmentAreas: string[]; readiness: string } | undefined): SuccessionCell => {
+              if (!c) return { candidate: null };
+              const readinessMap: Record<string, number> = { ready_now: 90, '1_year': 65, '2_year': 45, '3_year': 35 };
+              return {
+                candidate: {
+                  name: c.candidate,
+                  title: '',
+                  department: c.department || '',
+                  readinessScore: readinessMap[c.readiness] || 50,
+                  strengths: [],
+                  developmentAreas: c.developmentAreas || [],
+                  tenure: '',
+                  batScore: 2.0,
+                },
+              };
+            };
+
+            return {
+              id: `db-${idx}`,
+              title: posTitle,
+              currentHolder: '—',
+              department: candidates[0]?.department || '',
+              readyNow: toCandidateProfile(readyNow),
+              readyOneYear: toCandidateProfile(ready1y),
+              readyThreeYear: toCandidateProfile(ready3y),
+              riskLevel: readyNow ? 'low' as const : ready1y ? 'medium' as const : 'high' as const,
+            };
+          });
+
+          if (mapped.length > 0) setPositions(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const highRiskCount = positions.filter((p) => p.riskLevel === 'high').length;
+  const noSuccessorPositions = positions.filter(
     (p) => !p.readyNow.candidate && !p.readyOneYear.candidate && !p.readyThreeYear.candidate
   ).length;
 
@@ -204,7 +258,7 @@ export default function SuccessionPage() {
             textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: 28, fontWeight: 700, color: '#111' }}>{POSITIONS.length}</div>
+          <div style={{ fontSize: 28, fontWeight: 700, color: '#111' }}>{positions.length}</div>
           <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Kritik Pozisyon</div>
         </div>
         <div
@@ -243,7 +297,7 @@ export default function SuccessionPage() {
           }}
         >
           <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>
-            {POSITIONS.filter((p) => p.readyNow.candidate).length}
+            {positions.filter((p) => p.readyNow.candidate).length}
           </div>
           <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Hazir Yedek Var</div>
         </div>
@@ -299,7 +353,7 @@ export default function SuccessionPage() {
         </div>
 
         {/* Table rows */}
-        {POSITIONS.map((pos) => {
+        {positions.map((pos) => {
           const risk = RISK_COLORS[pos.riskLevel];
           return (
             <div
@@ -598,7 +652,7 @@ export default function SuccessionPage() {
               Aday Ekle
             </div>
             <p style={{ fontSize: 13, color: '#888', marginBottom: 20 }}>
-              {POSITIONS.find((p) => p.id === showAddModal)?.title} pozisyonu icin yedek aday
+              {positions.find((p) => p.id === showAddModal)?.title} pozisyonu icin yedek aday
               ekleyin.
             </p>
 

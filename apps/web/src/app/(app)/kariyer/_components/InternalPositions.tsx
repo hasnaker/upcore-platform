@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 /* ─── Types ─── */
 interface InternalPosition {
@@ -14,6 +14,8 @@ interface InternalPosition {
   jdrProfile: { demands: number; resources: number };
   benefits: string[];
   requiredSkills: string[];
+  fitBreakdown?: { profileMatch: number; jdrBalance: number; skillCoverage: number; readinessIndex: number } | null;
+  fitInterpretation?: string | null;
 }
 
 interface NewPositionForm {
@@ -24,8 +26,8 @@ interface NewPositionForm {
   description: string;
 }
 
-/* ─── Data ─── */
-const POSITIONS: InternalPosition[] = [
+/* ─── Fallback Data ─── */
+const FALLBACK_POSITIONS: InternalPosition[] = [
   {
     id: '1',
     title: 'Satis Ekip Lideri',
@@ -75,8 +77,38 @@ const fitScoreColor = (score: number) => {
 };
 
 export const InternalPositions = () => {
+  const [positions, setPositions] = useState<InternalPosition[]>(FALLBACK_POSITIONS);
   const [expanded, setExpanded] = useState<string | null>(null);
   const [applied, setApplied] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch('/api/career')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.positions && data.positions.length > 0) {
+          const mapped: InternalPosition[] = data.positions.map((p: {
+            id: string; title: string; department: string; seniorityReq: string | null;
+            description: string | null; requiredSkills: string[]; jdrProfile: { demands: number; resources: number };
+            fitScore?: number | null; fitBreakdown?: Record<string, number> | null; fitInterpretation?: string | null;
+          }) => ({
+            id: p.id,
+            title: p.title,
+            department: p.department || '',
+            seniorityReq: p.seniorityReq || '',
+            strengths: [],
+            fitScore: p.fitScore ?? 0,
+            description: p.description || '',
+            jdrProfile: p.jdrProfile || { demands: 0, resources: 0 },
+            benefits: [],
+            requiredSkills: Array.isArray(p.requiredSkills) ? p.requiredSkills : [],
+            fitBreakdown: p.fitBreakdown || null,
+            fitInterpretation: p.fitInterpretation || null,
+          }));
+          setPositions(mapped);
+        }
+      })
+      .catch(() => {});
+  }, []);
   const [confirmModal, setConfirmModal] = useState<string | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [showNewForm, setShowNewForm] = useState(false);
@@ -96,7 +128,7 @@ export const InternalPositions = () => {
     if (confirmModal) {
       setApplied((prev) => new Set(prev).add(confirmModal));
       setConfirmModal(null);
-      const pos = POSITIONS.find((p) => p.id === confirmModal);
+      const pos = positions.find((p) => p.id === confirmModal);
       setSuccessToast(pos?.title ?? '');
       setTimeout(() => setSuccessToast(null), 3000);
     }
@@ -135,7 +167,7 @@ export const InternalPositions = () => {
       </div>
 
       {/* Position cards */}
-      {POSITIONS.map((pos) => {
+      {positions.map((pos) => {
         const isExpanded = expanded === pos.id;
         const isApplied = applied.has(pos.id);
         const sc = fitScoreColor(pos.fitScore);
@@ -376,6 +408,38 @@ export const InternalPositions = () => {
                     </div>
                   </div>
 
+                  {/* Fit Score Breakdown — Algoritmik Uyum Analizi */}
+                  {pos.fitBreakdown && (
+                    <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: 14 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#059669', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
+                        Uyum Analizi (Algoritmik)
+                      </div>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        {[
+                          { label: 'Profil Eslesmesi', value: pos.fitBreakdown.profileMatch, color: '#5E5CE6' },
+                          { label: 'JD-R Dengesi', value: pos.fitBreakdown.jdrBalance, color: '#0EA5E9' },
+                          { label: 'Yetkinlik Kapsama', value: pos.fitBreakdown.skillCoverage, color: '#D97706' },
+                          { label: 'Hazirlik Indeksi', value: pos.fitBreakdown.readinessIndex, color: '#059669' },
+                        ].map((item) => (
+                          <div key={item.label}>
+                            <div className="flex items-center justify-between">
+                              <span style={{ fontSize: 11, color: '#555' }}>{item.label}</span>
+                              <span style={{ fontSize: 11, fontWeight: 600, color: item.color }}>%{item.value}</span>
+                            </div>
+                            <div style={{ height: 6, background: '#f0f0f0', borderRadius: 3, marginTop: 4 }}>
+                              <div style={{ height: 6, borderRadius: 3, width: `${item.value}%`, background: item.color }} />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                      {pos.fitInterpretation && (
+                        <div style={{ marginTop: 10, fontSize: 12, color: '#059669', fontWeight: 500 }}>
+                          {pos.fitInterpretation}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {/* Required skills */}
                   <div>
                     <div
@@ -508,7 +572,7 @@ export const InternalPositions = () => {
               Basvuruyu Onayla
             </div>
             <p style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 8 }}>
-              <strong>{POSITIONS.find((p) => p.id === confirmModal)?.title}</strong> pozisyonuna
+              <strong>{positions.find((p) => p.id === confirmModal)?.title}</strong> pozisyonuna
               basvurunuzu gonderiyorsunuz.
             </p>
             <div

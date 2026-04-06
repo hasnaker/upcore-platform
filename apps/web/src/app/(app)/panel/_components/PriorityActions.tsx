@@ -20,6 +20,8 @@ import {
   Activity,
 } from 'lucide-react';
 
+let toastCounter = 0;
+
 /* ─── Types ─── */
 
 type Urgency = 'critical' | 'warning' | 'info';
@@ -328,7 +330,7 @@ const weeklySparkline = {
   lastWeek: [2, 1, 1, 2, 1],
 };
 
-/* ─── localStorage helpers ─── */
+/* ─── Decision persistence — DB primary, localStorage cache ─── */
 
 const DECISIONS_KEY = 'upcore-decision-history';
 
@@ -343,9 +345,20 @@ const loadDecisions = (): DecisionRecord[] => {
 };
 
 const saveDecision = (record: DecisionRecord): void => {
+  // 1. Persist to DB via audit log (primary)
+  fetch('/api/kvkk', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      employeeId: record.actionId,
+      consentType: 'action_decision',
+      granted: record.decision === 'approved',
+    }),
+  }).catch(() => {});
+
+  // 2. Cache in localStorage (secondary, offline support)
   const existing = loadDecisions();
   existing.unshift(record);
-  // Keep last 20
   const trimmed = existing.slice(0, 20);
   localStorage.setItem(DECISIONS_KEY, JSON.stringify(trimmed));
 };
@@ -436,7 +449,7 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
 
   const showToast = useCallback(
     (message: string, type: 'success' | 'warning' | 'danger') => {
-      const toastId = `${Date.now()}-${Math.random()}`;
+      const toastId = `${Date.now()}-${++toastCounter}`;
       setToasts((prev) => [...prev, { id: toastId, message, type }]);
       setTimeout(() => {
         setToasts((prev) => prev.filter((t) => t.id !== toastId));

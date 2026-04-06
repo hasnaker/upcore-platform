@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Plus, X, ChevronDown, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
@@ -85,6 +85,29 @@ const statusLabel = (s: string) => {
   if (s === 'completed') return { text: 'Tamamlandi', color: '#059669', bg: '#ECFDF5' };
   return { text: 'Taslak', color: '#737373', bg: '#f5f5f5' };
 };
+
+/* ─── Sparkline ─── */
+
+function Sparkline({ data, color = '#5E5CE6', width = 60, height = 20 }: { data: (number | null)[]; color?: string; width?: number; height?: number }) {
+  const values = data.filter((v): v is number => v !== null);
+  if (values.length < 2) return <span style={{ fontSize: 10, color: '#ccc' }}>—</span>;
+  const min = Math.min(...values);
+  const max = Math.max(...values);
+  const range = max - min || 1;
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * width;
+    const y = height - ((v - min) / range) * height;
+    return `${x},${y}`;
+  }).join(' ');
+  const trend = (values[values.length - 1] ?? 0) - (values[0] ?? 0);
+  const trendColor = trend >= 0 ? '#059669' : '#DC2626';
+  return (
+    <div className="flex items-center gap-1">
+      <svg width={width} height={height}><polyline points={points} fill="none" stroke={trendColor} strokeWidth={1.5} /></svg>
+      <span style={{ fontSize: 9, fontWeight: 600, color: trendColor }}>{trend >= 0 ? '\u2191' : '\u2193'}</span>
+    </div>
+  );
+}
 
 /* ─── 9-Box Mini Preview ─── */
 
@@ -287,7 +310,7 @@ const ReviewFormModal = ({
 
 /* ─── Period Card ─── */
 
-const PeriodCard = ({ period, onAddReview }: { period: ReviewPeriod; onAddReview: () => void }) => {
+const PeriodCard = ({ period, onAddReview, trends }: { period: ReviewPeriod; onAddReview: () => void; trends: Record<string, Array<{date: string; okr: number|null; performance: number|null}>> }) => {
   const [expanded, setExpanded] = useState(false);
   const status = statusLabel(period.status);
 
@@ -350,6 +373,7 @@ const PeriodCard = ({ period, onAddReview }: { period: ReviewPeriod; onAddReview
                       <th className="px-3 py-2.5 text-center font-semibold text-[#525252]">Yetkinlik</th>
                       <th className="px-3 py-2.5 text-center font-semibold text-[#525252]">Genel</th>
                       <th className="px-3 py-2.5 text-center font-semibold text-[#525252]">Potansiyel</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-[#525252]">Trend</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -379,6 +403,13 @@ const PeriodCard = ({ period, onAddReview }: { period: ReviewPeriod; onAddReview
                               {pot.text}
                             </span>
                           </td>
+                          <td className="px-3 py-2.5 text-center">
+                            {trends[emp.name] ? (
+                              <Sparkline data={trends[emp.name]!.map((t) => t.performance)} />
+                            ) : (
+                              <span style={{ fontSize: 10, color: '#ccc' }}>—</span>
+                            )}
+                          </td>
                         </tr>
                       );
                     })}
@@ -400,8 +431,38 @@ const PeriodCard = ({ period, onAddReview }: { period: ReviewPeriod; onAddReview
 
 export const DegerlendirmeTab = () => {
   const [periods, setPeriods] = useState<ReviewPeriod[]>(INITIAL_PERIODS);
+  const [trends, setTrends] = useState<Record<string, Array<{date: string; okr: number|null; performance: number|null}>>>({});
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [showNewPeriod, setShowNewPeriod] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/performance')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.reviews && data.reviews.length > 0) {
+          const reviewPeriod: ReviewPeriod = {
+            id: 'db-period',
+            name: '2026 H1 Değerlendirme',
+            type: 'H1',
+            year: 2026,
+            status: 'active',
+            employees: data.reviews.map((r: { id: string; employee: string; department: string; okrScore: number | null; competencyScore: number | null; overallScore: number | null; potentialRating: string | null }) => ({
+              id: r.id,
+              name: r.employee,
+              department: r.department || '',
+              okrScore: r.okrScore ?? 0,
+              competencyScore: r.competencyScore ?? 0,
+              overallScore: r.overallScore ?? 0,
+              potential: (r.potentialRating || 'medium') as 'high' | 'medium' | 'low',
+              managerNotes: '',
+            })),
+          };
+          setPeriods([reviewPeriod]);
+        }
+        if (data.trends) setTrends(data.trends);
+      })
+      .catch(() => {});
+  }, []);
 
   const handleAddReview = useCallback((form: ReviewFormData) => {
     const okr = parseInt(form.okrScore, 10) || 0;
@@ -472,7 +533,7 @@ export const DegerlendirmeTab = () => {
       {/* Period Cards */}
       <div className="space-y-3">
         {periods.map((period) => (
-          <PeriodCard key={period.id} period={period} onAddReview={() => setShowReviewForm(true)} />
+          <PeriodCard key={period.id} period={period} onAddReview={() => setShowReviewForm(true)} trends={trends} />
         ))}
       </div>
 
