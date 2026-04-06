@@ -16,6 +16,10 @@ const NAV_ITEMS = [
   { href: '/guclu-yonler', label: 'Güçlü Yönler', icon: 'star' },
   { href: '/performans', label: 'Performans', icon: 'award' },
   { href: '/kariyer', label: 'Kariyer', icon: 'compass' },
+  { href: '/ucretlendirme', label: 'Ücretlendirme', icon: 'dollar' },
+  { href: '/egitim', label: 'Eğitim & Gelişim', icon: 'book' },
+  { href: '/baglilik', label: 'Bağlılık', icon: 'heart' },
+  { href: '/is-akislari', label: 'İş Akışları', icon: 'workflow' },
   { href: '/analytics', label: 'Analitik', icon: 'trending-up' },
   { href: '/aksiyonlar', label: 'Aksiyonlar', icon: 'list' },
   { href: '/ayarlar', label: 'Ayarlar', icon: 'settings' },
@@ -37,6 +41,10 @@ const ICONS: Record<string, React.ReactNode> = {
   star: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></>,
   award: <><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></>,
   compass: <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></>,
+  dollar: <><path strokeLinecap="round" strokeLinejoin="round" d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" /></>,
+  book: <><path strokeLinecap="round" strokeLinejoin="round" d="M4 19.5A2.5 2.5 0 016.5 17H20" /><path strokeLinecap="round" strokeLinejoin="round" d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z" /></>,
+  heart: <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
+  workflow: <><path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 12h18M3 18h18" /><circle cx="6" cy="6" r="2" fill="currentColor" /><circle cx="12" cy="12" r="2" fill="currentColor" /><circle cx="18" cy="18" r="2" fill="currentColor" /></>,
 };
 
 export function AppSidebar() {
