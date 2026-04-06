@@ -1038,15 +1038,25 @@ export default function DegerlendirmelerPage() {
 
             {/* Content */}
             <div className="flex-1 overflow-y-auto p-6">
-              {/* Candidate info */}
+              {/* Candidate info — Enhanced */}
               <div className="flex items-center gap-4">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#F5F5F5] text-lg font-semibold text-[#525252]">
                   {getInitials(drawerCandidate.name)}
                 </div>
                 <div>
                   <p className="text-lg font-semibold text-[#0A0A0A]">{drawerCandidate.name}</p>
-                  <p className="text-sm text-[#A3A3A3]">{drawerCandidate.detail.email}</p>
-                  <p className="text-xs text-[#525252]">{drawerCandidate.position}</p>
+                  <div className="flex items-center gap-3 mt-0.5">
+                    <span className="flex items-center gap-1 text-xs text-[#A3A3A3]"><Mail className="h-3 w-3" />{drawerCandidate.detail.email}</span>
+                    {drawerCandidate.detail.phone && (
+                      <span className="flex items-center gap-1 text-xs text-[#A3A3A3]"><Phone className="h-3 w-3" />{drawerCandidate.detail.phone}</span>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-[#525252]">{drawerCandidate.detail.currentPosition ?? drawerCandidate.position}</p>
+                    {drawerCandidate.detail.experienceYears && (
+                      <span className="text-[10px] text-[#A3A3A3]">· {drawerCandidate.detail.experienceYears} yil deneyim</span>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1072,6 +1082,18 @@ export default function DegerlendirmelerPage() {
                 </span>
               </div>
 
+              {/* Red Flags */}
+              {drawerCandidate.detail.redFlags && drawerCandidate.detail.redFlags.length > 0 && (
+                <div className="mt-4 space-y-1.5">
+                  {drawerCandidate.detail.redFlags.map((flag) => (
+                    <div key={flag} className="flex items-center gap-2 rounded-lg bg-[#FEF3C7] border border-[#FDE68A] px-3 py-2">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-[#D97706]" />
+                      <p className="text-xs font-medium text-[#92400E]">{flag}</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
               {/* Fit Breakdown */}
               <div className="mt-6">
                 <p className="mb-3 text-sm font-semibold text-[#0A0A0A]">Yetkinlik Puanlari</p>
@@ -1095,17 +1117,156 @@ export default function DegerlendirmelerPage() {
                 </div>
               </div>
 
-              {/* Notes */}
+              {/* Assessment Results — Deep View for assessed candidates */}
+              {(drawerCandidate.stage === 'assessment' || drawerCandidate.stage === 'mulakat' || drawerCandidate.stage === 'teklif' || drawerCandidate.stage === 'ise-alim') && (
+                <div className="mt-6 space-y-4">
+                  {/* Overall Score */}
+                  <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText className="h-4 w-4 text-[#5E5CE6]" />
+                      <p className="text-sm font-semibold text-[#0A0A0A]">Assessment Sonuclari</p>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div
+                        className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white"
+                        style={{ backgroundColor: getScoreColor(drawerCandidate.score) }}
+                      >
+                        {drawerCandidate.score}
+                      </div>
+                      <div>
+                        <p className="text-xs text-[#525252]">Genel Uyum Skoru</p>
+                        <p className="text-xs font-medium" style={{ color: getRiskLevel(drawerCandidate.score).color }}>
+                          {getRiskLevel(drawerCandidate.score).label}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Big Five Personality */}
+                  {drawerCandidate.detail.bigFive && (
+                    <div className="rounded-lg border border-[#EDEDED] bg-white p-4">
+                      <p className="mb-3 text-xs font-semibold text-[#0A0A0A]">Big Five Kisilik Profili</p>
+                      <div className="space-y-2">
+                        {[
+                          { label: 'Disadonekluk (Extraversion)', value: drawerCandidate.detail.bigFive.extraversion },
+                          { label: 'Sorumluluk (Conscientiousness)', value: drawerCandidate.detail.bigFive.conscientiousness },
+                          { label: 'Deneyime Aciklik (Openness)', value: drawerCandidate.detail.bigFive.openness },
+                          { label: 'Uyumluluk (Agreeableness)', value: drawerCandidate.detail.bigFive.agreeableness },
+                          { label: 'Nevrotiklik (Neuroticism)', value: drawerCandidate.detail.bigFive.neuroticism },
+                        ].map((trait) => (
+                          <div key={trait.label}>
+                            <div className="flex items-center justify-between text-[10px] mb-0.5">
+                              <span className="text-[#525252]">{trait.label}</span>
+                              <span className="font-semibold tabular-nums" style={{ color: trait.label.includes('Nevrotiklik') ? (trait.value < 40 ? '#059669' : '#DC2626') : getScoreColor(trait.value) }}>
+                                %{trait.value}
+                              </span>
+                            </div>
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{
+                                  width: `${trait.value}%`,
+                                  backgroundColor: trait.label.includes('Nevrotiklik') ? (trait.value < 40 ? '#059669' : '#DC2626') : getScoreColor(trait.value),
+                                }}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* PsyCap */}
+                  {drawerCandidate.detail.psyCap && (
+                    <div className="rounded-lg border border-[#EDEDED] bg-white p-4">
+                      <p className="mb-3 text-xs font-semibold text-[#0A0A0A]">PsyCap (Psikolojik Sermaye)</p>
+                      <div className="grid grid-cols-2 gap-3">
+                        {[
+                          { label: 'Umut (Hope)', value: drawerCandidate.detail.psyCap.hope },
+                          { label: 'Oz-yeterlik (Efficacy)', value: drawerCandidate.detail.psyCap.efficacy },
+                          { label: 'Dayaniklilik (Resilience)', value: drawerCandidate.detail.psyCap.resilience },
+                          { label: 'Iyimserlik (Optimism)', value: drawerCandidate.detail.psyCap.optimism },
+                        ].map((cap) => (
+                          <div key={cap.label} className="rounded-lg bg-[#FAFAFA] p-3 text-center">
+                            <p className="text-[10px] text-[#A3A3A3] mb-1">{cap.label}</p>
+                            <p className="text-lg font-bold tabular-nums" style={{ color: cap.value >= 7.5 ? '#059669' : cap.value >= 6.5 ? '#D97706' : '#DC2626' }}>
+                              {cap.value.toFixed(1)}
+                            </p>
+                            <p className="text-[9px] text-[#A3A3A3]">/10</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* JD-R Fit */}
+                  {drawerCandidate.detail.jdrFit && (
+                    <div className="rounded-lg border border-[#EDEDED] bg-white p-4">
+                      <p className="mb-3 text-xs font-semibold text-[#0A0A0A]">JD-R Uyum Analizi</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between rounded-lg bg-[#FAFAFA] px-3 py-2 text-xs">
+                          <span className="text-[#525252]">Talepler eslemesi (Demands)</span>
+                          <span className="font-semibold" style={{ color: getScoreColor(drawerCandidate.detail.jdrFit.demandsMatch) }}>
+                            %{drawerCandidate.detail.jdrFit.demandsMatch}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-[#FAFAFA] px-3 py-2 text-xs">
+                          <span className="text-[#525252]">Kaynaklar eslemesi (Resources)</span>
+                          <span className="font-semibold" style={{ color: getScoreColor(drawerCandidate.detail.jdrFit.resourcesMatch) }}>
+                            %{drawerCandidate.detail.jdrFit.resourcesMatch}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between rounded-lg bg-[#5E5CE6]/10 px-3 py-2.5 text-xs">
+                          <span className="font-semibold text-[#5E5CE6]">Genel JD-R Uyum</span>
+                          <span className="text-base font-bold text-[#5E5CE6]">%{drawerCandidate.detail.jdrFit.overall}</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Reference Check */}
+              {drawerCandidate.detail.references && (
+                <div className="mt-6">
+                  <p className="mb-3 text-sm font-semibold text-[#0A0A0A]">Referans Kontrolu</p>
+                  <div className="space-y-2">
+                    {drawerCandidate.detail.references.map((ref) => (
+                      <div key={ref.label} className="flex items-center gap-3 rounded-lg border border-[#EDEDED] px-3 py-2.5">
+                        {ref.checked ? (
+                          <Check className="h-4 w-4 text-[#059669]" />
+                        ) : (
+                          <div className="h-4 w-4 rounded border border-[#D4D4D4]" />
+                        )}
+                        <span className={`text-xs ${ref.checked ? 'text-[#525252]' : 'text-[#A3A3A3]'}`}>{ref.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Strength/Compatibility Report */}
+              {drawerCandidate.detail.strengthReport && (
+                <div className="mt-6 rounded-lg bg-[#F0F9FF] border border-[#BAE6FD] p-4">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="h-3.5 w-3.5 text-[#2563EB]" />
+                    <p className="text-xs font-semibold text-[#1E40AF]">Uyum Raporu</p>
+                  </div>
+                  <p className="text-xs text-[#525252]">{drawerCandidate.detail.strengthReport}</p>
+                </div>
+              )}
+
+              {/* Notes — Mulakat Notlari */}
               <div className="mt-6">
                 <label className="mb-2 flex items-center gap-1.5 text-sm font-semibold text-[#0A0A0A]">
                   <MessageSquare className="h-4 w-4" />
-                  Notlar
+                  Mulakat Notlari
                 </label>
                 <textarea
                   value={drawerNotes}
                   onChange={(e) => setDrawerNotes(e.target.value)}
                   rows={4}
-                  placeholder="Bu aday hakkinda not ekleyin..."
+                  placeholder="Bu aday hakkinda mulakat notlari ekleyin..."
                   className="w-full rounded-lg border border-[#EDEDED] px-3 py-2.5 text-sm text-[#0A0A0A] outline-none focus:border-[#5E5CE6] focus:ring-1 focus:ring-[#5E5CE6]"
                 />
                 <button
@@ -1117,38 +1278,6 @@ export default function DegerlendirmelerPage() {
                   Kaydet
                 </button>
               </div>
-
-              {/* Assessment Results for assessed candidates */}
-              {(drawerCandidate.stage === 'assessment' || drawerCandidate.stage === 'mulakat' || drawerCandidate.stage === 'teklif' || drawerCandidate.stage === 'ise-alim') && (
-                <div className="mt-6 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText className="h-4 w-4 text-[#5E5CE6]" />
-                    <p className="text-sm font-semibold text-[#0A0A0A]">Assessment Sonuclari</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="flex h-12 w-12 items-center justify-center rounded-full text-sm font-bold text-white"
-                      style={{ backgroundColor: getScoreColor(drawerCandidate.score) }}
-                    >
-                      {drawerCandidate.score}
-                    </div>
-                    <div>
-                      <p className="text-xs text-[#525252]">Genel Uyum Skoru</p>
-                      <p className="text-xs font-medium" style={{ color: getRiskLevel(drawerCandidate.score).color }}>
-                        {getRiskLevel(drawerCandidate.score).label}
-                      </p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => showToast('Rapor PDF aciliyor...')}
-                    className="mt-3 inline-flex items-center gap-1.5 rounded-lg border border-[#5E5CE6] px-3 py-1.5 text-xs font-medium text-[#5E5CE6] hover:bg-[#EEF0FD]"
-                  >
-                    <FileText className="h-3.5 w-3.5" />
-                    Raporu Gor
-                  </button>
-                </div>
-              )}
             </div>
 
             {/* Footer actions */}
