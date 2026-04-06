@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { createAuditLogger } from '@/lib/audit-logger';
 
 export async function GET() {
   try {
@@ -103,5 +104,101 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Training POST error:', error);
     return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { enrollmentId, status, score, feedbackRating } = body;
+
+    if (!enrollmentId || !status) {
+      return NextResponse.json({ error: 'enrollmentId ve status zorunludur' }, { status: 400 });
+    }
+
+    const validStatuses = ['in_progress', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: `Geçersiz status. Geçerli değerler: ${validStatuses.join(', ')}` }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const setClauses: string[] = ['status = $1'];
+    const params: (string | number | null)[] = [status, enrollmentId, TENANT_ID];
+    let paramIndex = 4;
+
+    if (status === 'completed') {
+      setClauses.push('completed_at = now()');
+    }
+
+    if (score !== undefined) {
+      setClauses.push(`score = $${paramIndex}`);
+      params.push(score);
+      paramIndex++;
+    }
+
+    if (feedbackRating !== undefined) {
+      setClauses.push(`feedback_rating = $${paramIndex}`);
+      params.push(feedbackRating);
+      paramIndex++;
+    }
+
+    const result = await pool.query(
+      `UPDATE app.training_enrollments SET ${setClauses.join(', ')} WHERE id = $2 AND tenant_id = $3 RETURNING id`,
+      params
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Kayıt bulunamadı' }, { status: 404 });
+    }
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'employee';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('update', 'training_enrollment', enrollmentId, undefined, { status, score, feedbackRating });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Training PATCH error:', error);
+    return NextResponse.json({ error: 'Kayıt güncellenemedi' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const programId = searchParams.get('programId');
+
+    if (!programId) {
+      return NextResponse.json({ error: 'programId zorunludur' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    // CASCADE will handle enrollments
+    const result = await pool.query(
+      `DELETE FROM app.training_programs WHERE id = $1 AND tenant_id = $2 RETURNING id`,
+      [programId, TENANT_ID]
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Program bulunamadı' }, { status: 404 });
+    }
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'employee';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('delete', 'training_program', programId, undefined, { programId });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Training DELETE error:', error);
+    return NextResponse.json({ error: 'Program silinemedi' }, { status: 500 });
   }
 }

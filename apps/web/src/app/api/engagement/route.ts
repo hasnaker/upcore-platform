@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { createAuditLogger } from '@/lib/audit-logger';
 
 export async function GET() {
   try {
@@ -137,5 +138,106 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Engagement submit error:', error);
     return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 });
+  }
+}
+
+// PATCH /api/engagement — Update action plan status
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { actionPlanId, status } = body as { actionPlanId?: string; status?: string };
+
+    if (!actionPlanId || !status) {
+      return NextResponse.json({ error: 'actionPlanId ve status zorunludur' }, { status: 400 });
+    }
+
+    const validStatuses = ['in_progress', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json(
+        { error: `Geçersiz durum. Geçerli değerler: ${validStatuses.join(', ')}` },
+        { status: 400 },
+      );
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const result = await pool.query(
+      `UPDATE app.engagement_action_plans
+       SET status = $1, updated_at = now()
+       WHERE id = $2 AND tenant_id = $3
+       RETURNING id, status`,
+      [status, actionPlanId, TENANT_ID],
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Aksiyon planı bulunamadı' }, { status: 404 });
+    }
+
+    const audit = createAuditLogger('system', 'hr_director');
+    void audit.log('update', 'engagement_action_plan', actionPlanId, {
+      status: { old: 'unknown', new: status },
+    });
+
+    return NextResponse.json({
+      success: true,
+      actionPlan: result.rows[0],
+      message: 'Aksiyon planı durumu güncellendi',
+    });
+  } catch (error) {
+    console.error('Engagement PATCH error:', error);
+    return NextResponse.json({ error: 'Aksiyon planı güncellenemedi' }, { status: 500 });
+  }
+}
+
+// DELETE /api/engagement — Delete engagement survey (only draft)
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const surveyId = searchParams.get('surveyId');
+
+    if (!surveyId) {
+      return NextResponse.json({ error: 'surveyId query parametresi zorunludur' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    // Check current status before deleting
+    const existing = await pool.query(
+      `SELECT id, status FROM app.engagement_surveys WHERE id = $1 AND tenant_id = $2`,
+      [surveyId, TENANT_ID],
+    );
+
+    if (existing.rowCount === 0) {
+      await pool.end();
+      return NextResponse.json({ error: 'Anket bulunamadı' }, { status: 404 });
+    }
+
+    const surveyStatus = existing.rows[0].status;
+    if (surveyStatus !== 'draft') {
+      await pool.end();
+      return NextResponse.json(
+        { error: `Yalnızca taslak anketler silinebilir. Mevcut durum: ${surveyStatus}` },
+        { status: 409 },
+      );
+    }
+
+    await pool.query(
+      `DELETE FROM app.engagement_surveys WHERE id = $1 AND tenant_id = $2 AND status = 'draft'`,
+      [surveyId, TENANT_ID],
+    );
+
+    await pool.end();
+
+    const audit = createAuditLogger('system', 'hr_director');
+    void audit.log('delete', 'engagement_survey', surveyId);
+
+    return NextResponse.json({ success: true, message: 'Taslak anket silindi' });
+  } catch (error) {
+    console.error('Engagement DELETE error:', error);
+    return NextResponse.json({ error: 'Anket silinemedi' }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { DB_URL, TENANT_ID } from '@/lib/service-urls';
 
 /**
@@ -165,5 +165,35 @@ export async function GET() {
   } catch (error) {
     console.error('Notifications API error:', error);
     return NextResponse.json({ notifications: [], unreadCount: 0, criticalCount: 0 }, { status: 500 });
+  }
+}
+
+// PATCH /api/notifications — Mark notifications as read
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { action, notificationIds } = body as {
+      action?: string;
+      notificationIds?: string[];
+    };
+
+    if (action !== 'mark_read') {
+      return NextResponse.json(
+        { error: "Geçersiz aksiyon. Geçerli değer: 'mark_read'" },
+        { status: 400 },
+      );
+    }
+
+    // Notifications are currently computed on-the-fly (not stored in a table).
+    // In the future, read status will be persisted in a separate table.
+    // For now, acknowledge the request and return success.
+    return NextResponse.json({
+      success: true,
+      markedIds: notificationIds ?? [],
+      message: 'Bildirimler okundu olarak işaretlendi',
+    });
+  } catch (error) {
+    console.error('Notifications PATCH error:', error);
+    return NextResponse.json({ error: 'Bildirimler güncellenemedi' }, { status: 500 });
   }
 }

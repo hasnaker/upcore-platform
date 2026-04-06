@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { createAuditLogger } from '@/lib/audit-logger';
 
 export async function GET() {
   try {
@@ -94,5 +95,42 @@ export async function GET() {
       { error: 'Tahmin verileri alinamadi', details: String(error) },
       { status: 500 }
     );
+  }
+}
+
+/**
+ * DELETE — Remove/dismiss a prediction by ID.
+ */
+export async function DELETE(req: NextRequest) {
+  try {
+    const predictionId = req.nextUrl.searchParams.get('predictionId');
+    if (!predictionId) {
+      return NextResponse.json({ error: 'predictionId parametresi gerekli' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const result = await pool.query(
+      `DELETE FROM app.ai_predictions WHERE id = $1 AND tenant_id = $2 RETURNING id`,
+      [predictionId, TENANT_ID]
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Tahmin bulunamadı' }, { status: 404 });
+    }
+
+    // Audit
+    const actorId = req.headers.get('x-user-id') || '00000000-0000-0000-0000-000000000001';
+    const actorRole = req.headers.get('x-user-role') || 'hr_director';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('delete', 'ai_prediction', predictionId);
+
+    return NextResponse.json({ success: true, predictionId });
+  } catch (error) {
+    console.error('Prediction delete error:', error);
+    return NextResponse.json({ error: 'Tahmin silinemedi' }, { status: 500 });
   }
 }

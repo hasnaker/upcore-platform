@@ -133,3 +133,94 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Teklif oluşturulamadı' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { reviewId, status, hrNotes } = body;
+
+    if (!reviewId || !status) {
+      return NextResponse.json({ error: 'reviewId ve status zorunludur' }, { status: 400 });
+    }
+
+    const validStatuses = ['approved', 'rejected'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: `Geçersiz status. Geçerli değerler: ${validStatuses.join(', ')}` }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const approvedAt = status === 'approved' ? 'now()' : 'NULL';
+    const result = await pool.query(
+      `UPDATE app.compensation_reviews
+       SET status = $1, hr_notes = $2, approved_at = ${approvedAt}, updated_at = now()
+       WHERE id = $3 AND tenant_id = $4
+       RETURNING id, employee_id, proposed_salary`,
+      [status, hrNotes || null, reviewId, TENANT_ID]
+    );
+
+    if (result.rowCount === 0) {
+      await pool.end();
+      return NextResponse.json({ error: 'İnceleme bulunamadı' }, { status: 404 });
+    }
+
+    // If approved, update the employee's base salary to the proposed salary
+    if (status === 'approved') {
+      const review = result.rows[0];
+      await pool.query(
+        `UPDATE app.employee_compensation SET base_salary = $1, effective_date = now()
+         WHERE employee_id = $2 AND tenant_id = $3`,
+        [review.proposed_salary, review.employee_id, TENANT_ID]
+      );
+    }
+
+    await pool.end();
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'hr_director';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('update', 'compensation_review', reviewId, undefined, { status, hrNotes });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Compensation PATCH error:', error);
+    return NextResponse.json({ error: 'İnceleme güncellenemedi' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const reviewId = searchParams.get('reviewId');
+
+    if (!reviewId) {
+      return NextResponse.json({ error: 'reviewId zorunludur' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    // Only allow deleting draft reviews
+    const result = await pool.query(
+      `DELETE FROM app.compensation_reviews WHERE id = $1 AND tenant_id = $2 AND status = 'draft' RETURNING id`,
+      [reviewId, TENANT_ID]
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Taslak inceleme bulunamadı veya silinemez durumda' }, { status: 404 });
+    }
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'hr_director';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('delete', 'compensation_review', reviewId, undefined, { reviewId });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Compensation DELETE error:', error);
+    return NextResponse.json({ error: 'İnceleme silinemedi' }, { status: 500 });
+  }
+}

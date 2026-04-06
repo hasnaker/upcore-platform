@@ -185,3 +185,97 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Değerlendirme kaydedilemedi' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { employeeId, domainScores, top5, roleFitScore } = body;
+
+    if (!employeeId) {
+      return NextResponse.json({ error: 'employeeId zorunludur' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const setClauses: string[] = [];
+    const params: (string | number | null)[] = [TENANT_ID, employeeId];
+    let paramIndex = 3;
+
+    if (domainScores !== undefined) {
+      setClauses.push(`domain_scores = $${paramIndex}`);
+      params.push(JSON.stringify(domainScores));
+      paramIndex++;
+    }
+    if (top5 !== undefined) {
+      setClauses.push(`top5 = $${paramIndex}`);
+      params.push(JSON.stringify(top5));
+      paramIndex++;
+    }
+    if (roleFitScore !== undefined) {
+      setClauses.push(`role_fit_score = $${paramIndex}`);
+      params.push(roleFitScore);
+      paramIndex++;
+    }
+
+    if (setClauses.length === 0) {
+      await pool.end();
+      return NextResponse.json({ error: 'Güncellenecek alan belirtilmedi' }, { status: 400 });
+    }
+
+    setClauses.push('updated_at = now()');
+
+    await pool.query(
+      `UPDATE app.strength_profiles SET ${setClauses.join(', ')} WHERE employee_id = $2 AND tenant_id = $1`,
+      params
+    );
+
+    await pool.end();
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'employee';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('update', 'strength_profile', employeeId, undefined, { domainScores, top5, roleFitScore });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Strengths PATCH error:', error);
+    return NextResponse.json({ error: 'Güçlü yön profili güncellenemedi' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const employeeId = searchParams.get('employeeId');
+
+    if (!employeeId) {
+      return NextResponse.json({ error: 'employeeId zorunludur' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    await pool.query(
+      `DELETE FROM app.strengths_assessments WHERE employee_id = $1 AND tenant_id = $2`,
+      [employeeId, TENANT_ID]
+    );
+
+    await pool.query(
+      `DELETE FROM app.strength_profiles WHERE employee_id = $1 AND tenant_id = $2`,
+      [employeeId, TENANT_ID]
+    );
+
+    await pool.end();
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'employee';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('delete', 'strength_profile', employeeId, undefined, { employeeId });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Strengths DELETE error:', error);
+    return NextResponse.json({ error: 'Değerlendirme silinemedi' }, { status: 500 });
+  }
+}

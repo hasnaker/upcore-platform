@@ -188,3 +188,78 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Başvuru kaydedilemedi' }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { applicationId, status } = body;
+
+    if (!applicationId || !status) {
+      return NextResponse.json({ error: 'applicationId ve status zorunludur' }, { status: 400 });
+    }
+
+    const validStatuses = ['reviewing', 'interviewed', 'offered', 'accepted', 'rejected', 'withdrawn'];
+    if (!validStatuses.includes(status)) {
+      return NextResponse.json({ error: `Geçersiz status. Geçerli değerler: ${validStatuses.join(', ')}` }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const result = await pool.query(
+      `UPDATE app.internal_applications SET status = $1, updated_at = now() WHERE id = $2 AND tenant_id = $3 RETURNING id`,
+      [status, applicationId, TENANT_ID]
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Başvuru bulunamadı' }, { status: 404 });
+    }
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'employee';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('update', 'internal_application', applicationId, undefined, { status });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Career PATCH error:', error);
+    return NextResponse.json({ error: 'Başvuru durumu güncellenemedi' }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const applicationId = searchParams.get('applicationId');
+
+    if (!applicationId) {
+      return NextResponse.json({ error: 'applicationId zorunludur' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    const result = await pool.query(
+      `DELETE FROM app.internal_applications WHERE id = $1 AND tenant_id = $2 RETURNING id`,
+      [applicationId, TENANT_ID]
+    );
+
+    await pool.end();
+
+    if (result.rowCount === 0) {
+      return NextResponse.json({ error: 'Başvuru bulunamadı' }, { status: 404 });
+    }
+
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'employee';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('delete', 'internal_application', applicationId, undefined, { applicationId });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Career DELETE error:', error);
+    return NextResponse.json({ error: 'Başvuru silinemedi' }, { status: 500 });
+  }
+}

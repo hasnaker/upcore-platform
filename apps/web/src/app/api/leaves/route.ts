@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
+import { createAuditLogger } from '@/lib/audit-logger';
 
 const HEADERS = {
   ...DEV_HEADERS,
@@ -39,5 +40,56 @@ export async function POST(request: Request) {
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
     return NextResponse.json({ error: 'İzin talebi gönderilemedi' }, { status: 500 });
+  }
+}
+
+// PATCH /api/leaves — Approve or reject leave request
+export async function PATCH(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { requestId, action, managerNotes } = body as {
+      requestId?: string;
+      action?: 'approve' | 'reject';
+      managerNotes?: string;
+    };
+
+    if (!requestId || !action) {
+      return NextResponse.json({ error: 'requestId ve action zorunludur' }, { status: 400 });
+    }
+
+    if (action !== 'approve' && action !== 'reject') {
+      return NextResponse.json(
+        { error: "Geçersiz aksiyon. Geçerli değerler: 'approve', 'reject'" },
+        { status: 400 },
+      );
+    }
+
+    const status = action === 'approve' ? 'approved' : 'rejected';
+
+    const res = await fetch(`${SERVICES.leave}/api/v1/leave-requests/${requestId}`, {
+      method: 'PATCH',
+      headers: HEADERS,
+      body: JSON.stringify({ status, notes: managerNotes || '' }),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      return NextResponse.json(data, { status: res.status });
+    }
+
+    const audit = createAuditLogger(HEADERS['X-Employee-Id'], 'manager');
+    void audit.log('update', 'leave_request', requestId, {
+      status: { old: 'pending', new: status },
+    });
+
+    return NextResponse.json({
+      success: true,
+      leaveRequest: data,
+      message: action === 'approve' ? 'İzin talebi onaylandı' : 'İzin talebi reddedildi',
+    });
+  } catch (error) {
+    console.error('Leaves PATCH error:', error);
+    return NextResponse.json({ error: 'İzin talebi güncellenemedi' }, { status: 500 });
   }
 }
