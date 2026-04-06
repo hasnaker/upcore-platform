@@ -7,11 +7,12 @@ interface EmployeeTabsProps {
   employee: EmployeeView;
 }
 
-type TabKey = 'genel' | 'tukenmislik' | 'izinler' | 'belgeler' | 'gecmis';
+type TabKey = 'genel' | 'tukenmislik' | 'guclu-yonler' | 'izinler' | 'belgeler' | 'gecmis';
 
 const TABS: { key: TabKey; label: string }[] = [
   { key: 'genel', label: 'Genel Bilgiler' },
   { key: 'tukenmislik', label: 'Tükenmişlik' },
+  { key: 'guclu-yonler', label: 'Güçlü Yönler' },
   { key: 'izinler', label: 'İzinler' },
   { key: 'belgeler', label: 'Belgeler' },
   { key: 'gecmis', label: 'Geçmiş' },
@@ -51,6 +52,7 @@ export const EmployeeTabs = ({ employee }: EmployeeTabsProps) => {
       {/* Tab content */}
       {activeTab === 'genel' && <GenelTab employee={employee} />}
       {activeTab === 'tukenmislik' && <TukenmislikTab employee={employee} />}
+      {activeTab === 'guclu-yonler' && <GucluYonlerTab employee={employee} />}
       {activeTab === 'izinler' && <IzinTab employee={employee} />}
       {activeTab === 'belgeler' && <BelgeTab employee={employee} />}
       {activeTab === 'gecmis' && <GecmisTab employee={employee} />}
@@ -708,6 +710,202 @@ function BelgeTab({ employee }: { employee: EmployeeView }) {
             </div>
           ))}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Güçlü Yönler Tab ─── */
+
+interface EmployeeStrengthDomain {
+  id: string;
+  name_tr: string;
+  score: number;
+  color: string;
+  facets: string[];
+}
+
+function GucluYonlerTab({ employee }: { employee: EmployeeView }) {
+  // Static mock data — will be replaced with API call per employee
+  // Simulates whether this employee has completed the UpStrengths-TR assessment
+  const hasAssessment = employee.durum === 'active'; // Active employees are "assessed"
+
+  const mockStrengths: EmployeeStrengthDomain[] = [
+    { id: 'analytical', name_tr: 'Analitik Düşünce', score: 4.7, color: '#6366F1', facets: ['Problem Çözme', 'Veri Analizi', 'Sistem Düşüncesi'] },
+    { id: 'wisdom', name_tr: 'Bilgelik', score: 4.3, color: '#5E5CE6', facets: ['Yaratıcılık', 'Merak', 'Sağduyu'] },
+    { id: 'courage', name_tr: 'Cesaret', score: 4.1, color: '#DC2626', facets: ['Cesaret', 'Azim', 'Dürüstlük'] },
+    { id: 'communication', name_tr: 'İletişim', score: 3.8, color: '#8B5CF6', facets: ['İkna', 'Empati', 'Sunum'] },
+    { id: 'justice', name_tr: 'Adalet', score: 3.5, color: '#059669', facets: ['Takım Çalışması', 'Adillik', 'Liderlik'] },
+  ];
+
+  if (!hasAssessment) {
+    return (
+      <div
+        style={{
+          background: '#fafafa',
+          borderRadius: 12,
+          border: '1px solid #f0f0f0',
+          padding: 40,
+          textAlign: 'center',
+        }}
+      >
+        <div
+          style={{
+            width: 48,
+            height: 48,
+            borderRadius: 12,
+            background: '#f0f0ff',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            margin: '0 auto 16px',
+          }}
+        >
+          <svg style={{ width: 24, height: 24, color: '#5E5CE6' }} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+          </svg>
+        </div>
+        <h3 style={{ fontSize: 16, fontWeight: 600, color: '#111', marginBottom: 8 }}>
+          Güçlü Yön Değerlendirmesi Yapılmadı
+        </h3>
+        <p style={{ fontSize: 13, color: '#888', maxWidth: 400, margin: '0 auto 20px', lineHeight: 1.6 }}>
+          Bu çalışan henüz UpStrengths-TR güçlü yön değerlendirmesini tamamlamamış.
+          Değerlendirme tamamlandığında güçlü yön profili burada görünecek.
+        </p>
+        <a
+          href="/guclu-yonler/kesfet"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 18px',
+            background: '#5E5CE6',
+            color: '#fff',
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            textDecoration: 'none',
+          }}
+        >
+          Değerlendirme Gönder
+        </a>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {/* Top 5 Strengths */}
+      <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
+        <div className="flex items-center justify-between" style={{ marginBottom: 20 }}>
+          <div>
+            <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111' }}>Top 5 Güçlü Yönleri</h3>
+            <p style={{ fontSize: 12, color: '#888', marginTop: 2 }}>UpStrengths-TR değerlendirme sonuçları</p>
+          </div>
+          <span style={{ fontSize: 11, padding: '4px 10px', borderRadius: 20, background: '#D1FAE5', color: '#059669', fontWeight: 600 }}>
+            Değerlendirildi
+          </span>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          {mockStrengths.map((strength, index) => {
+            const pct = (strength.score / 5) * 100;
+            const label = strength.score >= 4.5 ? 'Olağanüstü' : strength.score >= 4.0 ? 'Çok Güçlü' : strength.score >= 3.5 ? 'Güçlü' : 'Orta';
+
+            return (
+              <div key={strength.id} className="flex items-center gap-4">
+                {/* Rank */}
+                <div
+                  style={{
+                    width: 28,
+                    height: 28,
+                    borderRadius: 8,
+                    background: index < 3 ? `${strength.color}14` : '#f0f0f0',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: index < 3 ? strength.color : '#aaa',
+                    flexShrink: 0,
+                  }}
+                >
+                  {index + 1}
+                </div>
+
+                {/* Name + bar */}
+                <div className="flex-1">
+                  <div className="flex items-center justify-between" style={{ marginBottom: 4 }}>
+                    <div className="flex items-center gap-2">
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>{strength.name_tr}</span>
+                      <span style={{ fontSize: 11, color: strength.color, fontWeight: 600 }}>{label}</span>
+                    </div>
+                    <span style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>{strength.score.toFixed(1)}</span>
+                  </div>
+                  <div style={{ width: '100%', height: 6, background: '#f0f0f0', borderRadius: 3, overflow: 'hidden' }}>
+                    <div
+                      style={{
+                        width: `${pct}%`,
+                        height: '100%',
+                        background: strength.color,
+                        borderRadius: 3,
+                        transition: 'width 0.5s ease',
+                      }}
+                    />
+                  </div>
+                  {/* Facets */}
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {strength.facets.map((f) => (
+                      <span key={f} style={{ fontSize: 10, color: '#888', padding: '1px 6px', background: '#f8f8f8', borderRadius: 4 }}>
+                        {f}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Role Fit Summary */}
+      <div style={{ background: '#fafafa', borderRadius: 12, border: '1px solid #f0f0f0', padding: 24 }}>
+        <h3 style={{ fontSize: 15, fontWeight: 700, color: '#111', marginBottom: 12 }}>Rol Uyum Özeti</h3>
+        <div className="flex items-center gap-4">
+          <div
+            style={{
+              width: 60,
+              height: 60,
+              borderRadius: 30,
+              background: '#D1FAE5',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: 18,
+              fontWeight: 800,
+              color: '#059669',
+              flexShrink: 0,
+            }}
+          >
+            %78
+          </div>
+          <div>
+            <p style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>
+              <strong>{employee.tamAd}</strong> güçlü yön profili mevcut pozisyonuyla <strong style={{ color: '#059669' }}>yüksek düzeyde uyumlu</strong>.
+              En güçlü alanları olan <strong>Analitik Düşünce</strong> ve <strong>Bilgelik</strong> bu rol için kritik öneme sahip.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Quick Link */}
+      <div style={{ textAlign: 'center' }}>
+        <a
+          href="/guclu-yonler/sonuclar"
+          style={{ fontSize: 13, color: '#5E5CE6', fontWeight: 600, textDecoration: 'none' }}
+        >
+          Detaylı sonuçları görüntüle →
+        </a>
       </div>
     </div>
   );
