@@ -20,9 +20,9 @@ export async function POST(request: Request) {
     if (instrument === 'jdr') {
       endpoint = '/v1/score/jdr';
       payload = {
-        tenant_id: payload.tenant_id,
-        employee_id: payload.employee_id,
-        assessment_id: payload.assessment_id,
+        tenant_id: payload['tenant_id'],
+        employee_id: payload['employee_id'],
+        assessment_id: payload['assessment_id'],
         demands_z: responses.demands_z,
         resources_z: responses.resources_z,
       };
