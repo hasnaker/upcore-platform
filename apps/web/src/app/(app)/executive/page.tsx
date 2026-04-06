@@ -629,6 +629,255 @@ export default function ExecutiveDashboardPage() {
         </div>
       </div>
 
+      {/* ─── Workforce Composition Panel ─── */}
+      <div className="rounded-xl border border-[#EDEDED] bg-white">
+        <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
+          <div>
+            <h2 className="text-base font-semibold text-[#0A0A0A]">Isgucu Kompozisyonu</h2>
+            <p className="mt-0.5 text-xs text-[#A3A3A3]">Nisan 2026 &middot; Canli veri</p>
+          </div>
+        </div>
+        <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
+          {/* Headcount by type */}
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Toplam Kadro</p>
+            <p className="mt-1 text-3xl font-bold tabular-nums text-[#0A0A0A]">70</p>
+            <div className="mt-3 flex flex-col gap-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[#525252]">Tam Zamanli</span>
+                <span className="text-[11px] font-semibold tabular-nums text-[#0A0A0A]">62</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[#525252]">Yari Zamanli</span>
+                <span className="text-[11px] font-semibold tabular-nums text-[#0A0A0A]">5</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[#525252]">Sozlesmeli</span>
+                <span className="text-[11px] font-semibold tabular-nums text-[#0A0A0A]">3</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Personnel movement */}
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Personel Hareketi</p>
+            <div className="mt-2 flex items-end gap-2">
+              <span className="text-3xl font-bold tabular-nums text-[#059669]">+1</span>
+              <span className="mb-1 text-xs text-[#A3A3A3]">net degisim</span>
+            </div>
+            <div className="mt-3 flex flex-col gap-1.5">
+              <div className="flex items-center gap-2">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#D1FAE5] text-[9px] font-bold text-[#059669]">+</span>
+                <span className="text-[11px] text-[#525252]">Selin Koc, Hasan Celik</span>
+                <span className="ml-auto text-[11px] font-semibold text-[#059669]">2 ise alim</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="flex h-4 w-4 items-center justify-center rounded-full bg-[#FEE2E2] text-[9px] font-bold text-[#DC2626]">-</span>
+                <span className="text-[11px] text-[#525252]">Emre Polat (fesih)</span>
+                <span className="ml-auto text-[11px] font-semibold text-[#DC2626]">1 ayrilma</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Gender split */}
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Cinsiyet Dagilimi</p>
+            <div className="mt-3 flex items-center gap-3">
+              <div className="flex-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-[#525252]">Kadin</span>
+                  <span className="font-semibold text-[#5E5CE6]">%44</span>
+                </div>
+                <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                  <div className="h-full rounded-full bg-[#5E5CE6]" style={{ width: '44%' }} />
+                </div>
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className="text-[#525252]">Erkek</span>
+                  <span className="font-semibold text-[#0A0A0A]">%56</span>
+                </div>
+                <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                  <div className="h-full rounded-full bg-[#0A0A0A]" style={{ width: '56%' }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Avg age + tenure */}
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Demografik</p>
+            <div className="mt-3 flex flex-col gap-3">
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[#525252]">Ortalama Yas</span>
+                <span className="text-lg font-bold tabular-nums text-[#0A0A0A]">33.2 <span className="text-xs font-normal text-[#A3A3A3]">yil</span></span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-[11px] text-[#525252]">Ortalama Kidem</span>
+                <span className="text-lg font-bold tabular-nums text-[#0A0A0A]">4.8 <span className="text-xs font-normal text-[#A3A3A3]">yil</span></span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Monthly Comparison Table ─── */}
+      <div className="rounded-xl border border-[#EDEDED] bg-white">
+        <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
+          <div>
+            <h2 className="text-base font-semibold text-[#0A0A0A]">Aylik Karsilastirma</h2>
+            <p className="mt-0.5 text-xs text-[#A3A3A3]">Mart vs Nisan 2026 &middot; Temel metrikler</p>
+          </div>
+        </div>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead>
+              <tr className="border-b border-[#EDEDED] text-xs font-medium text-[#A3A3A3]">
+                <th className="px-6 py-3">Metrik</th>
+                <th className="px-4 py-3 text-right">Mart</th>
+                <th className="px-4 py-3 text-right">Nisan</th>
+                <th className="px-4 py-3 text-right">Degisim</th>
+                <th className="px-4 py-3 text-center">Durum</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[#EDEDED]">
+              {[
+                { metric: 'Tukenmislik', mart: '%28', nisan: '%32', change: '+4%', status: 'red' as const, icon: '\u2191' },
+                { metric: 'Baglilik', mart: '75', nisan: '78', change: '+3', status: 'green' as const, icon: '\u2191' },
+                { metric: 'Turnover', mart: '%3.1', nisan: '%4.2', change: '+1.1%', status: 'red' as const, icon: '\u2191' },
+                { metric: 'Izin Kullanim', mart: '%68', nisan: '%72', change: '+4%', status: 'green' as const, icon: '\u2191' },
+                { metric: 'Acik Pozisyon', mart: '2', nisan: '3', change: '+1', status: 'yellow' as const, icon: '\u2191' },
+                { metric: 'Ortalama Kidem', mart: '4.6 yil', nisan: '4.8 yil', change: '+0.2', status: 'green' as const, icon: '\u2191' },
+              ].map((row) => {
+                const statusColors = {
+                  red: { bg: '#FEF2F2', text: '#DC2626', label: 'Kotu' },
+                  green: { bg: '#F0FDF4', text: '#059669', label: 'Iyi' },
+                  yellow: { bg: '#FFFBEB', text: '#D97706', label: 'Dikkat' },
+                };
+                const sc = statusColors[row.status];
+                return (
+                  <tr key={row.metric} className="transition-colors hover:bg-[#FAFAFA]">
+                    <td className="px-6 py-3.5 font-medium text-[#0A0A0A]">{row.metric}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums text-[#525252]">{row.mart}</td>
+                    <td className="px-4 py-3.5 text-right tabular-nums font-semibold text-[#0A0A0A]">{row.nisan}</td>
+                    <td className="px-4 py-3.5 text-right">
+                      <span className="tabular-nums font-medium" style={{ color: sc.text }}>
+                        {row.icon} {row.change}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3.5 text-center">
+                      <span
+                        className="inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
+                        style={{ backgroundColor: sc.bg, color: sc.text }}
+                      >
+                        {sc.label}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* ─── Upcoming Risks Section ─── */}
+      <div className="rounded-xl border border-[#EDEDED] bg-white p-6">
+        <h3 className="text-sm font-semibold text-[#0A0A0A]">Yaklasan Riskler ve Uyarilar</h3>
+        <p className="mt-1 text-xs text-[#A3A3A3]">Proaktif izleme paneli &middot; Otomatik tespitler</p>
+        <div className="mt-4 flex flex-col gap-3">
+          <div className="flex items-start gap-3 rounded-lg border border-[#DC2626]/20 bg-[#FEF2F2] p-4">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#DC2626]" />
+            <div>
+              <p className="text-[13px] font-medium text-[#DC2626]">Satis departmani: 3 hafta ust uste tukenmislik artisi</p>
+              <p className="mt-0.5 text-[11px] text-[#525252]">
+                Mudahale penceresi kapaniyor. BAT-12-TR skoru %38 &#8594; %52 (3 hafta). Schaufeli (2017)&apos;ye gore 4 haftalik kritik esik asilmak uzere.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-lg border border-[#D97706]/20 bg-[#FFFBEB] p-4">
+            <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#D97706]" />
+            <div>
+              <p className="text-[13px] font-medium text-[#D97706]">Q2 butce kesintisi: 2 acik pozisyon dondurulabilir</p>
+              <p className="mt-0.5 text-[11px] text-[#525252]">
+                Finans departmani Q2 butce incelemesi sonuclarina gore Satis ve Urun departmanlarindaki acik pozisyonlar risk altinda. Ise alim surecinizi hizlandirmaniz onerilir.
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 rounded-lg border border-[#5E5CE6]/20 bg-[#EEF0FD] p-4">
+            <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#5E5CE6]" />
+            <div>
+              <p className="text-[13px] font-medium text-[#5E5CE6]">Ramazan Bayrami izin yogunlugu: 15-19 Nisan</p>
+              <p className="mt-0.5 text-[11px] text-[#525252]">
+                8 kisi izinde olacak. Satis departmanindan 3, Muhendislik&apos;ten 2, Musteri Hizmetleri&apos;nden 2, IK&apos;dan 1. Ekip kapasitesi planlama gerektiriyor.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── Intervention ROI Calculator ─── */}
+      <div className="rounded-xl border border-[#EDEDED] bg-white p-6">
+        <h3 className="text-sm font-semibold text-[#0A0A0A]">Mudahale ROI Hesaplayici</h3>
+        <p className="mt-1 text-xs text-[#A3A3A3]">Gercek mudahale verileri &middot; Son 12 ay</p>
+
+        <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4 text-center">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Toplam Mudahale</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-[#0A0A0A]">8</p>
+          </div>
+          <div className="rounded-lg border border-[#059669]/20 bg-[#F0FDF4] p-4 text-center">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Basarili</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-[#059669]">6</p>
+            <p className="text-[11px] text-[#059669]">%75 etkinlik</p>
+          </div>
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4 text-center">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Onlenen Istifa</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-[#5E5CE6]">3</p>
+            <p className="text-[11px] text-[#A3A3A3]">kisi elde tutuldu</p>
+          </div>
+          <div className="rounded-lg border border-[#059669]/20 bg-[#F0FDF4] p-4 text-center">
+            <p className="text-[11px] font-medium uppercase tracking-wider text-[#A3A3A3]">Toplam Tasarruf</p>
+            <p className="mt-1 text-2xl font-bold tabular-nums text-[#059669]">&#8378;420K</p>
+            <p className="text-[11px] text-[#525252]">3 x &#8378;140K/kisi</p>
+          </div>
+        </div>
+
+        {/* Detailed breakdown */}
+        <div className="mt-4 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">Mudahale Detayi</p>
+          <div className="mt-3 flex flex-col gap-2">
+            <div className="flex items-center justify-between rounded-md bg-white px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#D1FAE5] text-[9px] font-bold text-[#059669]">1</span>
+                <span className="text-[12px] text-[#525252]">Bireysel Kocluk (3 kisi)</span>
+              </div>
+              <span className="text-[12px] font-semibold text-[#059669]">2 basarili</span>
+            </div>
+            <div className="flex items-center justify-between rounded-md bg-white px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#D1FAE5] text-[9px] font-bold text-[#059669]">2</span>
+                <span className="text-[12px] text-[#525252]">Is Yuku Azaltma (3 kisi)</span>
+              </div>
+              <span className="text-[12px] font-semibold text-[#059669]">3 basarili</span>
+            </div>
+            <div className="flex items-center justify-between rounded-md bg-white px-3 py-2">
+              <div className="flex items-center gap-2">
+                <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#D1FAE5] text-[9px] font-bold text-[#059669]">3</span>
+                <span className="text-[12px] text-[#525252]">Esneklik Artirma (2 kisi)</span>
+              </div>
+              <span className="text-[12px] font-semibold text-[#059669]">1 basarili</span>
+            </div>
+          </div>
+          <div className="mt-3 flex items-center gap-2 rounded-md border border-[#5E5CE6]/20 bg-[#EEF0FD] px-3 py-2">
+            <Shield className="h-3.5 w-3.5 text-[#5E5CE6]" />
+            <span className="text-[11px] font-medium text-[#5E5CE6]">
+              Formul: 8 mudahale &#8594; 6 basarili &#8594; %75 etkinlik &#8594; Tasarruf: &#8378;420K (3 istifa onlendi x &#8378;140K/kisi)
+            </span>
+          </div>
+        </div>
+      </div>
+
       {/* ─── Scientific Transparency Badge ─── */}
       <div className="flex items-start gap-3 rounded-xl border border-[#EDEDED] bg-[#FAFAFA] px-6 py-4">
         <Shield className="mt-0.5 h-4 w-4 shrink-0 text-[#5E5CE6]" />

@@ -2,6 +2,41 @@
 
 import { useState } from 'react';
 
+interface ActionEmployeeProfile {
+  name: string;
+  department: string;
+  batScore: number;
+  batLevel: 'green' | 'amber' | 'red';
+  tenure: string;
+}
+
+interface ActionRiskTimeline {
+  label: string;
+  date: string;
+}
+
+interface ActionCostAnalysis {
+  resignationCost: string;
+  interventionName: string;
+  interventionDuration: string;
+  interventionCost: string;
+  estimatedSavings: string;
+  roi: string;
+}
+
+interface ActionSimilarCase {
+  profile: string;
+  outcome: string;
+  outcomeType: 'positive' | 'negative';
+}
+
+interface ActionDetail {
+  employee: ActionEmployeeProfile;
+  riskTimeline: ActionRiskTimeline[];
+  costAnalysis: ActionCostAnalysis;
+  similarCases: ActionSimilarCase[];
+}
+
 interface Action {
   id: string;
   urgency: 'critical' | 'warning' | 'info';
@@ -29,6 +64,65 @@ const HISTORY: { title: string; date: string; decision: string; outcome: string 
   { title: 'Satış 2 pozisyon — acil işe alım', date: '10 Mart', decision: 'Onaylandı', outcome: '2 pozisyon 18 günde dolduruldu' },
   { title: 'Ali Demir — performans koçluğu', date: '5 Mart', decision: 'Reddedildi', outcome: 'Çalışan kendi çözüm buldu' },
 ];
+
+/* ─── Enhanced Action Details ─── */
+const ACTION_DETAILS: Record<string, ActionDetail> = {
+  '1': {
+    employee: { name: 'Mehmet Kaya', department: 'Kurumsal Satis', batScore: 3.42, batLevel: 'red', tenure: '3.5 yil' },
+    riskTimeline: [
+      { label: 'Ilk tespit', date: '15 Mart' },
+      { label: 'Uyari', date: '22 Mart' },
+      { label: 'Kritik', date: '29 Mart' },
+      { label: 'Bugun', date: '4 Nisan' },
+    ],
+    costAnalysis: { resignationCost: '₺168K', interventionName: 'Haftalik 1:1 Kocluk', interventionDuration: '4 hafta', interventionCost: '₺2.400', estimatedSavings: '₺168K', roi: '70x' },
+    similarCases: [
+      { profile: 'Satis, 3+ yil kidem, BAT > 3.0', outcome: 'Istifa (2 ay icinde)', outcomeType: 'negative' },
+      { profile: 'Satis, 4 yil kidem, BAT 3.1', outcome: 'Istifa (6 hafta icinde)', outcomeType: 'negative' },
+      { profile: 'Satis, 3 yil kidem, BAT 3.3', outcome: 'Mudahale basarili — BAT 2.1\'e dustu', outcomeType: 'positive' },
+    ],
+  },
+  '2': {
+    employee: { name: 'Ayse Yilmaz', department: 'Musteri Hizmetleri', batScore: 3.80, batLevel: 'red', tenure: '2.1 yil' },
+    riskTimeline: [
+      { label: 'Ilk tespit', date: '18 Mart' },
+      { label: 'Uyari', date: '25 Mart' },
+      { label: 'Kritik', date: '1 Nisan' },
+      { label: 'Bugun', date: '4 Nisan' },
+    ],
+    costAnalysis: { resignationCost: '₺96K', interventionName: 'CBT Tabanli Stres Yonetimi', interventionDuration: '6 hafta', interventionCost: '₺4.800', estimatedSavings: '₺96K', roi: '20x' },
+    similarCases: [
+      { profile: 'MH, 2 yil kidem, duygusal 3.5+', outcome: 'Istifa (1 ay icinde)', outcomeType: 'negative' },
+      { profile: 'MH, 2.5 yil kidem, duygusal 3.8', outcome: 'CBT mudahalesi basarili', outcomeType: 'positive' },
+    ],
+  },
+  '3': {
+    employee: { name: 'Satis Ekibi (toplu)', department: 'Satis', batScore: 2.89, batLevel: 'amber', tenure: 'Ort. 3.2 yil' },
+    riskTimeline: [
+      { label: 'Trend baslangici', date: '11 Mart' },
+      { label: 'Devam', date: '18 Mart' },
+      { label: 'Kotu lesme', date: '25 Mart' },
+      { label: 'Bugun', date: '4 Nisan' },
+    ],
+    costAnalysis: { resignationCost: '₺672K', interventionName: 'Departman Kaynak Artirma Programi', interventionDuration: '8 hafta', interventionCost: '₺12.000', estimatedSavings: '₺672K', roi: '56x' },
+    similarCases: [
+      { profile: 'Departman bazli bozulma, 3+ hafta', outcome: '%40 turnover (6 ay icinde)', outcomeType: 'negative' },
+      { profile: 'Benzer departman, kaynak artirma', outcome: 'JD-R dengesi duzeltildi', outcomeType: 'positive' },
+    ],
+  },
+};
+
+/* ─── Action Metrics ─── */
+const ACTION_METRICS = {
+  generated: 15,
+  approved: 10,
+  rejected: 3,
+  deferred: 2,
+  approvalRate: 67,
+  avgDecisionTime: '4.2 saat',
+  mostCommonType: 'Burnout koclugu (%45)',
+  successRate: 72,
+};
 
 const URGENCY = { critical: { bg: '#FEE2E2', text: '#DC2626', label: 'Acil', stripe: '#DC2626' }, warning: { bg: '#FEF3C7', text: '#D97706', label: 'Uyarı', stripe: '#D97706' }, info: { bg: '#EEF0FD', text: '#5E5CE6', label: 'Bilgi', stripe: '#5E5CE6' } };
 const TYPE_LABELS: Record<string, string> = { burnout: 'Tükenmişlik', hiring: 'İşe Alım', leave: 'İzin', development: 'Gelişim' };
@@ -66,6 +160,48 @@ export default function AksiyonlarPage() {
 
       {tab === 'active' && (
         <>
+          {/* ── Action Metrics Dashboard ── */}
+          <div style={{ background: 'white', border: '1px solid #f0f0f0', borderRadius: 12, padding: 20 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 16 }}>Bu Ayin Aksiyon Metrikleri</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16 }}>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#111' }}>{ACTION_METRICS.generated}</div>
+                <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Uretilen</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#059669' }}>{ACTION_METRICS.approved}</div>
+                <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Onaylanan</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#DC2626' }}>{ACTION_METRICS.rejected}</div>
+                <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Reddedilen</div>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ fontSize: 28, fontWeight: 700, color: '#D97706' }}>{ACTION_METRICS.deferred}</div>
+                <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Ertelenen</div>
+              </div>
+            </div>
+
+            <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid #f0f0f0', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#FAFAFF', borderRadius: 8, border: '1px solid #E0E0FF' }}>
+                <div style={{ fontSize: 11, color: '#888' }}>Onay orani</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#5E5CE6', marginLeft: 'auto' }}>%{ACTION_METRICS.approvalRate}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#FAFAFF', borderRadius: 8, border: '1px solid #E0E0FF' }}>
+                <div style={{ fontSize: 11, color: '#888' }}>Ort. karar suresi</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#5E5CE6', marginLeft: 'auto' }}>{ACTION_METRICS.avgDecisionTime}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#F0FDF4', borderRadius: 8, border: '1px solid #BBF7D0' }}>
+                <div style={{ fontSize: 11, color: '#888' }}>En sik aksiyon</div>
+                <div style={{ fontSize: 12, fontWeight: 600, color: '#059669', marginLeft: 'auto' }}>{ACTION_METRICS.mostCommonType}</div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 14px', background: '#F0FDF4', borderRadius: 8, border: '1px solid #BBF7D0' }}>
+                <div style={{ fontSize: 11, color: '#888' }}>Basari orani</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#059669', marginLeft: 'auto' }}>%{ACTION_METRICS.successRate}</div>
+              </div>
+            </div>
+          </div>
+
           {/* Filters */}
           <div style={{ display: 'flex', gap: 6 }}>
             {[{ key: 'all', label: 'Tümü' }, { key: 'burnout', label: 'Tükenmişlik' }, { key: 'hiring', label: 'İşe Alım' }, { key: 'leave', label: 'İzin' }, { key: 'development', label: 'Gelişim' }].map(f => (
@@ -107,6 +243,101 @@ export default function AksiyonlarPage() {
                             <span style={{ fontSize: 13, color: '#555', lineHeight: 1.5 }}>{r}</span>
                           </div>
                         ))}
+
+                        {/* ── Enhanced Detail Panel ── */}
+                        {(() => {
+                          const detail = ACTION_DETAILS[a.id];
+                          if (!detail) return null;
+                          const LEVEL_COLORS: Record<string, { bg: string; text: string }> = {
+                            green: { bg: '#D1FAE5', text: '#059669' },
+                            amber: { bg: '#FEF3C7', text: '#D97706' },
+                            red: { bg: '#FEE2E2', text: '#DC2626' },
+                          };
+                          const levelStyle = LEVEL_COLORS[detail.employee.batLevel] ?? { bg: '#F5F5F5', text: '#888' };
+                          return (
+                            <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+                              {/* Employee Profile Mini Card */}
+                              <div style={{ background: '#FAFAFF', border: '1px solid #E0E0FF', borderRadius: 10, padding: 14 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>Etkilenen Çalışan Profili</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#5E5CE6', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700 }}>
+                                    {detail.employee.name.split(' ').map(n => n[0]).join('')}
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{detail.employee.name}</div>
+                                    <div style={{ fontSize: 12, color: '#888' }}>{detail.employee.department} · {detail.employee.tenure}</div>
+                                  </div>
+                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2 }}>
+                                    <span style={{ fontSize: 18, fontWeight: 700, color: levelStyle.text }}>{detail.employee.batScore.toFixed(2)}</span>
+                                    <span style={{ fontSize: 10, fontWeight: 600, padding: '1px 8px', borderRadius: 10, background: levelStyle.bg, color: levelStyle.text }}>BAT-12</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Risk Timeline */}
+                              <div style={{ background: '#fff', border: '1px solid #f0f0f0', borderRadius: 10, padding: 14 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>Risk Zaman Çizelgesi</div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: 0 }}>
+                                  {detail.riskTimeline.map((step, idx) => (
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                                        <div style={{
+                                          width: 12, height: 12, borderRadius: '50%',
+                                          background: idx === detail.riskTimeline.length - 1 ? '#DC2626' : idx >= detail.riskTimeline.length - 2 ? '#D97706' : '#5E5CE6',
+                                        }} />
+                                        <span style={{ fontSize: 10, fontWeight: 600, color: '#111' }}>{step.label}</span>
+                                        <span style={{ fontSize: 10, color: '#aaa' }}>{step.date}</span>
+                                      </div>
+                                      {idx < detail.riskTimeline.length - 1 && (
+                                        <div style={{ flex: 1, height: 2, background: '#EDEDED', margin: '0 4px', marginBottom: 28 }} />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                              {/* Cost Analysis + ROI */}
+                              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                                <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: 10, padding: 14 }}>
+                                  <div style={{ fontSize: 10, fontWeight: 700, color: '#DC2626', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>İstifa Maliyeti</div>
+                                  <div style={{ fontSize: 22, fontWeight: 700, color: '#DC2626' }}>{detail.costAnalysis.resignationCost}</div>
+                                  <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>Yıllık maaş × 1.5</div>
+                                </div>
+                                <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: 14 }}>
+                                  <div style={{ fontSize: 10, fontWeight: 700, color: '#059669', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 6 }}>Önerilen Müdahale</div>
+                                  <div style={{ fontSize: 14, fontWeight: 600, color: '#111' }}>{detail.costAnalysis.interventionName}</div>
+                                  <div style={{ fontSize: 11, color: '#888', marginTop: 4 }}>
+                                    Süre: {detail.costAnalysis.interventionDuration} · Maliyet: {detail.costAnalysis.interventionCost}
+                                  </div>
+                                  <div style={{ fontSize: 11, color: '#888', marginTop: 2 }}>
+                                    Tahmini tasarruf: {detail.costAnalysis.estimatedSavings} · <span style={{ fontWeight: 700, color: '#059669' }}>ROI: {detail.costAnalysis.roi}</span>
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Similar Cases */}
+                              <div style={{ background: '#fff', border: '1px solid #f0f0f0', borderRadius: 10, padding: 14 }}>
+                                <div style={{ fontSize: 10, fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 8 }}>
+                                  Benzer Vakalar (Son 12 Ay)
+                                </div>
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+                                  {detail.similarCases.map((sc, idx) => (
+                                    <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '6px 10px', borderRadius: 8, background: sc.outcomeType === 'positive' ? '#F0FDF4' : '#FEF2F2' }}>
+                                      <span style={{ fontSize: 14 }}>{sc.outcomeType === 'positive' ? '✓' : '✗'}</span>
+                                      <div style={{ flex: 1 }}>
+                                        <div style={{ fontSize: 12, color: '#525252' }}>{sc.profile}</div>
+                                        <div style={{ fontSize: 11, fontWeight: 600, color: sc.outcomeType === 'positive' ? '#059669' : '#DC2626' }}>{sc.outcome}</div>
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+
+                            </div>
+                          );
+                        })()}
+
                         <div className="flex gap-2" style={{ marginTop: 12 }}>
                           <button onClick={() => handleDecision(a.id, 'approved')} style={{ fontSize: 12, fontWeight: 600, color: 'white', background: '#059669', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer' }}>✓ Onayla</button>
                           <button onClick={() => handleDecision(a.id, 'rejected')} style={{ fontSize: 12, fontWeight: 600, color: '#DC2626', background: '#FEE2E2', border: 'none', borderRadius: 8, padding: '8px 16px', cursor: 'pointer' }}>✗ Reddet</button>

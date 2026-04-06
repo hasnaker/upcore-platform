@@ -2,6 +2,8 @@ import { BurnoutHeatmap } from './_components/BurnoutHeatmap';
 import { BurnoutSidebar } from './_components/BurnoutSidebar';
 import { CriticalEmployees } from './_components/CriticalEmployees';
 import { DepartmentTrendChart } from './_components/DepartmentTrendChart';
+import { BurnoutPrediction } from './_components/BurnoutPrediction';
+import { InterventionEffectiveness } from './_components/InterventionEffectiveness';
 import { TransparencyNote } from './_components/TransparencyNote';
 
 // Fetch REAL burnout data from API
@@ -34,11 +36,17 @@ export default async function TukenmislikPage() {
         <BurnoutSidebar apiData={data} />
       </div>
 
+      {/* Burnout Prediction Panel */}
+      <BurnoutPrediction />
+
       {/* 30-day Trend Chart */}
       <DepartmentTrendChart apiData={data} />
 
       {/* Critical employees */}
       <CriticalEmployees apiData={data} />
+
+      {/* Intervention Effectiveness Dashboard */}
+      <InterventionEffectiveness />
 
       {/* Transparency note */}
       <TransparencyNote />

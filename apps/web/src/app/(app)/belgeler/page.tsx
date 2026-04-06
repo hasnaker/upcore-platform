@@ -19,6 +19,11 @@ import {
   XCircle,
   Archive,
   History,
+  Filter,
+  Clock,
+  Users,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 
 type DocCategory = 'all' | 'sozlesme' | 'rapor' | 'kimlik' | 'sertifika' | 'diger';
@@ -167,6 +172,75 @@ const categories: { key: DocCategory; label: string }[] = [
   { key: 'diger', label: 'Diger' },
 ];
 
+/* ─── Category Detail Cards ─── */
+interface CategoryDetail {
+  key: DocCategory;
+  label: string;
+  count: number;
+  lastUpdated: string;
+  complianceStatus: 'ok' | 'warning' | 'error';
+  complianceNote: string;
+  icon: string;
+  color: string;
+}
+
+const categoryDetails: CategoryDetail[] = [
+  { key: 'sozlesme', label: 'Sozlesmeler', count: 12, lastUpdated: '15 Mart', complianceStatus: 'ok', complianceNote: 'Tumu guncel.', icon: 'sozlesme', color: '#5E5CE6' },
+  { key: 'kimlik', label: 'Kimlik', count: 8, lastUpdated: '10 Ocak', complianceStatus: 'warning', complianceNote: '2 suresi dolmak uzere.', icon: 'kimlik', color: '#D97706' },
+  { key: 'rapor', label: 'SGK Belgeleri', count: 10, lastUpdated: '01 Nisan', complianceStatus: 'ok', complianceNote: 'Tumu guncel.', icon: 'sgk', color: '#059669' },
+  { key: 'sertifika', label: 'Egitim/Sertifika', count: 5, lastUpdated: '20 Subat', complianceStatus: 'error', complianceNote: '1 sertifika suresi dolmus.', icon: 'egitim', color: '#DC2626' },
+  { key: 'diger', label: 'Saglik', count: 3, lastUpdated: '05 Mart', complianceStatus: 'ok', complianceNote: 'Tumu guncel.', icon: 'saglik', color: '#2563EB' },
+];
+
+/* ─── KVKK Compliance Detail per Document ─── */
+interface KVKKDetail {
+  retentionPeriod: string;
+  retentionLaw: string;
+  retentionRemaining: string;
+  accessCount30d: number;
+  lastAccessedBy: string;
+  lastAccessedDate: string;
+}
+
+const getKVKKDetail = (doc: Document): KVKKDetail => {
+  const currentYear = 2026;
+  const endYear = doc.uploadYear + doc.retentionYears;
+  const remainingYears = endYear - currentYear;
+  const months = Math.floor(((doc.id.charCodeAt(0) ?? 0) % 12));
+  const retentionRemaining = remainingYears <= 0 ? 'Suresi doldu' : `${remainingYears} yil ${months} ay`;
+
+  const accessors = ['Ayse Kara', 'Hasan Aker', 'Selin Ozturk', 'Burak Arslan', 'Elif Demir'];
+  const accessCount = ((doc.id.charCodeAt(0) ?? 0) % 8) + 1;
+  const accessorIdx = (doc.id.charCodeAt(0) ?? 0) % accessors.length;
+
+  return {
+    retentionPeriod: `${doc.retentionYears} yil (${doc.retentionLaw})`,
+    retentionLaw: `4857 Is Kanunu Madde 75`,
+    retentionRemaining,
+    accessCount30d: accessCount,
+    lastAccessedBy: accessors[accessorIdx] ?? 'Hasan Aker',
+    lastAccessedDate: '02 Nisan 2026',
+  };
+};
+
+/* ─── Employee Document Completeness ─── */
+interface EmployeeCompleteness {
+  name: string;
+  sozlesme: boolean;
+  kimlik: boolean;
+  sgk: boolean;
+  kvkkRiza: boolean;
+  pct: number;
+}
+
+const employeeCompleteness: EmployeeCompleteness[] = [
+  { name: 'Ayse Yilmaz', sozlesme: true, kimlik: true, sgk: true, kvkkRiza: true, pct: 100 },
+  { name: 'Mehmet Kaya', sozlesme: true, kimlik: true, sgk: false, kvkkRiza: true, pct: 75 },
+  { name: 'Zeynep Arslan', sozlesme: true, kimlik: false, sgk: false, kvkkRiza: false, pct: 25 },
+  { name: 'Hasan Aker', sozlesme: true, kimlik: false, sgk: true, kvkkRiza: true, pct: 75 },
+  { name: 'Burak Arslan', sozlesme: true, kimlik: false, sgk: false, kvkkRiza: false, pct: 25 },
+];
+
 const typeIcons: Record<string, React.ReactNode> = {
   pdf: <FileText className="h-5 w-5 text-[#DC2626]" />,
   doc: <File className="h-5 w-5 text-[#2563EB]" />,
@@ -216,6 +290,10 @@ export default function BelgelerPage() {
   const [versionDoc, setVersionDoc] = useState<Document | null>(null);
   const [showChecklist, setShowChecklist] = useState(false);
   const [checklistEmployee, setChecklistEmployee] = useState('Hasan Aker');
+  const [showCategoryCards, setShowCategoryCards] = useState(true);
+  const [showCompleteness, setShowCompleteness] = useState(false);
+  const [filterExpiring, setFilterExpiring] = useState(false);
+  const [kvkkDetailDoc, setKvkkDetailDoc] = useState<Document | null>(null);
 
   // Upload form state
   const [uploadName, setUploadName] = useState('');
@@ -280,9 +358,14 @@ export default function BelgelerPage() {
     return docs.filter((d) => {
       const matchCategory = activeCategory === 'all' || d.category === activeCategory;
       const matchSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.employee.toLowerCase().includes(searchQuery.toLowerCase());
+      if (filterExpiring) {
+        if (!d.expiryDate) return false;
+        const daysLeft = getDaysUntilExpiry(d.expiryDate);
+        return matchCategory && matchSearch && daysLeft <= 90;
+      }
       return matchCategory && matchSearch;
     });
-  }, [docs, activeCategory, searchQuery]);
+  }, [docs, activeCategory, searchQuery, filterExpiring]);
 
   /* ─── Category counts ─── */
   const categoryCounts = useMemo(() => {
@@ -340,6 +423,51 @@ export default function BelgelerPage() {
             Belge Yukle
           </button>
         </div>
+      </div>
+
+      {/* ─── Document Category Summary Cards ─── */}
+      <div className="rounded-xl border border-[#EDEDED] bg-white">
+        <button
+          type="button"
+          onClick={() => setShowCategoryCards(!showCategoryCards)}
+          className="flex w-full items-center justify-between px-5 py-4"
+        >
+          <div className="flex items-center gap-2">
+            <Shield className="h-4 w-4 text-[#5E5CE6]" />
+            <p className="text-sm font-semibold text-[#0A0A0A]">Belge Kategorileri ve Uyumluluk</p>
+          </div>
+          {showCategoryCards ? <ChevronUp className="h-4 w-4 text-[#A3A3A3]" /> : <ChevronDown className="h-4 w-4 text-[#A3A3A3]" />}
+        </button>
+
+        {showCategoryCards && (
+          <div className="border-t border-[#EDEDED] px-5 py-4">
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+              {categoryDetails.map((cat) => (
+                <div
+                  key={cat.key}
+                  className="rounded-lg border border-[#EDEDED] p-4 transition-all hover:shadow-sm cursor-pointer"
+                  onClick={() => setActiveCategory(cat.key)}
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-xs font-semibold text-[#0A0A0A]">{cat.label}</span>
+                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: cat.color }}>
+                      {cat.count}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-[#A3A3A3] mb-2">Son guncelleme: {cat.lastUpdated}</p>
+                  <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+                    cat.complianceStatus === 'ok' ? 'bg-[#D1FAE5] text-[#059669]'
+                    : cat.complianceStatus === 'warning' ? 'bg-[#FEF3C7] text-[#D97706]'
+                    : 'bg-[#FEE2E2] text-[#DC2626]'
+                  }`}>
+                    {cat.complianceStatus === 'ok' ? <CheckCircle2 className="h-3 w-3" /> : cat.complianceStatus === 'warning' ? <AlertTriangle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
+                    {cat.complianceNote}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Expiry Warnings */}
@@ -434,6 +562,100 @@ export default function BelgelerPage() {
         </div>
       </div>
 
+      {/* Batch Operations Bar */}
+      <div className="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          onClick={() => setFilterExpiring(!filterExpiring)}
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+            filterExpiring ? 'bg-[#D97706] text-white' : 'border border-[#EDEDED] bg-white text-[#525252] hover:bg-[#FAFAFA]'
+          }`}
+        >
+          <Filter className="h-3.5 w-3.5" />
+          Suresi Dolan Belgeleri Filtrele
+        </button>
+        <button
+          type="button"
+          onClick={() => setShowCompleteness(!showCompleteness)}
+          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
+            showCompleteness ? 'bg-[#5E5CE6] text-white' : 'border border-[#EDEDED] bg-white text-[#525252] hover:bg-[#FAFAFA]'
+          }`}
+        >
+          <Users className="h-3.5 w-3.5" />
+          Eksik Belge Raporu
+        </button>
+      </div>
+
+      {/* Employee Document Completeness Table */}
+      {showCompleteness && (
+        <div className="rounded-xl border border-[#EDEDED] bg-white p-5">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <Users className="h-4 w-4 text-[#5E5CE6]" />
+              <p className="text-sm font-semibold text-[#0A0A0A]">Calisan Belge Tamamlanma Durumu</p>
+            </div>
+            <button type="button" onClick={() => setShowCompleteness(false)} className="text-[#A3A3A3] hover:text-[#525252]">
+              <X className="h-4 w-4" />
+            </button>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b border-[#EDEDED]">
+                  <th className="py-2.5 text-left font-semibold text-[#525252]">Calisan</th>
+                  <th className="py-2.5 text-center font-semibold text-[#525252]">Sozlesme</th>
+                  <th className="py-2.5 text-center font-semibold text-[#525252]">Kimlik</th>
+                  <th className="py-2.5 text-center font-semibold text-[#525252]">SGK</th>
+                  <th className="py-2.5 text-center font-semibold text-[#525252]">KVKK Riza</th>
+                  <th className="py-2.5 text-right font-semibold text-[#525252]">Tamamlanma</th>
+                </tr>
+              </thead>
+              <tbody>
+                {employeeCompleteness.map((emp) => (
+                  <tr key={emp.name} className="border-b border-[#F5F5F5] hover:bg-[#FAFAFA]">
+                    <td className="py-3 font-medium text-[#0A0A0A]">{emp.name}</td>
+                    <td className="py-3 text-center">
+                      {emp.sozlesme ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
+                    </td>
+                    <td className="py-3 text-center">
+                      {emp.kimlik ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
+                    </td>
+                    <td className="py-3 text-center">
+                      {emp.sgk ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
+                    </td>
+                    <td className="py-3 text-center">
+                      {emp.kvkkRiza ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
+                    </td>
+                    <td className="py-3 text-right">
+                      <div className="flex items-center justify-end gap-2">
+                        <div className="h-2 w-16 overflow-hidden rounded-full bg-[#F5F5F5]">
+                          <div
+                            className="h-full rounded-full transition-all"
+                            style={{
+                              width: `${emp.pct}%`,
+                              backgroundColor: emp.pct === 100 ? '#059669' : emp.pct >= 75 ? '#D97706' : '#DC2626',
+                            }}
+                          />
+                        </div>
+                        <span className={`font-semibold tabular-nums ${
+                          emp.pct === 100 ? 'text-[#059669]' : emp.pct >= 75 ? 'text-[#D97706]' : 'text-[#DC2626]'
+                        }`}>
+                          %{emp.pct} {emp.pct <= 25 && <AlertTriangle className="inline h-3 w-3 ml-0.5" />}
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <div className="mt-3 flex items-center gap-2 text-[10px] text-[#A3A3A3]">
+            <Shield className="h-3 w-3" />
+            <span>Eksik belgeler 4857 Is Kanunu ve KVKK uyumu icin tamamlanmalidir</span>
+          </div>
+        </div>
+      )}
+
       {/* Bulk Actions */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
@@ -458,7 +680,7 @@ export default function BelgelerPage() {
               className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A0A0A] px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-[#262626]"
             >
               <Archive className="h-3.5 w-3.5" />
-              Tumunu Indir (ZIP)
+              Toplu Indir (ZIP)
             </button>
           </div>
         )}
@@ -536,11 +758,16 @@ export default function BelgelerPage() {
                 </div>
               )}
 
-              {/* KVKK Retention */}
-              <div className="mt-2 flex items-center gap-1.5 text-[10px] text-[#A3A3A3]">
-                <Shield className="h-3 w-3" />
-                <span>Saklama: {doc.retentionYears} yil ({doc.retentionLaw}). Kalan: {retentionLeft}</span>
-              </div>
+              {/* KVKK Retention — Clickable for detail */}
+              <button
+                type="button"
+                onClick={(e) => { e.stopPropagation(); setKvkkDetailDoc(doc); }}
+                className="mt-2 flex w-full items-center gap-1.5 rounded-md bg-[#F5F5F5] px-2 py-1.5 text-left text-[10px] text-[#525252] transition-colors hover:bg-[#EDEDED]"
+              >
+                <Shield className="h-3 w-3 shrink-0 text-[#5E5CE6]" />
+                <span className="flex-1">Saklama: {doc.retentionYears} yil ({doc.retentionLaw}). Kalan: {retentionLeft}</span>
+                <Eye className="h-3 w-3 shrink-0 text-[#A3A3A3]" />
+              </button>
 
               {/* Actions */}
               <div className="mt-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
@@ -693,6 +920,76 @@ export default function BelgelerPage() {
               >
                 <Download className="h-4 w-4" />
                 Indir
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* KVKK Compliance Detail Modal */}
+      {kvkkDetailDoc && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A]/50 p-4">
+          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
+              <div className="flex items-center gap-2">
+                <Shield className="h-4 w-4 text-[#5E5CE6]" />
+                <h3 className="text-base font-semibold text-[#0A0A0A]">KVKK Uyumluluk Detayi</h3>
+              </div>
+              <button type="button" onClick={() => setKvkkDetailDoc(null)} className="text-[#A3A3A3] hover:text-[#525252]">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6">
+              <p className="mb-4 truncate text-sm font-medium text-[#525252]">{kvkkDetailDoc.name}</p>
+              {(() => {
+                const detail = getKVKKDetail(kvkkDetailDoc);
+                return (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
+                      <span className="text-[#A3A3A3]">Saklama suresi</span>
+                      <span className="font-medium text-[#0A0A0A]">{detail.retentionPeriod}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
+                      <span className="text-[#A3A3A3]">Yasal dayanak</span>
+                      <span className="font-medium text-[#0A0A0A]">{detail.retentionLaw}</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
+                      <span className="text-[#A3A3A3]">Kalan sure</span>
+                      <span className={`font-semibold ${detail.retentionRemaining === 'Suresi doldu' ? 'text-[#DC2626]' : 'text-[#059669]'}`}>
+                        {detail.retentionRemaining}
+                      </span>
+                    </div>
+                    <div className="border-t border-[#EDEDED] my-2" />
+                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
+                      <span className="text-[#A3A3A3]">Son 30 gunde erisim</span>
+                      <span className="font-medium text-[#0A0A0A]">{detail.accessCount30d} kez erisildi</span>
+                    </div>
+                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
+                      <span className="text-[#A3A3A3]">Son erisen</span>
+                      <span className="font-medium text-[#0A0A0A]">{detail.lastAccessedBy}, {detail.lastAccessedDate}</span>
+                    </div>
+                    {kvkkDetailDoc.expiryDate && (
+                      <div className="flex items-center justify-between rounded-lg bg-[#FEF3C7] px-3 py-2.5 text-xs">
+                        <span className="text-[#92400E]">Son gecerlilik</span>
+                        <span className="font-semibold text-[#D97706]">{formatDateTR(kvkkDetailDoc.expiryDate)}</span>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+              <div className="mt-4 rounded-lg bg-[#F0F9FF] border border-[#BAE6FD] p-3">
+                <p className="text-[10px] text-[#1E40AF]">
+                  <span className="font-semibold">KVKK Notu:</span> Kisisel veriler, 6698 sayili KVKK kapsaminda islenme amaci sona erdikten sonra anonimlestirilmeli veya silinmelidir.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
+              <button
+                type="button"
+                onClick={() => setKvkkDetailDoc(null)}
+                className="rounded-lg border border-[#EDEDED] px-4 py-2 text-sm font-medium text-[#525252] hover:bg-[#FAFAFA]"
+              >
+                Kapat
               </button>
             </div>
           </div>

@@ -749,7 +749,7 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
                     {/* Reasoning bullets with academic citations */}
                     <div
                       className={`overflow-hidden transition-all duration-300 ease-in-out ${
-                        isExpanded ? 'mt-3 max-h-[400px] opacity-100' : 'max-h-0 opacity-0'
+                        isExpanded ? 'mt-3 max-h-[2000px] opacity-100' : 'max-h-0 opacity-0'
                       }`}
                     >
                       <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
@@ -796,36 +796,356 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
                             </span>
                           </div>
                         </div>
+
+                        {/* ─── DEEP CONTEXT: Card 1 (Critical — Burnout) ─── */}
+                        {action.urgency === 'critical' && (
+                          <div className="mt-4 flex flex-col gap-3">
+                            {/* Employee mini-profile */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                Calisan Profili
+                              </p>
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F5F5F5] text-sm font-semibold text-[#525252]">
+                                  {action.title.split(' ').slice(0, 2).map((w) => w[0]).join('')}
+                                </div>
+                                <div>
+                                  <p className="text-[13px] font-medium text-[#0A0A0A]">
+                                    {action.title.split(' \u2014 ')[0]}
+                                  </p>
+                                  <p className="text-[11px] text-[#A3A3A3]">
+                                    {action.department} &middot; Kidem: 3.2 yil &middot; Yas: 31
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* BAT-12-TR 4 subscale sparklines */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                BAT-12-TR Alt Boyut Seyri (4 Hafta)
+                              </p>
+                              <div className="grid gap-2 sm:grid-cols-2">
+                                {[
+                                  { label: 'Tukenmislik', scores: [3.1, 3.4, 3.7, 4.0], color: '#DC2626' },
+                                  { label: 'Zihinsel Uzaklasma', scores: [2.6, 2.8, 3.0, 3.2], color: '#EA580C' },
+                                  { label: 'Bilissel Bozulma', scores: [2.2, 2.5, 2.7, 2.9], color: '#D97706' },
+                                  { label: 'Duygusal Bozulma', scores: [2.8, 3.0, 3.1, 3.1], color: '#D97706' },
+                                ].map((sub) => (
+                                  <div key={sub.label} className="flex items-center gap-2 rounded-md bg-[#FAFAFA] px-2 py-1.5">
+                                    <div className="min-w-0 flex-1">
+                                      <p className="text-[10px] font-medium text-[#525252]">{sub.label}</p>
+                                      <div className="flex items-center gap-1">
+                                        {sub.scores.map((s, i) => (
+                                          <span key={i} className="text-[10px] tabular-nums text-[#888]">
+                                            {i > 0 && <span className="text-[#D4D4D4]">{'\u2192'}</span>}
+                                            {s.toFixed(1)}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    </div>
+                                    <Sparkline data={sub.scores} color={sub.color} height={16} width={40} />
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* JD-R imbalance visualization */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                JD-R Dengesizlik Gorseli
+                              </p>
+                              <div className="flex flex-col gap-2">
+                                <div>
+                                  <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-[#DC2626]">Talepler</span>
+                                    <span className="font-semibold tabular-nums text-[#DC2626]">%78</span>
+                                  </div>
+                                  <div className="mt-0.5 h-3 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                                    <div className="h-full rounded-full bg-[#DC2626]" style={{ width: '78%' }} />
+                                  </div>
+                                  <p className="mt-0.5 text-[9px] text-[#A3A3A3]">is yuku, zaman baskisi, rol belirsizligi</p>
+                                </div>
+                                <div>
+                                  <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-[#059669]">Kaynaklar</span>
+                                    <span className="font-semibold tabular-nums text-[#059669]">%56</span>
+                                  </div>
+                                  <div className="mt-0.5 h-3 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                                    <div className="h-full rounded-full bg-[#059669]" style={{ width: '56%' }} />
+                                  </div>
+                                  <p className="mt-0.5 text-[9px] text-[#A3A3A3]">ozerklik, sosyal destek</p>
+                                </div>
+                                <div className="mt-1 flex items-center gap-2 rounded-md bg-[#FEF2F2] px-2 py-1">
+                                  <AlertTriangle className="h-3 w-3 text-[#DC2626]" />
+                                  <span className="text-[10px] font-medium text-[#DC2626]">Gap: +22 puan (kritik esik: 15)</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Similar cases */}
+                            <div className="rounded-md border border-[#D97706]/20 bg-[#FFFBEB] p-3">
+                              <p className="text-[11px] font-semibold text-[#D97706]">Benzer Vaka Analizi</p>
+                              <p className="mt-0.5 text-[11px] text-[#525252]">
+                                Son 12 ayda benzer JD-R profilli 8 calisandan 6&apos;si istifa etti. Mudahale yapilmayan vakalarda ortalama istifa suresi: 6 hafta.
+                              </p>
+                            </div>
+
+                            {/* Intervention recommendation */}
+                            <div className="rounded-md border border-[#059669]/20 bg-[#F0FDF4] p-3">
+                              <p className="text-[11px] font-semibold text-[#059669]">Mudahale Onerisi</p>
+                              <p className="mt-0.5 text-[11px] text-[#525252]">
+                                Haftalik 1:1 kocluk + is yuku %20 azaltma. Tahmini etki: BAT 3.63 {'\u2192'} 2.40 (4 haftada).
+                              </p>
+                              <div className="mt-2 flex items-center gap-2">
+                                <div className="flex-1">
+                                  <div className="flex items-center justify-between text-[10px]">
+                                    <span className="text-[#DC2626]">Simdi: 3.63</span>
+                                    <span className="text-[#059669]">Hedef: 2.40</span>
+                                  </div>
+                                  <div className="relative mt-0.5 h-2 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                                    <div className="absolute h-full rounded-full bg-[#FEE2E2]" style={{ width: '73%' }} />
+                                    <div className="absolute h-full rounded-full bg-[#059669]" style={{ width: '48%' }} />
+                                  </div>
+                                </div>
+                                <span className="text-[11px] font-semibold text-[#059669]">-1.23</span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ─── DEEP CONTEXT: Card 2 (Warning — Department) ─── */}
+                        {action.urgency === 'warning' && (
+                          <div className="mt-4 flex flex-col gap-3">
+                            {/* Department trend mini-chart */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                Departman 4 Haftalik Trend
+                              </p>
+                              <div className="flex items-center gap-3">
+                                <div className="flex items-center gap-2">
+                                  {[34, 42, 48, 52].map((score, i) => (
+                                    <div key={i} className="text-center">
+                                      <div
+                                        className="mx-auto flex h-10 w-10 items-center justify-center rounded-md text-[12px] font-semibold"
+                                        style={{
+                                          backgroundColor: score >= 55 ? '#FEE2E2' : score >= 45 ? '#FED7AA' : score >= 30 ? '#FEF3C7' : '#D1FAE5',
+                                          color: score >= 55 ? '#DC2626' : score >= 45 ? '#EA580C' : score >= 30 ? '#D97706' : '#059669',
+                                        }}
+                                      >
+                                        {score}
+                                      </div>
+                                      <p className="mt-0.5 text-[9px] text-[#A3A3A3]">Hf {i + 1}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="flex items-center gap-1">
+                                  <TrendingUp className="h-3.5 w-3.5 text-[#DC2626]" />
+                                  <span className="text-[11px] font-semibold text-[#DC2626]">+18 puan (4 hf)</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Top 3 risk employees */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                En Riskli 3 Calisan
+                              </p>
+                              <div className="flex flex-col gap-2">
+                                {[
+                                  { name: 'Burak Arslan', bat: 3.82, risk: 82 },
+                                  { name: 'Deniz Kara', bat: 3.41, risk: 78 },
+                                  { name: 'Selin Dogan', bat: 2.45, risk: 65 },
+                                ].map((emp, i) => (
+                                  <div key={emp.name} className="flex items-center gap-2 rounded-md bg-[#FAFAFA] px-2 py-1.5">
+                                    <span className="flex h-5 w-5 items-center justify-center rounded-full bg-[#F5F5F5] text-[9px] font-semibold text-[#888]">
+                                      {i + 1}
+                                    </span>
+                                    <span className="flex-1 text-[11px] font-medium text-[#0A0A0A]">{emp.name}</span>
+                                    <span className="text-[10px] tabular-nums text-[#A3A3A3]">BAT: {emp.bat}</span>
+                                    <span className="text-[11px] font-semibold tabular-nums text-[#DC2626]">%{emp.risk}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Department JD-R */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                Departman JD-R Dengesi
+                              </p>
+                              <div className="flex flex-col gap-1.5">
+                                <div>
+                                  <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-[#DC2626]">Talepler</span>
+                                    <span className="font-semibold text-[#DC2626]">%78</span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                                    <div className="h-full rounded-full bg-[#DC2626]" style={{ width: '78%' }} />
+                                  </div>
+                                </div>
+                                <div>
+                                  <div className="flex items-center justify-between text-[11px]">
+                                    <span className="text-[#059669]">Kaynaklar</span>
+                                    <span className="font-semibold text-[#059669]">%56</span>
+                                  </div>
+                                  <div className="h-2 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                                    <div className="h-full rounded-full bg-[#059669]" style={{ width: '56%' }} />
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Recommended intervention */}
+                            <div className="rounded-md border border-[#5E5CE6]/20 bg-[#EEF0FD] p-3">
+                              <p className="text-[11px] font-semibold text-[#5E5CE6]">Onerilen Departman Mudahalesi</p>
+                              <p className="mt-0.5 text-[11px] text-[#525252]">
+                                Ekip toplantisi + kaynak degerlendirmesi + bireysel 1:1&apos;ler. Sprint hedeflerinin %20 azaltilmasi ve ek kaynak talep edilmesi.
+                              </p>
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ─── DEEP CONTEXT: Card 3 (Info — Hiring) ─── */}
+                        {action.urgency === 'info' && (
+                          <div className="mt-4 flex flex-col gap-3">
+                            {/* Candidate cards */}
+                            <div className="rounded-md border border-[#EDEDED] bg-white p-3">
+                              <p className="mb-2 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                Aday Profilleri
+                              </p>
+                              <div className="flex flex-col gap-2">
+                                {[
+                                  { name: 'Selin Ozturk', dept: 'Satis', fit: 96, skills: ['Iletisim: %94', 'Stres Yon.: %92', 'Takim Calismasi: %97'] },
+                                  { name: 'Kerem Aslan', dept: 'Urun', fit: 95, skills: ['Analitik: %96', 'Liderlik: %88', 'Problem Cozme: %95'] },
+                                ].map((candidate) => (
+                                  <div key={candidate.name} className="rounded-md border border-[#EDEDED] bg-[#FAFAFA] p-3">
+                                    <div className="flex items-center gap-3">
+                                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#EEF0FD] text-xs font-semibold text-[#5E5CE6]">
+                                        {candidate.name.split(' ').map((n) => n[0]).join('')}
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-[12px] font-medium text-[#0A0A0A]">{candidate.name}</p>
+                                        <p className="text-[10px] text-[#A3A3A3]">{candidate.dept} pozisyonu</p>
+                                      </div>
+                                      <div className="text-right">
+                                        <span className="inline-flex items-center rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[11px] font-semibold text-[#059669]">
+                                          %{candidate.fit} uyum
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div className="mt-2 flex flex-wrap gap-1.5">
+                                      {candidate.skills.map((skill) => (
+                                        <span key={skill} className="inline-flex items-center rounded bg-white px-1.5 py-0.5 text-[10px] font-medium text-[#525252] ring-1 ring-[#EDEDED]">
+                                          {skill}
+                                        </span>
+                                      ))}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Interview question suggestions */}
+                            <div className="rounded-md border border-[#5E5CE6]/20 bg-[#EEF0FD] p-3">
+                              <p className="text-[11px] font-semibold text-[#5E5CE6]">Mulakat Soru Onerisi</p>
+                              <ul className="mt-1 flex flex-col gap-1">
+                                <li className="text-[11px] text-[#525252]">{'\u2022'} Iletisim becerisi: Zor bir musteri ile yasadiginiz durumu anlatin</li>
+                                <li className="text-[11px] text-[#525252]">{'\u2022'} Stres yonetimi: Yogun is yukunde nasil oncelik belirlersiniz?</li>
+                                <li className="text-[11px] text-[#525252]">{'\u2022'} Kültür uyumu: Ekip icerisinde anlasamazlik oldugunda nasil davranirsiniz?</li>
+                              </ul>
+                            </div>
+
+                            {/* Approval status */}
+                            <div className="rounded-md border border-[#D97706]/20 bg-[#FFFBEB] p-3">
+                              <div className="flex items-center gap-2">
+                                <Clock className="h-3.5 w-3.5 text-[#D97706]" />
+                                <p className="text-[11px] font-semibold text-[#D97706]">Ise Alim Onayi: Yonetici onayi bekliyor</p>
+                              </div>
+                              <p className="mt-0.5 text-[11px] text-[#525252]">
+                                Satis Muduru ve IK Direktoru onayina sunuldu. Beklenen yanit suresi: 2 is gunu.
+                              </p>
+                            </div>
+                          </div>
+                        )}
                       </div>
                     </div>
 
                     {/* Action buttons */}
                     {!isActioned && (
                       <div className="mt-4 flex flex-wrap items-center gap-2">
-                        <button
-                          type="button"
-                          onClick={() => handleAction(action.id, 'approved')}
-                          className="inline-flex items-center gap-1.5 rounded-md bg-[#0A0A0A] px-4 py-2 text-[13px] font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
-                        >
-                          <Check className="h-3.5 w-3.5" />
-                          Onayla
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAction(action.id, 'rejected')}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#525252] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
-                        >
-                          <X className="h-3.5 w-3.5" />
-                          Reddet
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleAction(action.id, 'deferred')}
-                          className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#525252] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
-                        >
-                          <Clock className="h-3.5 w-3.5" />
-                          Ertele
-                        </button>
+                        {action.urgency === 'critical' ? (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleAction(action.id, 'approved');
+                                showToast('Kocluk gorusmesi planlandi', 'success');
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-[#5E5CE6] px-4 py-2 text-[13px] font-medium text-white transition-all hover:bg-[#4B4AC5] active:scale-[0.97]"
+                            >
+                              <BookOpen className="h-3.5 w-3.5" />
+                              Kocluk Planla
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleAction(action.id, 'approved');
+                                showToast('Is yuku azaltma aksiyon plani olusturuldu', 'success');
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#525252] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
+                            >
+                              <Briefcase className="h-3.5 w-3.5" />
+                              Is Yuku Azalt
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                handleAction(action.id, 'approved');
+                                showToast('Esneklik plani devreye alindi', 'success');
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#525252] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
+                            >
+                              <CalendarDays className="h-3.5 w-3.5" />
+                              Esneklik Artir
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAction(action.id, 'deferred')}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#A3A3A3] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
+                            >
+                              <Clock className="h-3.5 w-3.5" />
+                              Ertele
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => handleAction(action.id, 'approved')}
+                              className="inline-flex items-center gap-1.5 rounded-md bg-[#0A0A0A] px-4 py-2 text-[13px] font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
+                            >
+                              <Check className="h-3.5 w-3.5" />
+                              Onayla
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAction(action.id, 'rejected')}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#525252] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
+                            >
+                              <X className="h-3.5 w-3.5" />
+                              Reddet
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleAction(action.id, 'deferred')}
+                              className="inline-flex items-center gap-1.5 rounded-md border border-[#EDEDED] bg-white px-4 py-2 text-[13px] font-medium text-[#525252] transition-all hover:border-[#D4D4D4] hover:bg-[#FAFAFA] active:scale-[0.97]"
+                            >
+                              <Clock className="h-3.5 w-3.5" />
+                              Ertele
+                            </button>
+                          </>
+                        )}
                       </div>
                     )}
                   </div>

@@ -14,6 +14,11 @@ import {
   ChevronUp,
   BookOpen,
   Activity,
+  Settings,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertTriangle,
 } from 'lucide-react';
 
 /* ─── Types ─── */
@@ -40,6 +45,41 @@ interface SurveyHistoryEntry {
     cognitive: number;
     emotional: number;
   };
+}
+
+interface PastSurveyRow {
+  id: string;
+  week: string;
+  instrument: string;
+  participation: number;
+  avgScore: number;
+  level: 'green' | 'amber' | 'red';
+  trend: 'up' | 'down' | 'same';
+  trendDiff: number;
+  subscaleBreakdown: {
+    dept: string;
+    exhaustion: number;
+    mentalDistance: number;
+    cognitive: number;
+    emotional: number;
+  }[];
+}
+
+interface DeptParticipation {
+  dept: string;
+  rate: number;
+  filled: number;
+  total: number;
+  warning: boolean;
+}
+
+interface NormRow {
+  dimension: string;
+  org: number;
+  sector: number;
+  turkey: number;
+  diff: number;
+  warning: boolean;
 }
 
 /* ─── Config ─── */
@@ -118,12 +158,86 @@ const participationByDept = [
   { dept: 'IK', rate: 80, count: 4 },
 ];
 
+/* ─── Past Survey History Data ─── */
+const pastSurveys: PastSurveyRow[] = [
+  {
+    id: 'ps1',
+    week: 'Mart Hf4',
+    instrument: 'BAT-12-TR',
+    participation: 87,
+    avgScore: 2.45,
+    level: 'green',
+    trend: 'up',
+    trendDiff: 0.12,
+    subscaleBreakdown: [
+      { dept: 'Satis', exhaustion: 2.8, mentalDistance: 2.5, cognitive: 2.1, emotional: 2.3 },
+      { dept: 'Muhendislik', exhaustion: 2.3, mentalDistance: 2.1, cognitive: 1.8, emotional: 1.9 },
+      { dept: 'Urun', exhaustion: 2.0, mentalDistance: 1.9, cognitive: 1.7, emotional: 1.8 },
+      { dept: 'Musteri Hizmetleri', exhaustion: 3.1, mentalDistance: 2.7, cognitive: 2.4, emotional: 2.8 },
+      { dept: 'IK', exhaustion: 2.2, mentalDistance: 2.0, cognitive: 1.9, emotional: 2.1 },
+    ],
+  },
+  {
+    id: 'ps2',
+    week: 'Mart Hf3',
+    instrument: 'BAT-12-TR',
+    participation: 82,
+    avgScore: 2.33,
+    level: 'green',
+    trend: 'same',
+    trendDiff: 0,
+    subscaleBreakdown: [
+      { dept: 'Satis', exhaustion: 2.7, mentalDistance: 2.4, cognitive: 2.0, emotional: 2.2 },
+      { dept: 'Muhendislik', exhaustion: 2.2, mentalDistance: 2.0, cognitive: 1.7, emotional: 1.8 },
+      { dept: 'Urun', exhaustion: 1.9, mentalDistance: 1.8, cognitive: 1.6, emotional: 1.7 },
+      { dept: 'Musteri Hizmetleri', exhaustion: 3.0, mentalDistance: 2.6, cognitive: 2.3, emotional: 2.7 },
+      { dept: 'IK', exhaustion: 2.1, mentalDistance: 1.9, cognitive: 1.8, emotional: 2.0 },
+    ],
+  },
+  {
+    id: 'ps3',
+    week: 'Mart Hf2',
+    instrument: 'BAT-12-TR',
+    participation: 91,
+    avgScore: 2.33,
+    level: 'green',
+    trend: 'down',
+    trendDiff: -0.15,
+    subscaleBreakdown: [
+      { dept: 'Satis', exhaustion: 2.6, mentalDistance: 2.3, cognitive: 1.9, emotional: 2.1 },
+      { dept: 'Muhendislik', exhaustion: 2.1, mentalDistance: 1.9, cognitive: 1.6, emotional: 1.7 },
+      { dept: 'Urun', exhaustion: 1.8, mentalDistance: 1.7, cognitive: 1.5, emotional: 1.6 },
+      { dept: 'Musteri Hizmetleri', exhaustion: 2.9, mentalDistance: 2.5, cognitive: 2.2, emotional: 2.6 },
+      { dept: 'IK', exhaustion: 2.0, mentalDistance: 1.8, cognitive: 1.7, emotional: 1.9 },
+    ],
+  },
+];
+
+/* ─── Department Participation Detail ─── */
+const deptParticipationDetail: DeptParticipation[] = [
+  { dept: 'Satis', rate: 92, filled: 22, total: 24, warning: false },
+  { dept: 'Muhendislik', rate: 89, filled: 16, total: 18, warning: false },
+  { dept: 'Urun', rate: 100, filled: 8, total: 8, warning: false },
+  { dept: 'Musteri Hizmetleri', rate: 80, filled: 8, total: 10, warning: false },
+  { dept: 'IK', rate: 75, filled: 3, total: 4, warning: true },
+];
+
+/* ─── Norm Comparison Data ─── */
+const normData: NormRow[] = [
+  { dimension: 'Tukenmislik', org: 2.65, sector: 2.40, turkey: 2.55, diff: 0.25, warning: true },
+  { dimension: 'Zihinsel Uzaklasma', org: 2.31, sector: 2.10, turkey: 2.20, diff: 0.21, warning: true },
+  { dimension: 'Bilissel Bozulma', org: 1.95, sector: 1.90, turkey: 1.85, diff: 0.05, warning: false },
+  { dimension: 'Duygusal Bozulma', org: 2.12, sector: 2.00, turkey: 2.10, diff: 0.12, warning: false },
+];
+
 /* ─── Component ─── */
 
 export default function AnketlerPage() {
   const [showHistory, setShowHistory] = useState(false);
   const [surveyHistory, setSurveyHistory] = useState<SurveyHistoryEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'active' | 'results'>('active');
+  const [expandedPastSurvey, setExpandedPastSurvey] = useState<string | null>(null);
+  const [showConfig, setShowConfig] = useState(false);
 
   useEffect(() => {
     try {
@@ -438,21 +552,134 @@ export default function AnketlerPage() {
         {/* Results Tab */}
         {activeTab === 'results' && (
           <div className="mt-6 flex flex-col gap-6">
-            {/* Department participation rates */}
+
+            {/* ── Survey History Section ── */}
+            <div className="rounded-lg border border-[#EDEDED] bg-white">
+              <div className="border-b border-[#EDEDED] px-5 py-4">
+                <h3 className="text-base font-semibold text-[#0A0A0A]">Gecmis Anket Sonuclari</h3>
+                <p className="mt-0.5 text-xs text-[#A3A3A3]">
+                  Tamamlanan anketlerin haftalik ozeti — satira tiklayarak departman kirilimini gorun
+                </p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-[#EDEDED] text-xs font-medium text-[#A3A3A3]">
+                      <th className="px-5 py-3">Tarih</th>
+                      <th className="px-4 py-3">Instrument</th>
+                      <th className="px-4 py-3">Katilim</th>
+                      <th className="px-4 py-3">Ort. Skor</th>
+                      <th className="px-4 py-3 text-right">Trend</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EDEDED]">
+                    {pastSurveys.map((ps) => (
+                      <tr key={ps.id} className="group">
+                        <td colSpan={5} className="p-0">
+                          <button
+                            type="button"
+                            onClick={() => setExpandedPastSurvey(expandedPastSurvey === ps.id ? null : ps.id)}
+                            className="flex w-full items-center text-left transition-colors hover:bg-[#FAFAFA]"
+                          >
+                            <span className="px-5 py-3.5 text-[13px] font-medium text-[#0A0A0A]">{ps.week}</span>
+                            <span className="px-4 py-3.5 text-[13px] text-[#525252]">{ps.instrument}</span>
+                            <span className="px-4 py-3.5 text-[13px] tabular-nums text-[#525252]">%{ps.participation}</span>
+                            <span className="px-4 py-3.5">
+                              <span
+                                className="inline-flex items-center rounded-full px-2 py-0.5 text-[12px] font-semibold tabular-nums"
+                                style={{
+                                  backgroundColor: RISK_BG_COLORS[ps.level],
+                                  color: RISK_COLORS[ps.level],
+                                }}
+                              >
+                                {ps.avgScore.toFixed(2)}
+                              </span>
+                            </span>
+                            <span className="ml-auto px-4 py-3.5 text-right">
+                              <span className={`inline-flex items-center gap-1 text-[12px] font-semibold tabular-nums ${
+                                ps.trend === 'up' ? 'text-[#DC2626]' : ps.trend === 'down' ? 'text-[#059669]' : 'text-[#888]'
+                              }`}>
+                                {ps.trend === 'up' && <TrendingUp className="h-3.5 w-3.5" />}
+                                {ps.trend === 'down' && <TrendingDown className="h-3.5 w-3.5" />}
+                                {ps.trend === 'same' && <Minus className="h-3.5 w-3.5" />}
+                                {ps.trend === 'up' ? `+${ps.trendDiff.toFixed(2)}` : ps.trend === 'down' ? ps.trendDiff.toFixed(2) : 'ayni'}
+                              </span>
+                            </span>
+                          </button>
+
+                          {/* Expanded subscale breakdown per department */}
+                          {expandedPastSurvey === ps.id && (
+                            <div className="border-t border-[#F0F0F0] bg-[#FAFAFF] px-5 py-4">
+                              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-[#A3A3A3]">
+                                Departman Bazli Alt Boyut Kirilimi
+                              </p>
+                              <div className="overflow-x-auto">
+                                <table className="w-full text-left text-[12px]">
+                                  <thead>
+                                    <tr className="text-[11px] font-medium text-[#A3A3A3]">
+                                      <th className="pb-2 pr-4">Departman</th>
+                                      <th className="pb-2 px-3 text-center">Tukenmislik</th>
+                                      <th className="pb-2 px-3 text-center">Zihinsel Uz.</th>
+                                      <th className="pb-2 px-3 text-center">Bilissel Boz.</th>
+                                      <th className="pb-2 px-3 text-center">Duygusal Boz.</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                    {ps.subscaleBreakdown.map((row) => (
+                                      <tr key={row.dept} className="border-t border-[#EDEDED]">
+                                        <td className="py-2 pr-4 font-medium text-[#0A0A0A]">{row.dept}</td>
+                                        {[row.exhaustion, row.mentalDistance, row.cognitive, row.emotional].map((val, i) => (
+                                          <td key={i} className="py-2 px-3 text-center">
+                                            <span
+                                              className="inline-flex min-w-[40px] items-center justify-center rounded px-1.5 py-0.5 text-[11px] font-semibold tabular-nums"
+                                              style={{
+                                                backgroundColor: val >= 3.02 ? '#FEE2E2' : val >= 2.58 ? '#FEF3C7' : '#D1FAE5',
+                                                color: val >= 3.02 ? '#DC2626' : val >= 2.58 ? '#D97706' : '#059669',
+                                              }}
+                                            >
+                                              {val.toFixed(1)}
+                                            </span>
+                                          </td>
+                                        ))}
+                                      </tr>
+                                    ))}
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* ── Department Participation Rates (Detailed) ── */}
             <div className="rounded-lg border border-[#EDEDED] bg-white">
               <div className="border-b border-[#EDEDED] px-5 py-4">
                 <h3 className="text-base font-semibold text-[#0A0A0A]">
                   Departman Katilim Oranlari
                 </h3>
-                <p className="mt-0.5 text-xs text-[#A3A3A3]">Hafta 14 katilim dagilimi</p>
+                <p className="mt-0.5 text-xs text-[#A3A3A3]">Hafta 14 katilim dagilimi — kisi bazinda detay</p>
               </div>
               <div className="p-5">
                 <div className="flex flex-col gap-3">
-                  {participationByDept.map((dept) => (
+                  {deptParticipationDetail.map((dept) => (
                     <div key={dept.dept}>
                       <div className="flex items-center justify-between text-[12px]">
-                        <span className="font-medium text-[#525252]">
-                          {dept.dept} (n={dept.count})
+                        <span className="flex items-center gap-2 font-medium text-[#525252]">
+                          {dept.dept}
+                          <span className="text-[11px] text-[#A3A3A3]">
+                            ({dept.filled}/{dept.total} kisi)
+                          </span>
+                          {dept.warning && (
+                            <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-semibold text-[#D97706]">
+                              <AlertTriangle className="h-3 w-3" />
+                              Dusuk katilim
+                            </span>
+                          )}
                         </span>
                         <span className="font-semibold tabular-nums text-[#0A0A0A]">
                           %{dept.rate}
@@ -473,8 +700,138 @@ export default function AnketlerPage() {
                 </div>
               </div>
             </div>
+
+            {/* ── Norm Comparison Table ── */}
+            <div className="rounded-lg border border-[#EDEDED] bg-white">
+              <div className="border-b border-[#EDEDED] px-5 py-4">
+                <h3 className="text-base font-semibold text-[#0A0A0A]">Norm Karsilastirma Tablosu</h3>
+                <p className="mt-0.5 text-xs text-[#A3A3A3]">Kurum, sektor ve Turkiye normlari ile kiyaslama</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm">
+                  <thead>
+                    <tr className="border-b border-[#EDEDED] text-xs font-medium text-[#A3A3A3]">
+                      <th className="px-5 py-3">Boyut</th>
+                      <th className="px-4 py-3 text-center">Kurum</th>
+                      <th className="px-4 py-3 text-center">Sektor</th>
+                      <th className="px-4 py-3 text-center">Turkiye</th>
+                      <th className="px-4 py-3 text-right">Fark</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#EDEDED]">
+                    {normData.map((row) => (
+                      <tr key={row.dimension} className="transition-colors hover:bg-[#FAFAFA]">
+                        <td className="px-5 py-3.5 font-medium text-[#0A0A0A]">{row.dimension}</td>
+                        <td className="px-4 py-3.5 text-center">
+                          <span className="font-semibold tabular-nums text-[#0A0A0A]">{row.org.toFixed(2)}</span>
+                        </td>
+                        <td className="px-4 py-3.5 text-center tabular-nums text-[#525252]">{row.sector.toFixed(2)}</td>
+                        <td className="px-4 py-3.5 text-center tabular-nums text-[#525252]">{row.turkey.toFixed(2)}</td>
+                        <td className="px-4 py-3.5 text-right">
+                          <span className={`inline-flex items-center gap-1 font-semibold tabular-nums text-[12px] ${
+                            row.warning ? 'text-[#D97706]' : 'text-[#059669]'
+                          }`}>
+                            {row.diff > 0 ? '+' : ''}{row.diff.toFixed(2)}
+                            {row.warning && <AlertTriangle className="h-3 w-3" />}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="border-t border-[#EDEDED] px-5 py-3">
+                <p className="text-[11px] italic text-[#AAA]">
+                  Not: Sektor ve Turkiye normlari provisional European norms&apos;a dayanmaktadir (Schaufeli 2023).
+                </p>
+              </div>
+            </div>
+
           </div>
         )}
+      </div>
+
+      {/* ── Survey Configuration Panel ── */}
+      <div>
+        <button
+          type="button"
+          onClick={() => setShowConfig((prev) => !prev)}
+          className="flex w-full items-center justify-between rounded-lg border border-[#EDEDED] bg-white px-5 py-3 transition-colors hover:border-[#D4D4D4]"
+        >
+          <div className="flex items-center gap-2">
+            <Settings className="h-4 w-4 text-[#5E5CE6]" />
+            <span className="text-[13px] font-semibold text-[#0A0A0A]">
+              Anket Yapilandirma Paneli
+            </span>
+          </div>
+          {showConfig ? (
+            <ChevronUp className="h-4 w-4 text-[#888]" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-[#888]" />
+          )}
+        </button>
+
+        <div
+          className={`overflow-hidden transition-all duration-300 ${
+            showConfig ? 'mt-2 max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className="grid gap-4 sm:grid-cols-2">
+            {/* BAT-12-TR Pulse Config */}
+            <div className="rounded-lg border border-[#E0E0FF] bg-[#FAFAFF] p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <Activity className="h-4 w-4 text-[#5E5CE6]" />
+                <h4 className="text-[14px] font-semibold text-[#0A0A0A]">BAT-12-TR Pulse Ayarlari</h4>
+              </div>
+              <div className="flex flex-col gap-3">
+                {[
+                  { label: 'Siklik', value: 'Haftalik (Pazartesi 09:00)' },
+                  { label: 'Hedef', value: 'Tum calisanlar' },
+                  { label: 'Hatirlatma', value: '72 saat sonra, max 3 kez' },
+                  { label: 'Anonimlik', value: 'Aktif (min N=5)' },
+                  { label: 'Dil', value: 'Turkce' },
+                  { label: 'Soru sayisi', value: '12 soru · ~3 dakika' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between text-[12px]">
+                    <span className="text-[#888]">{item.label}</span>
+                    <span className="font-medium text-[#0A0A0A]">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center gap-2 rounded bg-[#D1FAE5] px-2.5 py-1.5">
+                <div className="h-2 w-2 rounded-full bg-[#059669]" />
+                <span className="text-[11px] font-medium text-[#059669]">Aktif — sonraki gonderim Pazartesi 09:00</span>
+              </div>
+            </div>
+
+            {/* COPSOQ-III-TR Config */}
+            <div className="rounded-lg border border-[#EDEDED] bg-white p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <BookOpen className="h-4 w-4 text-[#D97706]" />
+                <h4 className="text-[14px] font-semibold text-[#0A0A0A]">COPSOQ-III-TR Ayarlari</h4>
+              </div>
+              <div className="flex flex-col gap-3">
+                {[
+                  { label: 'Siklik', value: 'Aylik (her ayin 1\'i)' },
+                  { label: 'Hedef', value: 'Tum calisanlar' },
+                  { label: 'Soru sayisi', value: '40 soru · ~8 dakika' },
+                  { label: 'Hatirlatma', value: '5 gun sonra, max 2 kez' },
+                  { label: 'Anonimlik', value: 'Aktif (min N=5)' },
+                  { label: 'Dil', value: 'Turkce' },
+                ].map((item) => (
+                  <div key={item.label} className="flex items-center justify-between text-[12px]">
+                    <span className="text-[#888]">{item.label}</span>
+                    <span className="font-medium text-[#0A0A0A]">{item.value}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="mt-4 flex items-center gap-2 rounded bg-[#FEF3C7] px-2.5 py-1.5">
+                <div className="h-2 w-2 rounded-full bg-[#D97706]" />
+                <span className="text-[11px] font-medium text-[#D97706]">Planli — sonraki gonderim 1 Mayis 2026</span>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Survey history from localStorage */}

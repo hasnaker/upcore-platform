@@ -47,7 +47,7 @@ export default function PanelPage() {
             Oncelikli Aksiyonlar
           </h2>
         </div>
-        <PriorityActions burnoutData={burnoutData} actionData={actionData} />
+        <PriorityActions burnoutData={burnoutData} />
       </section>
 
       {/* Weekly Recap */}

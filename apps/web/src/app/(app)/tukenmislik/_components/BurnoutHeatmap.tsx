@@ -797,6 +797,182 @@ export const BurnoutHeatmap = ({ apiData }: BurnoutHeatmapProps) => {
                 </div>
               </div>
 
+              {/* Individual Employee Scores */}
+              <div>
+                <h4 className="mb-3 text-[13px] font-semibold text-[#0A0A0A]">
+                  Bireysel Calisan Skorlari
+                </h4>
+                <div className="rounded-lg border border-[#EDEDED]">
+                  <div className="divide-y divide-[#EDEDED]">
+                    {(() => {
+                      const deptEmployeeScores: Array<{
+                        name: string;
+                        bat: number;
+                        trend: 'up' | 'stable' | 'down';
+                        exhaustion: number;
+                        exhaustionLevel: 'red' | 'yellow' | 'green';
+                      }> = (() => {
+                        const dname = selectedCell.dept.name;
+                        const map: Record<string, Array<{ name: string; bat: number; trend: 'up' | 'stable' | 'down'; exhaustion: number; exhaustionLevel: 'red' | 'yellow' | 'green' }>> = {
+                          'Satis': [
+                            { name: 'Ayse Yilmaz', bat: 3.63, trend: 'up', exhaustion: 4.0, exhaustionLevel: 'red' },
+                            { name: 'Mehmet Kaya', bat: 2.91, trend: 'stable', exhaustion: 3.2, exhaustionLevel: 'yellow' },
+                            { name: 'Burak Arslan', bat: 3.82, trend: 'up', exhaustion: 4.1, exhaustionLevel: 'red' },
+                            { name: 'Deniz Kara', bat: 3.41, trend: 'up', exhaustion: 3.8, exhaustionLevel: 'red' },
+                            { name: 'Selin Dogan', bat: 2.45, trend: 'stable', exhaustion: 2.6, exhaustionLevel: 'yellow' },
+                          ],
+                          'Musteri Hizmetleri': [
+                            { name: 'Emre Cetin', bat: 2.82, trend: 'down', exhaustion: 3.0, exhaustionLevel: 'yellow' },
+                            { name: 'Zeynep Koc', bat: 3.15, trend: 'up', exhaustion: 3.5, exhaustionLevel: 'red' },
+                            { name: 'Ali Demir', bat: 2.71, trend: 'stable', exhaustion: 2.9, exhaustionLevel: 'yellow' },
+                          ],
+                          'Urun': [
+                            { name: 'Canan Yilmaz', bat: 2.60, trend: 'up', exhaustion: 2.8, exhaustionLevel: 'yellow' },
+                            { name: 'Murat Oz', bat: 2.20, trend: 'stable', exhaustion: 2.3, exhaustionLevel: 'green' },
+                            { name: 'Elif Sen', bat: 1.85, trend: 'down', exhaustion: 1.9, exhaustionLevel: 'green' },
+                          ],
+                          'Muhendislik': [
+                            { name: 'Ahmet Yilmaz', bat: 2.95, trend: 'up', exhaustion: 3.1, exhaustionLevel: 'yellow' },
+                            { name: 'Berk Sahin', bat: 1.55, trend: 'stable', exhaustion: 1.6, exhaustionLevel: 'green' },
+                            { name: 'Ece Acar', bat: 1.32, trend: 'down', exhaustion: 1.4, exhaustionLevel: 'green' },
+                          ],
+                          'IK': [
+                            { name: 'Ayse Korkmaz', bat: 2.10, trend: 'down', exhaustion: 2.2, exhaustionLevel: 'green' },
+                            { name: 'Mert Aydin', bat: 1.72, trend: 'down', exhaustion: 1.8, exhaustionLevel: 'green' },
+                            { name: 'Nur Tekin', bat: 1.40, trend: 'stable', exhaustion: 1.5, exhaustionLevel: 'green' },
+                          ],
+                          'Pazarlama': [
+                            { name: 'Oya Derin', bat: 1.55, trend: 'stable', exhaustion: 1.6, exhaustionLevel: 'green' },
+                            { name: 'Kagan Tas', bat: 1.20, trend: 'down', exhaustion: 1.3, exhaustionLevel: 'green' },
+                            { name: 'Naz Kaya', bat: 1.10, trend: 'stable', exhaustion: 1.2, exhaustionLevel: 'green' },
+                          ],
+                        };
+                        return map[dname] ?? [
+                          { name: 'Calisan 1', bat: 2.50, trend: 'stable' as const, exhaustion: 2.7, exhaustionLevel: 'yellow' as const },
+                          { name: 'Calisan 2', bat: 1.90, trend: 'down' as const, exhaustion: 2.0, exhaustionLevel: 'green' as const },
+                        ];
+                      })();
+                      return deptEmployeeScores.map((emp) => {
+                        const trendSymbol = emp.trend === 'up' ? '\u2191' : emp.trend === 'down' ? '\u2193' : '\u2192';
+                        const trendColor = emp.trend === 'up' ? 'text-[#DC2626]' : emp.trend === 'down' ? 'text-[#059669]' : 'text-[#D97706]';
+                        const exhColor = emp.exhaustionLevel === 'red' ? '#DC2626' : emp.exhaustionLevel === 'yellow' ? '#D97706' : '#059669';
+                        const exhBg = emp.exhaustionLevel === 'red' ? '#FEF2F2' : emp.exhaustionLevel === 'yellow' ? '#FFFBEB' : '#F0FDF4';
+                        return (
+                          <div key={emp.name} className="flex items-center gap-3 px-4 py-2.5">
+                            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F5F5F5] text-[10px] font-medium text-[#525252]">
+                              {emp.name.split(' ').map((n: string) => n[0]).join('')}
+                            </div>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-[12px] font-medium text-[#0A0A0A]">{emp.name}</p>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[11px] font-medium text-[#525252]">BAT:</span>
+                              <span className="text-[12px] font-semibold tabular-nums text-[#0A0A0A]">{emp.bat.toFixed(2)}</span>
+                              <span className={`text-[11px] font-bold ${trendColor}`}>{trendSymbol}</span>
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <span className="text-[10px] text-[#A3A3A3]">Exh:</span>
+                              <span
+                                className="inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-semibold"
+                                style={{ backgroundColor: exhBg, color: exhColor }}
+                              >
+                                {emp.exhaustion.toFixed(1)}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      });
+                    })()}
+                  </div>
+                </div>
+              </div>
+
+              {/* Root Cause Analysis */}
+              <div>
+                <h4 className="mb-3 text-[13px] font-semibold text-[#0A0A0A]">
+                  Kok Neden Analizi
+                </h4>
+                <div className="rounded-lg border border-[#D97706]/20 bg-[#FFFBEB] p-4">
+                  <p className="text-[12px] leading-relaxed text-[#525252]">
+                    {(() => {
+                      const dept = selectedCell.dept;
+                      const topDemand = dept.jdr.demandLabels[0] ?? 'is yuku';
+                      const topResource = dept.jdr.resourceLabels[0] ?? 'ozerklik';
+                      const demandScore = ((dept.jdr.demands / 10)).toFixed(1);
+                      const resourceScore = ((dept.jdr.resources / 10)).toFixed(1);
+                      const isHighDemand = dept.jdr.demands > dept.jdr.resources;
+                      return (
+                        <>
+                          <span className="font-semibold text-[#D97706]">Bu departmanda tukenmisligin ana sebebi: </span>
+                          {isHighDemand ? (
+                            <>
+                              {topDemand.charAt(0).toUpperCase() + topDemand.slice(1)} ({demandScore}/10) ve Dusuk {topResource.charAt(0).toUpperCase() + topResource.slice(1)} ({resourceScore}/10).
+                              JD-R modeline gore kaynak artirma mudahalesi onerilir.
+                            </>
+                          ) : (
+                            <>
+                              Dengeli JD-R profili mevcut. Kaynak skoru ({resourceScore}/10) talep skorundan ({demandScore}/10) yuksek.
+                              Mevcut durumun korunmasi onerilir.
+                            </>
+                          )}
+                        </>
+                      );
+                    })()}
+                  </p>
+                </div>
+              </div>
+
+              {/* Historical Comparison */}
+              <div>
+                <h4 className="mb-3 text-[13px] font-semibold text-[#0A0A0A]">
+                  Tarihsel Karsilastirma
+                </h4>
+                <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+                  <p className="text-[12px] leading-relaxed text-[#525252]">
+                    {(() => {
+                      const dept = selectedCell.dept;
+                      const firstWeekScore = dept.weeks[0]?.score ?? 0;
+                      const lastWeekScore = dept.weeks[dept.weeks.length - 1]?.score ?? 0;
+                      const diff = lastWeekScore - firstWeekScore;
+                      const firstLevel = dept.weeks[0]?.level ?? 'green';
+                      const levelLabels: Record<string, string> = { green: 'YESIL', yellow: 'SARI', orange: 'TURUNCU', red: 'KIRMIZI' };
+                      const reasonMap: Record<string, string> = {
+                        'Satis': 'Q1 satis hedefi artisi (%40)',
+                        'Musteri Hizmetleri': 'Musteriden gelen sikayet yogunlugu artisi (%25)',
+                        'Urun': 'Yeni urun lansmanina bagli sprint yogunlugu',
+                        'Muhendislik': 'Teknik borc temizligi baslatildi',
+                        'IK': 'Ise alim yogunlugu normalize oldu',
+                        'Pazarlama': 'Kampanya donemi sakin gecti',
+                      };
+                      if (diff > 10) {
+                        return (
+                          <>
+                            Bu departman 3 ay once <span className="font-semibold text-[#059669]">{levelLabels[firstLevel]}</span> bolgede idi.
+                            Kotulesme ana sebebi: <span className="font-semibold text-[#DC2626]">{reasonMap[dept.name] ?? 'artan is yuku'}</span>.
+                            Skor {firstWeekScore} &#8594; {lastWeekScore} (+{diff} puan artis).
+                          </>
+                        );
+                      } else if (diff < -5) {
+                        return (
+                          <>
+                            Bu departman iyilesme trendinde.
+                            Skor {firstWeekScore} &#8594; {lastWeekScore} ({diff} puan dusus).
+                            Mudahalelerin etkisi goruluyor.
+                          </>
+                        );
+                      } else {
+                        return (
+                          <>
+                            Bu departman son 4 haftada stabil seyretti.
+                            Skor {firstWeekScore} &#8594; {lastWeekScore} (degisim: {diff > 0 ? '+' : ''}{diff} puan).
+                          </>
+                        );
+                      }
+                    })()}
+                  </p>
+                </div>
+              </div>
+
               {/* Active interventions */}
               <div>
                 <h4 className="mb-3 text-[13px] font-semibold text-[#0A0A0A]">

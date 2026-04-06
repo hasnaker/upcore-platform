@@ -31,6 +31,11 @@ import {
   Plus,
   Network,
   Download,
+  Monitor,
+  Lock,
+  Clock,
+  Zap,
+  ArrowUpRight,
 } from 'lucide-react';
 
 type TabKey = 'profile' | 'company' | 'modules' | 'notifications' | 'billing' | 'team' | 'developer' | 'audit' | 'kvkk';
@@ -73,6 +78,8 @@ export default function AyarlarPage() {
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState('IK Uzmani');
   const [apiKeyCopied, setApiKeyCopied] = useState(false);
+  const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
+  const [expandedModuleId, setExpandedModuleId] = useState<string | null>(null);
 
   // Profile form
   const [profileName, setProfileName] = useState('Hasan Aker');
@@ -124,6 +131,32 @@ export default function AyarlarPage() {
     { id: 'rotation', label: 'Rotasyon', description: 'Ic mobilite ve kariyer planlama', enabled: false, price: 1000, usage: { current: 0, limit: 'sinirsiz', label: 'rotasyon plani' } },
     { id: 'okr', label: 'OKR Takibi', description: 'Hedef ve anahtar sonuc yonetimi', enabled: false, price: 1000, usage: { current: 0, limit: 'sinirsiz', label: 'OKR' } },
   ]);
+
+  // Module sub-features detail
+  const moduleFeatures: Record<string, { features: string[]; lastActivity: string; setupComplete: boolean }> = {
+    burnout: { features: ['Haftalik BAT-12-TR pulse', 'Departman kirilim analizi', 'Norm karsilastirmasi', 'Risk haritasi & trendler', 'Otomatik alarm ve bildirimler'], lastActivity: '2 saat once', setupComplete: true },
+    assessment: { features: ['Yetkinlik bazli degerlendirme', 'JD-R profil eslesmesi', 'Big Five kisilik analizi', 'Aday karsilastirma raporu', 'Otomatik skor ve onceliklendirme'], lastActivity: '5 saat once', setupComplete: true },
+    leave: { features: ['Izin bakiye yonetimi', 'Onay akislari', 'Takvim gorunumu', 'Departman cakisma kontrolu'], lastActivity: '1 gun once', setupComplete: true },
+    docs: { features: ['Guvenli belge arsivi', 'Sozlesme yonetimi', 'Otomatik suresi dolma uyarisi', 'KVKK uyumlu saklama'], lastActivity: '3 saat once', setupComplete: true },
+    rotation: { features: ['Ic transfer planlama', 'Kariyer yolu haritasi', 'Yetkinlik gap analizi', 'Mentoring eslestirme'], lastActivity: 'Henuz kullanilmadi', setupComplete: false },
+    okr: { features: ['Hedef agaci olusturma', 'Anahtar sonuc takibi', 'Ceyreklik raporlama', 'Departman OKR hizalamasi'], lastActivity: 'Henuz kullanilmadi', setupComplete: false },
+  };
+
+  // Notification delivery stats
+  const notifStats: Record<string, { lastSent: string; deliveryRate: number }> = {
+    'email-actions': { lastSent: '2 saat once', deliveryRate: 98 },
+    'email-burnout': { lastSent: '5 saat once', deliveryRate: 100 },
+    'email-leave': { lastSent: '1 gun once', deliveryRate: 97 },
+    'email-weekly': { lastSent: 'Pazartesi 09:00', deliveryRate: 99 },
+    'push-all': { lastSent: 'Henuz gonderilmedi', deliveryRate: 0 },
+  };
+
+  // Invoice history
+  const invoiceHistory = [
+    { month: 'Mart 2026', amount: 5000, status: 'paid' as const },
+    { month: 'Subat 2026', amount: 5000, status: 'paid' as const },
+    { month: 'Ocak 2026', amount: 4500, status: 'paid' as const },
+  ];
 
   // Team members
   const [team] = useState<TeamMember[]>([
@@ -330,30 +363,93 @@ export default function AyarlarPage() {
                   />
                 </div>
               </div>
-              {/* Theme toggle */}
+              {/* 2FA Toggle */}
               <div className="flex items-center justify-between rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
                 <div className="flex items-center gap-2">
-                  {darkMode ? <Moon className="h-4 w-4 text-[#5E5CE6]" /> : <Sun className="h-4 w-4 text-[#D97706]" />}
-                  <span className="text-sm font-medium text-[#0A0A0A]">
-                    {darkMode ? 'Koyu Tema' : 'Acik Tema'}
-                  </span>
+                  <Lock className="h-4 w-4 text-[#5E5CE6]" />
+                  <div>
+                    <span className="text-sm font-medium text-[#0A0A0A]">Iki Faktorlu Dogrulama (2FA)</span>
+                    <p className="text-[11px] text-[#A3A3A3]">
+                      {twoFactorEnabled ? 'Aktif — hesabiniz korunuyor' : 'Devre disi — aktif etmenizi oneriyoruz'}
+                    </p>
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => {
-                    setDarkMode(!darkMode);
-                    showToast(darkMode ? 'Acik tema secildi' : 'Koyu tema secildi');
+                    setTwoFactorEnabled(!twoFactorEnabled);
+                    showToast(twoFactorEnabled ? '2FA devre disi birakildi' : '2FA aktif edildi');
                   }}
                   className={`relative h-6 w-11 rounded-full transition-colors ${
-                    darkMode ? 'bg-[#5E5CE6]' : 'bg-[#D4D4D4]'
+                    twoFactorEnabled ? 'bg-[#059669]' : 'bg-[#D4D4D4]'
                   }`}
                 >
                   <span
                     className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                      darkMode ? 'translate-x-[22px]' : 'translate-x-0.5'
+                      twoFactorEnabled ? 'translate-x-[22px]' : 'translate-x-0.5'
                     }`}
                   />
                 </button>
+              </div>
+
+              {/* Last login & active sessions */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
+                  <Clock className="h-4 w-4 text-[#525252]" />
+                  <div>
+                    <p className="text-[11px] text-[#A3A3A3]">Son giris</p>
+                    <p className="text-sm font-medium text-[#0A0A0A]">Bugun 09:24, Istanbul</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
+                  <Monitor className="h-4 w-4 text-[#525252]" />
+                  <div>
+                    <p className="text-[11px] text-[#A3A3A3]">Aktif oturumlar</p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium text-[#0A0A0A]">2 oturum</p>
+                      <span className="text-[10px] text-[#888]">(bu cihaz + iPhone)</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Language & Theme preferences */}
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="flex items-center justify-between rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    <Globe className="h-4 w-4 text-[#525252]" />
+                    <div>
+                      <p className="text-[11px] text-[#A3A3A3]">Dil tercihi</p>
+                      <p className="text-sm font-medium text-[#0A0A0A]">Turkce</p>
+                    </div>
+                  </div>
+                  <span className="rounded-full bg-[#F5F5F5] px-2 py-0.5 text-[10px] font-medium text-[#A3A3A3]">V1 tek dil</span>
+                </div>
+                <div className="flex items-center justify-between rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
+                  <div className="flex items-center gap-2">
+                    {darkMode ? <Moon className="h-4 w-4 text-[#5E5CE6]" /> : <Sun className="h-4 w-4 text-[#D97706]" />}
+                    <div>
+                      <p className="text-[11px] text-[#A3A3A3]">Tema</p>
+                      <p className="text-sm font-medium text-[#0A0A0A]">{darkMode ? 'Koyu' : 'Acik'}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setDarkMode(!darkMode);
+                      showToast(darkMode ? 'Acik tema secildi' : 'Koyu tema secildi');
+                    }}
+                    className={`relative h-6 w-11 rounded-full transition-colors ${
+                      darkMode ? 'bg-[#5E5CE6]' : 'bg-[#D4D4D4]'
+                    }`}
+                  >
+                    <span
+                      className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                        darkMode ? 'translate-x-[22px]' : 'translate-x-0.5'
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
             </div>
             <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
@@ -774,6 +870,61 @@ export default function AyarlarPage() {
                     )}
                   </div>
                 )}
+
+                {/* Expandable feature list */}
+                {(() => {
+                  const mf = moduleFeatures[m.id];
+                  if (!mf) return null;
+                  return (
+                    <div className="border-t border-[#EDEDED]">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedModuleId(expandedModuleId === m.id ? null : m.id)}
+                        className="flex w-full items-center justify-between px-5 py-2.5 text-left transition-colors hover:bg-[#FAFAFA]"
+                      >
+                        <span className="text-[11px] font-medium text-[#5E5CE6]">Ozellikler ve detaylar</span>
+                        {expandedModuleId === m.id ? (
+                          <ChevronDown className="h-3.5 w-3.5 text-[#A3A3A3]" />
+                        ) : (
+                          <ChevronRight className="h-3.5 w-3.5 text-[#A3A3A3]" />
+                        )}
+                      </button>
+
+                      {expandedModuleId === m.id && (
+                        <div className="bg-[#FAFAFF] px-5 py-3">
+                          {/* Feature list */}
+                          <p className="mb-2 text-[10px] font-semibold uppercase tracking-wider text-[#A3A3A3]">Alt Ozellikler</p>
+                          <div className="flex flex-col gap-1.5 mb-3">
+                            {mf.features.map((feat) => (
+                              <div key={feat} className="flex items-center gap-2 text-[12px] text-[#525252]">
+                                <Check className="h-3 w-3 text-[#059669]" />
+                                {feat}
+                              </div>
+                            ))}
+                          </div>
+
+                          {/* Stats row */}
+                          <div className="flex items-center gap-4 rounded-lg bg-white border border-[#EDEDED] px-3 py-2">
+                            <div className="flex items-center gap-1.5 text-[11px] text-[#888]">
+                              <Clock className="h-3 w-3" />
+                              Son aktivite: <span className="font-medium text-[#0A0A0A]">{mf.lastActivity}</span>
+                            </div>
+                            {!mf.setupComplete && (
+                              <button
+                                type="button"
+                                onClick={() => showToast(`${m.label} kurulum sihirbazi acildi`)}
+                                className="ml-auto flex items-center gap-1 text-[11px] font-semibold text-[#5E5CE6] hover:underline"
+                              >
+                                Kurulumu tamamla
+                                <ArrowUpRight className="h-3 w-3" />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
             ))}
           </div>
@@ -824,34 +975,65 @@ export default function AyarlarPage() {
       {/* Notifications Tab */}
       {activeTab === 'notifications' && (
         <div className="max-w-2xl">
-          <div className="mb-4 flex items-center gap-2">
-            <Mail className="h-4 w-4 text-[#525252]" />
-            <p className="text-sm text-[#525252]">
-              Bildirim tercihleri — {profileEmail}
-            </p>
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-[#525252]" />
+              <p className="text-sm text-[#525252]">
+                Bildirim tercihleri — {profileEmail}
+              </p>
+            </div>
+            {/* Monthly stats summary */}
+            <div className="flex items-center gap-3 rounded-lg bg-[#FAFAFA] px-3 py-2">
+              <span className="text-[11px] text-[#A3A3A3]">Bu ay:</span>
+              <span className="text-[11px] font-semibold text-[#0A0A0A]">47 email</span>
+              <span className="text-[11px] text-[#D4D4D4]">|</span>
+              <span className="text-[11px] font-semibold text-[#0A0A0A]">123 uygulama ici</span>
+            </div>
           </div>
           <div className="flex flex-col gap-3">
-            {notifications.map((n) => (
-              <div key={n.id} className="flex items-center justify-between rounded-lg border border-[#EDEDED] bg-white px-5 py-4 transition-colors hover:border-[#D4D4D4]">
-                <div>
-                  <p className="text-sm font-medium text-[#0A0A0A]">{n.label}</p>
-                  <p className="mt-0.5 text-xs text-[#A3A3A3]">{n.description}</p>
+            {notifications.map((n) => {
+              const stats = notifStats[n.id];
+              return (
+                <div key={n.id} className="rounded-lg border border-[#EDEDED] bg-white transition-colors hover:border-[#D4D4D4]">
+                  <div className="flex items-center justify-between px-5 py-4">
+                    <div>
+                      <p className="text-sm font-medium text-[#0A0A0A]">{n.label}</p>
+                      <p className="mt-0.5 text-xs text-[#A3A3A3]">{n.description}</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => toggleNotification(n.id)}
+                      className={`relative h-6 w-11 rounded-full transition-colors ${
+                        n.enabled ? 'bg-[#059669]' : 'bg-[#D4D4D4]'
+                      }`}
+                    >
+                      <span
+                        className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+                          n.enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
+                        }`}
+                      />
+                    </button>
+                  </div>
+                  {/* Delivery stats per notification */}
+                  {n.enabled && stats && (
+                    <div className="border-t border-[#EDEDED] bg-[#FAFAFF] px-5 py-2.5">
+                      <div className="flex items-center gap-4 text-[11px] text-[#888]">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          Son gonderim: <span className="font-medium text-[#525252]">{stats.lastSent}</span>
+                        </span>
+                        {stats.deliveryRate > 0 && (
+                          <span className="flex items-center gap-1">
+                            <Zap className="h-3 w-3" />
+                            Teslim orani: <span className="font-medium text-[#059669]">%{stats.deliveryRate} basarili</span>
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <button
-                  type="button"
-                  onClick={() => toggleNotification(n.id)}
-                  className={`relative h-6 w-11 rounded-full transition-colors ${
-                    n.enabled ? 'bg-[#059669]' : 'bg-[#D4D4D4]'
-                  }`}
-                >
-                  <span
-                    className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                      n.enabled ? 'translate-x-[22px]' : 'translate-x-0.5'
-                    }`}
-                  />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
           <div className="mt-4 flex justify-end">
             <button
@@ -910,7 +1092,82 @@ export default function AyarlarPage() {
               </div>
             ))}
           </div>
-          <div className="mt-6 flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-5 py-4">
+          {/* Plan Limits */}
+          <div className="mt-6 rounded-xl border border-[#EDEDED] bg-white p-5">
+            <h3 className="text-sm font-semibold text-[#0A0A0A] mb-4">Plan Limitleri</h3>
+            <div className="flex flex-col gap-3">
+              {[
+                { label: 'Calisan', current: 10, limit: 500, unit: '' },
+                { label: 'Assessment', current: 34, limit: -1, unit: 'sinirsiz' },
+                { label: 'Depolama', current: 2.1, limit: 10, unit: 'GB' },
+              ].map((item) => (
+                <div key={item.label}>
+                  <div className="flex items-center justify-between text-[12px]">
+                    <span className="text-[#525252]">{item.label}</span>
+                    <span className="font-medium tabular-nums text-[#0A0A0A]">
+                      {item.limit === -1 ? `${item.current} (${item.unit})` : `${item.current}/${item.limit} ${item.unit}`}
+                    </span>
+                  </div>
+                  {item.limit > 0 && (
+                    <div className="mt-1 h-1.5 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                      <div
+                        className="h-full rounded-full bg-[#5E5CE6] transition-all"
+                        style={{ width: `${Math.min(100, (item.current / item.limit) * 100)}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Upgrade Comparison */}
+          <div className="mt-4 rounded-xl border border-[#5E5CE6]/20 bg-[#FAFAFF] p-5">
+            <div className="flex items-center gap-2 mb-3">
+              <ArrowUpRight className="h-4 w-4 text-[#5E5CE6]" />
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">Kurumsal Plana Yukselt</h3>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2 text-[12px]">
+              <div className="rounded-lg border border-[#EDEDED] bg-white p-3">
+                <p className="text-[#A3A3A3] mb-1">Platform (Mevcut)</p>
+                <p className="font-semibold text-[#0A0A0A]">₺{currentMonthlyCost.toLocaleString('tr-TR')}/ay</p>
+                <p className="text-[11px] text-[#888] mt-1">500 calisan, 10 GB</p>
+              </div>
+              <div className="rounded-lg border border-[#5E5CE6]/30 bg-[#EEF0FD] p-3">
+                <p className="text-[#5E5CE6] mb-1 font-medium">Kurumsal</p>
+                <p className="font-semibold text-[#0A0A0A]">+₺5.000/ay</p>
+                <p className="text-[11px] text-[#5E5CE6] mt-1">Sinirsiz calisan, dedicated destek</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Invoice History */}
+          <div className="mt-4 rounded-xl border border-[#EDEDED] bg-white">
+            <div className="border-b border-[#EDEDED] px-5 py-3">
+              <h3 className="text-sm font-semibold text-[#0A0A0A]">Fatura Gecmisi</h3>
+            </div>
+            <div className="divide-y divide-[#EDEDED]">
+              {invoiceHistory.map((inv) => (
+                <div key={inv.month} className="flex items-center justify-between px-5 py-3 transition-colors hover:bg-[#FAFAFA]">
+                  <div className="flex items-center gap-3">
+                    <FileText className="h-4 w-4 text-[#A3A3A3]" />
+                    <span className="text-[13px] font-medium text-[#0A0A0A]">{inv.month}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className="text-[13px] font-semibold tabular-nums text-[#0A0A0A]">
+                      ₺{inv.amount.toLocaleString('tr-TR')}
+                    </span>
+                    <span className="inline-flex items-center gap-1 rounded-full bg-[#D1FAE5] px-2 py-0.5 text-[10px] font-semibold text-[#059669]">
+                      <Check className="h-3 w-3" />
+                      Odendi
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="mt-4 flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-5 py-4">
             <Globe className="h-4 w-4 text-[#5E5CE6]" />
             <div>
               <p className="text-xs font-medium text-[#525252]">Fatura Bilgileri</p>

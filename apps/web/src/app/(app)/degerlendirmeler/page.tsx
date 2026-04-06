@@ -15,12 +15,56 @@ import {
   MessageSquare,
   XCircle,
   BarChart3,
+  MapPin,
+  Briefcase,
+  Target,
+  AlertTriangle,
+  Phone,
+  Mail,
+  Shield,
+  TrendingUp,
+  TrendingDown,
 } from 'lucide-react';
+
+interface BigFiveProfile {
+  extraversion: number;
+  conscientiousness: number;
+  openness: number;
+  agreeableness: number;
+  neuroticism: number;
+}
+
+interface PsyCapProfile {
+  hope: number;
+  efficacy: number;
+  resilience: number;
+  optimism: number;
+}
+
+interface JDRFit {
+  demandsMatch: number;
+  resourcesMatch: number;
+  overall: number;
+}
+
+interface ReferenceCheck {
+  label: string;
+  checked: boolean;
+}
 
 interface CandidateDetail {
   email: string;
+  phone?: string;
+  currentPosition?: string;
+  experienceYears?: number;
   fitBreakdown: { label: string; score: number }[];
   notes: string;
+  bigFive?: BigFiveProfile;
+  psyCap?: PsyCapProfile;
+  jdrFit?: JDRFit;
+  references?: ReferenceCheck[];
+  redFlags?: string[];
+  strengthReport?: string;
 }
 
 interface Candidate {
@@ -44,51 +88,142 @@ const STAGES = [
 const initialCandidates: Candidate[] = [
   {
     id: '1', name: 'Selin Ozturk', position: 'Satis Uzmani', score: 96, stage: 'mulakat',
-    detail: { email: 'selin.o@gmail.com', fitBreakdown: [{ label: 'Iletisim', score: 98 }, { label: 'Analitik', score: 88 }, { label: 'Stres Dayanikliligi', score: 94 }, { label: 'Takim Calismasi', score: 96 }], notes: 'Cok guzel sunum yapti, satista 5 yil tecrubesi var.' },
+    detail: {
+      email: 'selin.o@gmail.com', phone: '+90 532 111 2233', currentPosition: 'Satis Temsilcisi, ABC Ltd.', experienceYears: 5,
+      fitBreakdown: [{ label: 'Iletisim', score: 98 }, { label: 'Analitik', score: 88 }, { label: 'Stres Dayanikliligi', score: 94 }, { label: 'Takim Calismasi', score: 96 }],
+      notes: 'Cok guzel sunum yapti, satista 5 yil tecrubesi var.',
+      bigFive: { extraversion: 78, conscientiousness: 85, openness: 72, agreeableness: 68, neuroticism: 32 },
+      psyCap: { hope: 7.8, efficacy: 8.1, resilience: 6.5, optimism: 7.2 },
+      jdrFit: { demandsMatch: 92, resourcesMatch: 88, overall: 90 },
+      references: [{ label: 'Is deneyimi dogrulandi', checked: true }, { label: 'Egitim dogrulandi', checked: true }, { label: 'Referans kontrolu', checked: false }],
+      redFlags: [],
+      strengthReport: 'Bu adayin guclu yonleri: Iletisim, stres dayanikliligi. Dikkat: Dusuk resilience skoru (6.5/10).',
+    },
   },
   {
     id: '2', name: 'Kerem Aslan', position: 'Urun Yoneticisi', score: 95, stage: 'mulakat',
-    detail: { email: 'kerem.a@outlook.com', fitBreakdown: [{ label: 'Iletisim', score: 92 }, { label: 'Analitik', score: 96 }, { label: 'Stres Dayanikliligi', score: 90 }, { label: 'Liderlik', score: 95 }], notes: '' },
+    detail: {
+      email: 'kerem.a@outlook.com', phone: '+90 533 222 3344', currentPosition: 'Urun Muduru, XYZ Tech', experienceYears: 7,
+      fitBreakdown: [{ label: 'Iletisim', score: 92 }, { label: 'Analitik', score: 96 }, { label: 'Stres Dayanikliligi', score: 90 }, { label: 'Liderlik', score: 95 }],
+      notes: '',
+      bigFive: { extraversion: 82, conscientiousness: 90, openness: 85, agreeableness: 75, neuroticism: 28 },
+      psyCap: { hope: 8.2, efficacy: 8.5, resilience: 7.8, optimism: 8.0 },
+      jdrFit: { demandsMatch: 94, resourcesMatch: 91, overall: 93 },
+      references: [{ label: 'Is deneyimi dogrulandi', checked: true }, { label: 'Egitim dogrulandi', checked: true }, { label: 'Referans kontrolu', checked: true }],
+      redFlags: [],
+      strengthReport: 'Guclu liderlik ve analitik yetkinlik. Tum referanslar olumlu.',
+    },
   },
   {
     id: '3', name: 'Defne Yildirim', position: 'Frontend Gelistirici', score: 88, stage: 'assessment',
-    detail: { email: 'defne.y@gmail.com', fitBreakdown: [{ label: 'Teknik', score: 92 }, { label: 'Problem Cozme', score: 85 }, { label: 'Takim Calismasi', score: 88 }, { label: 'Iletisim', score: 80 }], notes: 'React portfolyosu etkileyici.' },
+    detail: {
+      email: 'defne.y@gmail.com', phone: '+90 535 333 4455', currentPosition: 'Junior Developer, Startup Co.', experienceYears: 3,
+      fitBreakdown: [{ label: 'Teknik', score: 92 }, { label: 'Problem Cozme', score: 85 }, { label: 'Takim Calismasi', score: 88 }, { label: 'Iletisim', score: 80 }],
+      notes: 'React portfolyosu etkileyici.',
+      bigFive: { extraversion: 65, conscientiousness: 80, openness: 88, agreeableness: 82, neuroticism: 40 },
+      psyCap: { hope: 7.5, efficacy: 7.8, resilience: 7.0, optimism: 7.5 },
+      jdrFit: { demandsMatch: 85, resourcesMatch: 82, overall: 84 },
+      references: [{ label: 'Is deneyimi dogrulandi', checked: true }, { label: 'Egitim dogrulandi', checked: false }, { label: 'Referans kontrolu', checked: false }],
+      redFlags: [],
+      strengthReport: 'Teknik beceriler guclu, acik fikirli ve yaratici. Sosyal yonleri gelistirilebilir.',
+    },
   },
   {
     id: '4', name: 'Arda Koc', position: 'Veri Analisti', score: 82, stage: 'assessment',
-    detail: { email: 'arda.k@yahoo.com', fitBreakdown: [{ label: 'Analitik', score: 90 }, { label: 'SQL/Python', score: 85 }, { label: 'Iletisim', score: 72 }, { label: 'Sunum', score: 78 }], notes: '' },
+    detail: {
+      email: 'arda.k@yahoo.com', phone: '+90 536 444 5566', currentPosition: 'Data Intern, BigCo', experienceYears: 2,
+      fitBreakdown: [{ label: 'Analitik', score: 90 }, { label: 'SQL/Python', score: 85 }, { label: 'Iletisim', score: 72 }, { label: 'Sunum', score: 78 }],
+      notes: '',
+      bigFive: { extraversion: 55, conscientiousness: 78, openness: 70, agreeableness: 72, neuroticism: 45 },
+      psyCap: { hope: 6.8, efficacy: 7.2, resilience: 6.0, optimism: 6.5 },
+      jdrFit: { demandsMatch: 80, resourcesMatch: 76, overall: 78 },
+      references: [{ label: 'Is deneyimi dogrulandi', checked: true }, { label: 'Egitim dogrulandi', checked: true }, { label: 'Referans kontrolu', checked: false }],
+      redFlags: ['Sik is degisimi (3 yilda 4 sirket)'],
+      strengthReport: 'Analitik yetenekler iyi. Dikkat: Dusuk resilience skoru ve sik is degisimi.',
+    },
   },
   {
     id: '5', name: 'Zeynep Celik', position: 'IK Uzmani', score: 91, stage: 'on-eleme',
-    detail: { email: 'zeynep.c@gmail.com', fitBreakdown: [{ label: 'Iletisim', score: 95 }, { label: 'Empati', score: 92 }, { label: 'Organizasyon', score: 88 }, { label: 'Hukuk Bilgisi', score: 86 }], notes: '' },
+    detail: {
+      email: 'zeynep.c@gmail.com', phone: '+90 537 555 6677', currentPosition: 'IK Asistani, DEF Holding', experienceYears: 4,
+      fitBreakdown: [{ label: 'Iletisim', score: 95 }, { label: 'Empati', score: 92 }, { label: 'Organizasyon', score: 88 }, { label: 'Hukuk Bilgisi', score: 86 }],
+      notes: '',
+      references: [{ label: 'Is deneyimi dogrulandi', checked: false }, { label: 'Egitim dogrulandi', checked: false }, { label: 'Referans kontrolu', checked: false }],
+      redFlags: [],
+    },
   },
   {
     id: '6', name: 'Can Demirtas', position: 'Satis Uzmani', score: 78, stage: 'basvuru',
-    detail: { email: 'can.d@hotmail.com', fitBreakdown: [{ label: 'Iletisim', score: 82 }, { label: 'Analitik', score: 70 }, { label: 'Stres Dayanikliligi', score: 75 }, { label: 'Satish Deneyimi', score: 80 }], notes: '' },
+    detail: {
+      email: 'can.d@hotmail.com', phone: '+90 538 666 7788', currentPosition: 'Satis Stajyeri, GHI A.S.', experienceYears: 1,
+      fitBreakdown: [{ label: 'Iletisim', score: 82 }, { label: 'Analitik', score: 70 }, { label: 'Stres Dayanikliligi', score: 75 }, { label: 'Satish Deneyimi', score: 80 }],
+      notes: '',
+      redFlags: ['Deneyim suresi kisa (1 yil)'],
+    },
   },
   {
     id: '7', name: 'Melis Acar', position: 'Pazarlama Uzmani', score: 85, stage: 'basvuru',
-    detail: { email: 'melis.a@gmail.com', fitBreakdown: [{ label: 'Yaraticilik', score: 92 }, { label: 'Analitik', score: 78 }, { label: 'Dijital Pazarlama', score: 88 }, { label: 'Iletisim', score: 85 }], notes: '' },
+    detail: {
+      email: 'melis.a@gmail.com', phone: '+90 539 777 8899', currentPosition: 'Dijital Pazarlama Uzmani, JKL Ltd.', experienceYears: 3,
+      fitBreakdown: [{ label: 'Yaraticilik', score: 92 }, { label: 'Analitik', score: 78 }, { label: 'Dijital Pazarlama', score: 88 }, { label: 'Iletisim', score: 85 }],
+      notes: '',
+      redFlags: [],
+    },
   },
   {
     id: '8', name: 'Emre Sahin', position: 'Backend Gelistirici', score: 90, stage: 'teklif',
-    detail: { email: 'emre.s@gmail.com', fitBreakdown: [{ label: 'Teknik', score: 95 }, { label: 'Sistem Tasarimi', score: 88 }, { label: 'Takim Calismasi', score: 84 }, { label: 'Iletisim', score: 80 }], notes: 'Teklifimiz gonderildi, yanit bekleniyor.' },
+    detail: {
+      email: 'emre.s@gmail.com', phone: '+90 531 888 9900', currentPosition: 'Senior Backend Dev, MNO Tech', experienceYears: 6,
+      fitBreakdown: [{ label: 'Teknik', score: 95 }, { label: 'Sistem Tasarimi', score: 88 }, { label: 'Takim Calismasi', score: 84 }, { label: 'Iletisim', score: 80 }],
+      notes: 'Teklifimiz gonderildi, yanit bekleniyor.',
+      bigFive: { extraversion: 60, conscientiousness: 92, openness: 75, agreeableness: 80, neuroticism: 30 },
+      psyCap: { hope: 8.0, efficacy: 8.8, resilience: 7.5, optimism: 7.8 },
+      jdrFit: { demandsMatch: 90, resourcesMatch: 85, overall: 88 },
+      references: [{ label: 'Is deneyimi dogrulandi', checked: true }, { label: 'Egitim dogrulandi', checked: true }, { label: 'Referans kontrolu', checked: true }],
+      redFlags: [],
+      strengthReport: 'Teknik yetkinlik cok yuksek. Sistem tasarimi deneyimi guclu.',
+    },
   },
   {
     id: '9', name: 'Ayse Korkmaz', position: 'Musteri Temsilcisi', score: 74, stage: 'on-eleme',
-    detail: { email: 'ayse.k@outlook.com', fitBreakdown: [{ label: 'Iletisim', score: 78 }, { label: 'Empati', score: 80 }, { label: 'Stres Dayanikliligi', score: 68 }, { label: 'Problem Cozme', score: 70 }], notes: '' },
+    detail: {
+      email: 'ayse.k@outlook.com', phone: '+90 532 999 0011', currentPosition: 'Cagri Merkezi Op., PQR A.S.', experienceYears: 2,
+      fitBreakdown: [{ label: 'Iletisim', score: 78 }, { label: 'Empati', score: 80 }, { label: 'Stres Dayanikliligi', score: 68 }, { label: 'Problem Cozme', score: 70 }],
+      notes: '',
+      redFlags: ['Dusuk stres dayanikliligi skoru'],
+    },
   },
   {
     id: '10', name: 'Baris Erdogan', position: 'DevOps Muhendisi', score: 93, stage: 'ise-alim',
-    detail: { email: 'baris.e@gmail.com', fitBreakdown: [{ label: 'Teknik', score: 96 }, { label: 'Otomasyon', score: 94 }, { label: 'Problem Cozme', score: 90 }, { label: 'Iletisim', score: 82 }], notes: 'Ise baslama tarihi: 15 Nisan 2026' },
+    detail: {
+      email: 'baris.e@gmail.com', phone: '+90 533 000 1122', currentPosition: 'DevOps Engineer, STU Inc.', experienceYears: 5,
+      fitBreakdown: [{ label: 'Teknik', score: 96 }, { label: 'Otomasyon', score: 94 }, { label: 'Problem Cozme', score: 90 }, { label: 'Iletisim', score: 82 }],
+      notes: 'Ise baslama tarihi: 15 Nisan 2026',
+      bigFive: { extraversion: 70, conscientiousness: 88, openness: 80, agreeableness: 78, neuroticism: 25 },
+      psyCap: { hope: 8.5, efficacy: 9.0, resilience: 8.0, optimism: 8.2 },
+      jdrFit: { demandsMatch: 95, resourcesMatch: 90, overall: 93 },
+      references: [{ label: 'Is deneyimi dogrulandi', checked: true }, { label: 'Egitim dogrulandi', checked: true }, { label: 'Referans kontrolu', checked: true }],
+      redFlags: [],
+      strengthReport: 'Mukemmel teknik yetkinlik ve problem cozme becerisi. Ise alim tamamlandi.',
+    },
   },
   {
     id: '11', name: 'Tugce Yildiz', position: 'Satis Uzmani', score: 72, stage: 'basvuru',
-    detail: { email: 'tugce.y@gmail.com', fitBreakdown: [{ label: 'Iletisim', score: 75 }, { label: 'Analitik', score: 68 }, { label: 'Stres Dayanikliligi', score: 72 }, { label: 'Satish Deneyimi', score: 70 }], notes: '' },
+    detail: {
+      email: 'tugce.y@gmail.com', phone: '+90 534 111 2244', currentPosition: 'Satis Asistani, VWX Ltd.', experienceYears: 1,
+      fitBreakdown: [{ label: 'Iletisim', score: 75 }, { label: 'Analitik', score: 68 }, { label: 'Stres Dayanikliligi', score: 72 }, { label: 'Satish Deneyimi', score: 70 }],
+      notes: '',
+      redFlags: ['Deneyim suresi kisa'],
+    },
   },
   {
     id: '12', name: 'Oguz Kaya', position: 'Satis Uzmani', score: 80, stage: 'on-eleme',
-    detail: { email: 'oguz.k@gmail.com', fitBreakdown: [{ label: 'Iletisim', score: 85 }, { label: 'Analitik', score: 76 }, { label: 'Stres Dayanikliligi', score: 78 }, { label: 'Satish Deneyimi', score: 82 }], notes: '' },
+    detail: {
+      email: 'oguz.k@gmail.com', phone: '+90 535 222 3355', currentPosition: 'Saha Satis, YZA A.S.', experienceYears: 3,
+      fitBreakdown: [{ label: 'Iletisim', score: 85 }, { label: 'Analitik', score: 76 }, { label: 'Stres Dayanikliligi', score: 78 }, { label: 'Satish Deneyimi', score: 82 }],
+      notes: '',
+      redFlags: [],
+    },
   },
 ];
 
@@ -180,13 +315,66 @@ const buildPositionStats = (positions: ApiPosition[], applications: ApiApplicati
 
 /* ─── Position stats (mock for Satis Uzmani) ─── */
 const defaultPositionStats = {
-  name: 'Satis Uzmani',
-  openedDaysAgo: 15,
-  applications: 12,
+  name: 'Kidemli Satis Uzmani',
+  openedDaysAgo: 12,
+  applications: 6,
   avgFit: 78,
   slaCurrent: 7,
   slaTotal: 30,
 };
+
+/* ─── Rich Position Detail ─── */
+const positionDetail = {
+  title: 'Kidemli Satis Uzmani',
+  department: 'Satis',
+  location: 'Istanbul',
+  type: 'Tam Zamanli',
+  openedDate: '25 Mart 2026',
+  openedDaysAgo: 12,
+  targetHeadcount: 2,
+  applicationCount: 6,
+  conversion: 33,
+  jdrProfile: {
+    demands: [
+      { label: 'Is yuku', score: 7 },
+      { label: 'Zaman baskisi', score: 8 },
+      { label: 'Musteri baskisi', score: 7 },
+    ],
+    resources: [
+      { label: 'Ozerklik', score: 6 },
+      { label: 'Yonetici destegi', score: 7 },
+      { label: 'Kariyer firsati', score: 8 },
+    ],
+  },
+};
+
+/* ─── Deep Pipeline Analytics ─── */
+const stageTimings = [
+  { from: 'Basvuru', to: 'Tarama', avgDays: 2 },
+  { from: 'Tarama', to: 'Test', avgDays: 3 },
+  { from: 'Test', to: 'Mulakat', avgDays: 5 },
+  { from: 'Mulakat', to: 'Teklif', avgDays: 8 },
+  { from: 'Teklif', to: 'Ise Alim', avgDays: 4 },
+];
+
+const bottlenecks = [
+  { stage: 'Mulakat', avgDays: 8, targetDays: 5, severity: 'high' as const },
+  { stage: 'Teklif', avgDays: 4, targetDays: 3, severity: 'medium' as const },
+];
+
+const sourceQuality = [
+  { source: 'Kariyer.net', applicationPct: 45, hirePct: 20, quality: 'low' as const },
+  { source: 'Referral', applicationPct: 20, hirePct: 50, quality: 'high' as const },
+  { source: 'LinkedIn', applicationPct: 25, hirePct: 25, quality: 'medium' as const },
+  { source: 'Diger', applicationPct: 10, hirePct: 5, quality: 'low' as const },
+];
+
+const rejectionReasons = [
+  { reason: 'Deneyim yetersiz', pct: 40, color: '#DC2626' },
+  { reason: 'Uyum dusuk', pct: 30, color: '#D97706' },
+  { reason: 'Maas beklentisi yuksek', pct: 20, color: '#5E5CE6' },
+  { reason: 'Diger', pct: 10, color: '#A3A3A3' },
+];
 
 const getInitials = (name: string) =>
   name.split(' ').map((n) => n[0]).join('').toUpperCase();
@@ -397,34 +585,95 @@ export default function DegerlendirmelerPage() {
         </button>
       </div>
 
-      {/* Position-level stats */}
+      {/* ─── Rich Position Detail Header ─── */}
       <div className="rounded-xl border border-[#EDEDED] bg-white p-5">
-        <div className="flex flex-wrap items-center gap-6">
+        {/* Top row: Position name + meta */}
+        <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
           <div>
-            <p className="text-xs font-medium text-[#A3A3A3]">Pozisyon</p>
-            <p className="text-sm font-semibold text-[#0A0A0A]">{positionStats.name}</p>
+            <h2 className="text-lg font-semibold text-[#0A0A0A]">{positionDetail.title}</h2>
+            <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-[#525252]">
+              <span className="inline-flex items-center gap-1"><Briefcase className="h-3 w-3" />{positionDetail.department}</span>
+              <span className="text-[#D4D4D4]">|</span>
+              <span className="inline-flex items-center gap-1"><MapPin className="h-3 w-3" />{positionDetail.location}</span>
+              <span className="text-[#D4D4D4]">|</span>
+              <span>{positionDetail.type}</span>
+            </div>
+            <p className="mt-1 text-[11px] text-[#A3A3A3]">Acilma: {positionDetail.openedDate} ({positionDetail.openedDaysAgo} gun once)</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <p className="text-[10px] font-medium text-[#A3A3A3]">SLA</p>
+              <p className="text-sm font-semibold text-[#0A0A0A]">{positionStats.slaCurrent}/{positionStats.slaTotal} gun</p>
+            </div>
+            <div className="h-10 w-24 overflow-hidden rounded-lg bg-[#F5F5F5]">
+              <div
+                className="h-full rounded-lg transition-all"
+                style={{
+                  width: `${(positionStats.slaCurrent / positionStats.slaTotal) * 100}%`,
+                  backgroundColor: positionStats.slaCurrent / positionStats.slaTotal < 0.5 ? '#059669' : positionStats.slaCurrent / positionStats.slaTotal < 0.8 ? '#D97706' : '#DC2626',
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Stats row */}
+        <div className="flex flex-wrap items-center gap-6 mb-4">
+          <div>
+            <p className="text-[10px] font-medium text-[#A3A3A3]">Hedef</p>
+            <p className="text-sm font-semibold text-[#0A0A0A]">{positionDetail.targetHeadcount} kisi</p>
           </div>
           <div className="h-8 w-px bg-[#EDEDED]" />
           <div>
-            <p className="text-xs font-medium text-[#A3A3A3]">Acilma</p>
-            <p className="text-sm font-semibold text-[#0A0A0A]">{positionStats.openedDaysAgo} gun once</p>
+            <p className="text-[10px] font-medium text-[#A3A3A3]">Basvuru</p>
+            <p className="text-sm font-semibold text-[#0A0A0A]">{positionDetail.applicationCount}</p>
           </div>
           <div className="h-8 w-px bg-[#EDEDED]" />
           <div>
-            <p className="text-xs font-medium text-[#A3A3A3]">Basvuru</p>
-            <p className="text-sm font-semibold text-[#0A0A0A]">{positionStats.applications}</p>
+            <p className="text-[10px] font-medium text-[#A3A3A3]">Conversion</p>
+            <p className="text-sm font-semibold text-[#0A0A0A]">%{positionDetail.conversion}</p>
           </div>
           <div className="h-8 w-px bg-[#EDEDED]" />
           <div>
-            <p className="text-xs font-medium text-[#A3A3A3]">Ort. Fit</p>
+            <p className="text-[10px] font-medium text-[#A3A3A3]">Ort. Fit</p>
             <p className="text-sm font-semibold text-[#0A0A0A]">%{positionStats.avgFit}</p>
           </div>
-          <div className="h-8 w-px bg-[#EDEDED]" />
-          <div>
-            <p className="text-xs font-medium text-[#A3A3A3]">SLA</p>
-            <div className="flex items-center gap-2">
-              <p className="text-sm font-semibold text-[#0A0A0A]">{positionStats.slaCurrent}/{positionStats.slaTotal} gun</p>
-              <span className="inline-flex h-2 w-2 rounded-full bg-[#059669]" />
+        </div>
+
+        {/* JD-R Profile */}
+        <div className="rounded-lg bg-[#FAFAFA] border border-[#EDEDED] p-4">
+          <div className="flex items-center gap-2 mb-3">
+            <Target className="h-3.5 w-3.5 text-[#5E5CE6]" />
+            <p className="text-xs font-semibold text-[#0A0A0A]">JD-R Profili (Talepler / Kaynaklar)</p>
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <p className="text-[10px] font-medium text-[#DC2626] mb-2">Talepler (Demands)</p>
+              {positionDetail.jdrProfile.demands.map((d) => (
+                <div key={d.label} className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-[#525252]">{d.label}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-1.5 w-12 overflow-hidden rounded-full bg-[#F5F5F5]">
+                      <div className="h-full rounded-full bg-[#DC2626]" style={{ width: `${d.score * 10}%` }} />
+                    </div>
+                    <span className="text-[10px] font-semibold tabular-nums text-[#DC2626]">{d.score}/10</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div>
+              <p className="text-[10px] font-medium text-[#059669] mb-2">Kaynaklar (Resources)</p>
+              {positionDetail.jdrProfile.resources.map((r) => (
+                <div key={r.label} className="flex items-center justify-between mb-1.5">
+                  <span className="text-[10px] text-[#525252]">{r.label}</span>
+                  <div className="flex items-center gap-1.5">
+                    <div className="h-1.5 w-12 overflow-hidden rounded-full bg-[#F5F5F5]">
+                      <div className="h-full rounded-full bg-[#059669]" style={{ width: `${r.score * 10}%` }} />
+                    </div>
+                    <span className="text-[10px] font-semibold tabular-nums text-[#059669]">{r.score}/10</span>
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -470,7 +719,7 @@ export default function DegerlendirmelerPage() {
         </button>
 
         {showFunnel && (
-          <div className="mt-4">
+          <div className="mt-4 space-y-6">
             {/* Funnel visualization */}
             <div className="flex items-center gap-1 overflow-x-auto pb-2">
               {funnel.map((step, i) => (
@@ -500,6 +749,81 @@ export default function DegerlendirmelerPage() {
                   )}
                 </div>
               ))}
+            </div>
+
+            {/* Stage Timings */}
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[#525252]">Asamalar Arasi Ortalama Sure</p>
+              <div className="space-y-1.5">
+                {stageTimings.map((st) => (
+                  <div key={st.from} className="flex items-center justify-between rounded-lg bg-[#FAFAFA] px-3 py-2 text-xs">
+                    <span className="text-[#525252]">{st.from} &rarr; {st.to}</span>
+                    <span className="font-semibold tabular-nums text-[#0A0A0A]">{st.avgDays} gun</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Bottleneck Detection */}
+            {bottlenecks.length > 0 && (
+              <div>
+                <p className="mb-2 text-xs font-semibold text-[#525252]">Darbogaz Tespiti</p>
+                <div className="space-y-2">
+                  {bottlenecks.map((b) => (
+                    <div key={b.stage} className={`flex items-start gap-2 rounded-lg p-3 ${
+                      b.severity === 'high' ? 'bg-[#FEF3C7] border border-[#FDE68A]' : 'bg-[#FEF9C3] border border-[#FEF3C7]'
+                    }`}>
+                      <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#D97706]" />
+                      <p className="text-xs text-[#92400E]">
+                        <span className="font-semibold">{b.stage}</span> asamasinda darbogaz: ortalama <span className="font-semibold">{b.avgDays} gun</span> (hedef: {b.targetDays} gun)
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Source Quality */}
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[#525252]">Kaynak Kalitesi</p>
+              <div className="space-y-2">
+                {sourceQuality.map((s) => (
+                  <div key={s.source} className="flex items-center justify-between rounded-lg bg-[#FAFAFA] px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2 w-2 rounded-full ${
+                        s.quality === 'high' ? 'bg-[#059669]' : s.quality === 'medium' ? 'bg-[#D97706]' : 'bg-[#DC2626]'
+                      }`} />
+                      <span className="text-xs font-medium text-[#0A0A0A]">{s.source}</span>
+                    </div>
+                    <div className="flex items-center gap-4 text-[10px]">
+                      <span className="text-[#A3A3A3]">%{s.applicationPct} basvuru</span>
+                      <span className={`font-semibold ${s.quality === 'high' ? 'text-[#059669]' : s.quality === 'medium' ? 'text-[#D97706]' : 'text-[#DC2626]'}`}>
+                        %{s.hirePct} ise alim
+                      </span>
+                      {s.quality === 'high' && <TrendingUp className="h-3 w-3 text-[#059669]" />}
+                      {s.quality === 'low' && <TrendingDown className="h-3 w-3 text-[#DC2626]" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Rejection Reasons */}
+            <div>
+              <p className="mb-2 text-xs font-semibold text-[#525252]">Red Nedenleri Dagilimi</p>
+              <div className="flex h-4 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
+                {rejectionReasons.map((r) => (
+                  <div key={r.reason} className="h-full transition-all" style={{ width: `${r.pct}%`, backgroundColor: r.color }} />
+                ))}
+              </div>
+              <div className="mt-2 flex flex-wrap gap-3">
+                {rejectionReasons.map((r) => (
+                  <div key={r.reason} className="flex items-center gap-1.5">
+                    <span className="h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: r.color }} />
+                    <span className="text-[10px] text-[#525252]">{r.reason} %{r.pct}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}

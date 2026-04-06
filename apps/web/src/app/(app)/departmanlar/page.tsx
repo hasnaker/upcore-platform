@@ -15,6 +15,23 @@ import {
 } from 'lucide-react';
 import { DepartmentAnalytics } from './_components/DepartmentAnalytics';
 
+interface DeptPosition {
+  title: string;
+  filled: number;
+  capacity: number;
+  openPositions: number;
+}
+
+interface DeptEnhancedMeta {
+  burnoutRisk: 'LOW' | 'MEDIUM' | 'HIGH';
+  budget: string;
+  openPositions: number;
+  avgTenure: number;
+  recentJoins: number;
+  recentExits: number;
+  positions: DeptPosition[];
+}
+
 interface Department {
   id: string;
   name: string;
@@ -155,6 +172,41 @@ const fallbackOrgData: Department[] = [
   },
 ];
 
+/* ─── Enhanced department meta (mock) ─── */
+const BURNOUT_BADGE: Record<string, { label: string; bg: string; text: string; icon: string }> = {
+  LOW: { label: 'LOW', bg: '#D1FAE5', text: '#059669', icon: '🟢' },
+  MEDIUM: { label: 'MEDIUM', bg: '#FEF3C7', text: '#D97706', icon: '🟡' },
+  HIGH: { label: 'HIGH', bg: '#FEE2E2', text: '#DC2626', icon: '🔴' },
+};
+
+const deptEnhancedData: Record<string, DeptEnhancedMeta> = {
+  ceo: { burnoutRisk: 'LOW', budget: '₺18M/yil', openPositions: 0, avgTenure: 6.5, recentJoins: 0, recentExits: 0, positions: [{ title: 'Genel Mudur', filled: 1, capacity: 1, openPositions: 0 }, { title: 'Genel Mudur Yardimcisi', filled: 1, capacity: 1, openPositions: 0 }, { title: 'Idari Asistan', filled: 1, capacity: 1, openPositions: 0 }] },
+  tech: { burnoutRisk: 'MEDIUM', budget: '₺5.4M/yil', openPositions: 1, avgTenure: 3.8, recentJoins: 1, recentExits: 0, positions: [{ title: 'VP Muhendislik', filled: 1, capacity: 1, openPositions: 0 }, { title: 'Teknik Lider', filled: 2, capacity: 3, openPositions: 1 }] },
+  frontend: { burnoutRisk: 'LOW', budget: '₺1.5M/yil', openPositions: 0, avgTenure: 2.9, recentJoins: 1, recentExits: 0, positions: [{ title: 'Frontend Gelistirici', filled: 4, capacity: 4, openPositions: 0 }, { title: 'Kidemli Frontend', filled: 2, capacity: 2, openPositions: 0 }] },
+  backend: { burnoutRisk: 'MEDIUM', budget: '₺2.1M/yil', openPositions: 1, avgTenure: 3.2, recentJoins: 0, recentExits: 0, positions: [{ title: 'Backend Gelistirici', filled: 5, capacity: 6, openPositions: 1 }, { title: 'Kidemli Backend', filled: 3, capacity: 3, openPositions: 0 }] },
+  devops: { burnoutRisk: 'LOW', budget: '₺1.2M/yil', openPositions: 0, avgTenure: 4.1, recentJoins: 0, recentExits: 0, positions: [{ title: 'DevOps Muhendisi', filled: 3, capacity: 3, openPositions: 0 }, { title: 'SRE', filled: 1, capacity: 1, openPositions: 0 }] },
+  satis: { burnoutRisk: 'HIGH', budget: '₺2.4M/yil', openPositions: 2, avgTenure: 4.2, recentJoins: 1, recentExits: 0, positions: [{ title: 'Satis Uzmani', filled: 8, capacity: 10, openPositions: 2 }, { title: 'Kidemli Satis Uzmani', filled: 3, capacity: 4, openPositions: 1 }, { title: 'Satis Muduru', filled: 1, capacity: 1, openPositions: 0 }] },
+  kurumsal: { burnoutRisk: 'MEDIUM', budget: '₺1.1M/yil', openPositions: 1, avgTenure: 3.5, recentJoins: 0, recentExits: 0, positions: [{ title: 'Kurumsal Satis Uzmani', filled: 4, capacity: 5, openPositions: 1 }, { title: 'Hesap Yoneticisi', filled: 1, capacity: 1, openPositions: 0 }] },
+  kucuk: { burnoutRisk: 'MEDIUM', budget: '₺1.3M/yil', openPositions: 1, avgTenure: 2.8, recentJoins: 1, recentExits: 0, positions: [{ title: 'KOBi Satis Temsilcisi', filled: 5, capacity: 6, openPositions: 1 }, { title: 'Bolge Muduru', filled: 1, capacity: 1, openPositions: 0 }, { title: 'Satis Destek', filled: 1, capacity: 1, openPositions: 0 }] },
+  urun: { burnoutRisk: 'LOW', budget: '₺1.6M/yil', openPositions: 1, avgTenure: 3.9, recentJoins: 0, recentExits: 0, positions: [{ title: 'Urun Yoneticisi', filled: 2, capacity: 2, openPositions: 0 }, { title: 'Urun Tasarimcisi', filled: 2, capacity: 3, openPositions: 1 }, { title: 'Urun Analisti', filled: 2, capacity: 2, openPositions: 0 }] },
+  musteri: { burnoutRisk: 'HIGH', budget: '₺1.8M/yil', openPositions: 0, avgTenure: 2.1, recentJoins: 0, recentExits: 1, positions: [{ title: 'Musteri Temsilcisi', filled: 5, capacity: 5, openPositions: 0 }, { title: 'Kidemli Temsilci', filled: 2, capacity: 2, openPositions: 0 }, { title: 'Destek Muhendisi', filled: 1, capacity: 1, openPositions: 0 }] },
+  ik: { burnoutRisk: 'LOW', budget: '₺1.2M/yil', openPositions: 0, avgTenure: 5.3, recentJoins: 0, recentExits: 0, positions: [{ title: 'IK Uzmani', filled: 3, capacity: 3, openPositions: 0 }, { title: 'IK Direktoru', filled: 1, capacity: 1, openPositions: 0 }, { title: 'IK Asistani', filled: 1, capacity: 1, openPositions: 0 }] },
+  pazarlama: { burnoutRisk: 'LOW', budget: '₺1.9M/yil', openPositions: 1, avgTenure: 3.4, recentJoins: 0, recentExits: 0, positions: [{ title: 'Pazarlama Uzmani', filled: 4, capacity: 5, openPositions: 1 }, { title: 'Icerik Uretici', filled: 2, capacity: 2, openPositions: 0 }, { title: 'Marka Yoneticisi', filled: 1, capacity: 1, openPositions: 0 }, { title: 'Performans Pazarlama', filled: 1, capacity: 1, openPositions: 0 }] },
+};
+
+/* ─── Headcount Planning Data ─── */
+const headcountPlan = {
+  current: 70,
+  planned: 75,
+  open: 5,
+  q2Hires: [
+    { dept: 'Satis', count: 3 },
+    { dept: 'Muhendislik', count: 1 },
+    { dept: 'Urun', count: 1 },
+  ],
+  budgetImpact: '₺1.2M/yil',
+};
+
 interface TreeNodeProps {
   dept: Department;
   level: number;
@@ -168,6 +220,8 @@ const TreeNode = ({ dept, level, selectedId, onSelect, expandedIds, onToggle }: 
   const hasChildren = dept.children.length > 0;
   const isExpanded = expandedIds.has(dept.id);
   const isSelected = selectedId === dept.id;
+  const meta = deptEnhancedData[dept.id];
+  const badge = meta ? BURNOUT_BADGE[meta.burnoutRisk] : null;
 
   return (
     <div>
@@ -196,6 +250,14 @@ const TreeNode = ({ dept, level, selectedId, onSelect, expandedIds, onToggle }: 
           style={{ backgroundColor: dept.color }}
         />
         <span className="text-sm font-medium text-[#0A0A0A]">{dept.name}</span>
+        {badge && (
+          <span
+            className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-bold"
+            style={{ backgroundColor: badge.bg, color: badge.text }}
+          >
+            {badge.icon} {badge.label}
+          </span>
+        )}
         <span className="ml-auto flex items-center gap-1 text-xs text-[#A3A3A3]">
           <Users className="h-3 w-3" />
           {dept.headCount}
@@ -323,6 +385,7 @@ export default function DepartmanlarPage() {
   };
 
   const selected = selectedId ? findDept(orgData, selectedId) : null;
+  const selectedMeta: DeptEnhancedMeta | null = selected ? (deptEnhancedData[selected.id] ?? null) : null;
   const deptCount = countAllDepts(orgData);
   const empCount = totalEmployees > 0 ? totalEmployees : (orgData[0] ? totalCount(orgData[0]) : 0);
 
@@ -452,6 +515,21 @@ export default function DepartmanlarPage() {
                       style={{ backgroundColor: selected.color }}
                     />
                     <h2 className="text-lg font-semibold text-[#0A0A0A]">{selected.name}</h2>
+                    {/* Burnout Risk Badge */}
+                    {(() => {
+                      const meta = selectedMeta;
+                      if (!meta) return null;
+                      const badge = BURNOUT_BADGE[meta.burnoutRisk];
+                      if (!badge) return null;
+                      return (
+                        <span
+                          className="inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold"
+                          style={{ backgroundColor: badge.bg, color: badge.text }}
+                        >
+                          {badge.icon} {badge.label}
+                        </span>
+                      );
+                    })()}
                   </div>
                   <button
                     type="button"
@@ -467,7 +545,9 @@ export default function DepartmanlarPage() {
                   </button>
                 </div>
               </div>
-              <div className="grid gap-6 p-6 sm:grid-cols-2">
+
+              {/* Enhanced info grid */}
+              <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
                   <User className="h-5 w-5 text-[#525252]" />
                   <div>
@@ -489,30 +569,106 @@ export default function DepartmanlarPage() {
                     <p className="text-sm font-medium text-[#0A0A0A]">{selected.location}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
-                  <Building2 className="h-5 w-5 text-[#525252]" />
-                  <div>
-                    <p className="text-[11px] font-medium text-[#A3A3A3]">Alt Departman</p>
-                    <p className="text-sm font-medium text-[#0A0A0A]">{selected.children.length} birim</p>
+                {selectedMeta && (
+                  <>
+                    <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+                      <Building2 className="h-5 w-5 text-[#525252]" />
+                      <div>
+                        <p className="text-[11px] font-medium text-[#A3A3A3]">Personel Maliyeti</p>
+                        <p className="text-sm font-medium text-[#0A0A0A]">{selectedMeta.budget}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+                      <Plus className="h-5 w-5 text-[#D97706]" />
+                      <div>
+                        <p className="text-[11px] font-medium text-[#A3A3A3]">Acik Pozisyon</p>
+                        <p className="text-sm font-medium text-[#0A0A0A]">{selectedMeta.openPositions} pozisyon</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
+                      <Users className="h-5 w-5 text-[#059669]" />
+                      <div>
+                        <p className="text-[11px] font-medium text-[#A3A3A3]">Ort. Kidem</p>
+                        <p className="text-sm font-medium text-[#0A0A0A]">{selectedMeta.avgTenure} yil</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Recent Changes */}
+              {selectedMeta && (
+                <div className="border-t border-[#EDEDED] px-6 py-4">
+                  <div className="flex items-center gap-3 rounded-lg bg-[#FAFAFF] px-4 py-3">
+                    <span className="text-[12px] text-[#525252]">
+                      Son 30 gun:
+                      <span className="ml-2 font-semibold text-[#059669]">+{selectedMeta.recentJoins} giris</span>
+                      <span className="mx-1 text-[#D4D4D4]">|</span>
+                      <span className="font-semibold text-[#DC2626]">-{selectedMeta.recentExits} cikis</span>
+                    </span>
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Position Management */}
+              {selectedMeta && !showAnalytics && (
+                <div className="border-t border-[#EDEDED] px-6 py-4">
+                  <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#A3A3A3]">Pozisyon Yonetimi</p>
+                  <div className="flex flex-col gap-2">
+                    {selectedMeta.positions.map((pos) => (
+                      <div
+                        key={pos.title}
+                        className="flex items-center justify-between rounded-lg border border-[#EDEDED] p-3 transition-colors hover:bg-[#FAFAFA]"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`h-2 w-2 rounded-full ${pos.openPositions > 0 ? 'bg-[#D97706]' : 'bg-[#059669]'}`} />
+                          <span className="text-sm font-medium text-[#0A0A0A]">{pos.title}</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs tabular-nums text-[#525252]">
+                            {pos.filled}/{pos.capacity} kadro
+                          </span>
+                          {pos.openPositions > 0 && (
+                            <span className="inline-flex items-center rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-semibold text-[#D97706]">
+                              {pos.openPositions} acik pozisyon
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Sub-departments */}
               {selected.children.length > 0 && !showAnalytics && (
                 <div className="border-t border-[#EDEDED] px-6 py-4">
                   <p className="mb-3 text-xs font-semibold uppercase tracking-wider text-[#A3A3A3]">Alt Departmanlar</p>
                   <div className="flex flex-col gap-2">
-                    {selected.children.map((child) => (
-                      <button
-                        key={child.id}
-                        type="button"
-                        onClick={() => setSelectedId(child.id)}
-                        className="flex items-center gap-3 rounded-lg border border-[#EDEDED] p-3 text-left transition-colors hover:bg-[#FAFAFA]"
-                      >
-                        <span className="h-2 w-2 rounded-full" style={{ backgroundColor: child.color }} />
-                        <span className="text-sm font-medium text-[#0A0A0A]">{child.name}</span>
-                        <span className="ml-auto text-xs text-[#A3A3A3]">{child.headCount} kisi</span>
-                      </button>
-                    ))}
+                    {selected.children.map((child) => {
+                      const childMeta = deptEnhancedData[child.id];
+                      const childBadge = childMeta ? BURNOUT_BADGE[childMeta.burnoutRisk] : null;
+                      return (
+                        <button
+                          key={child.id}
+                          type="button"
+                          onClick={() => setSelectedId(child.id)}
+                          className="flex items-center gap-3 rounded-lg border border-[#EDEDED] p-3 text-left transition-colors hover:bg-[#FAFAFA]"
+                        >
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: child.color }} />
+                          <span className="text-sm font-medium text-[#0A0A0A]">{child.name}</span>
+                          {childBadge && (
+                            <span
+                              className="inline-flex items-center rounded px-1.5 py-0.5 text-[9px] font-bold"
+                              style={{ backgroundColor: childBadge.bg, color: childBadge.text }}
+                            >
+                              {childBadge.icon}
+                            </span>
+                          )}
+                          <span className="ml-auto text-xs text-[#A3A3A3]">{child.headCount} kisi</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}
@@ -531,6 +687,57 @@ export default function DepartmanlarPage() {
               Detay goruntulemek icin soldan bir departman secin.
             </div>
           )}
+        </div>
+      </div>
+
+      {/* ── Headcount Planning Section ── */}
+      <div className="rounded-xl border border-[#EDEDED] bg-white">
+        <div className="border-b border-[#EDEDED] px-6 py-4">
+          <h3 className="text-base font-semibold text-[#0A0A0A]">Kadro Planlamasi</h3>
+          <p className="mt-0.5 text-xs text-[#A3A3A3]">Mevcut durum ve Q2 ise alim plani</p>
+        </div>
+        <div className="p-6">
+          {/* Summary stats */}
+          <div className="grid grid-cols-3 gap-4 mb-6">
+            <div className="rounded-lg bg-[#FAFAFA] p-4 text-center">
+              <p className="text-2xl font-bold tabular-nums text-[#0A0A0A]">{headcountPlan.current}</p>
+              <p className="text-[11px] text-[#A3A3A3]">Mevcut Calisan</p>
+            </div>
+            <div className="rounded-lg bg-[#FAFAFA] p-4 text-center">
+              <p className="text-2xl font-bold tabular-nums text-[#0A0A0A]">{headcountPlan.planned}</p>
+              <p className="text-[11px] text-[#A3A3A3]">Plan (Q2 sonu)</p>
+            </div>
+            <div className="rounded-lg bg-[#FEF3C7] p-4 text-center">
+              <p className="text-2xl font-bold tabular-nums text-[#D97706]">{headcountPlan.open}</p>
+              <p className="text-[11px] text-[#92400E]">Acik Pozisyon</p>
+            </div>
+          </div>
+
+          {/* Q2 hiring plan */}
+          <div className="rounded-lg border border-[#EDEDED] bg-[#FAFAFF] p-4 mb-4">
+            <p className="text-[12px] font-semibold text-[#0A0A0A] mb-3">Q2 Ise Alim Plani</p>
+            <div className="flex flex-wrap gap-3">
+              {headcountPlan.q2Hires.map((h) => (
+                <div
+                  key={h.dept}
+                  className="flex items-center gap-2 rounded-lg border border-[#EDEDED] bg-white px-3 py-2"
+                >
+                  <span className="text-[13px] font-medium text-[#0A0A0A]">{h.count}</span>
+                  <span className="text-[12px] text-[#525252]">{h.dept}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Budget impact */}
+          <div className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] px-4 py-3">
+            <Building2 className="h-4 w-4 text-[#5E5CE6]" />
+            <div>
+              <p className="text-[12px] text-[#525252]">
+                {headcountPlan.open} yeni ise alim = <span className="font-semibold text-[#0A0A0A]">+{headcountPlan.budgetImpact} personel maliyeti</span>
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
