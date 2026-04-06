@@ -13,6 +13,9 @@ const NAV_ITEMS = [
   { href: '/tukenmislik', label: 'Tükenmişlik', icon: 'activity' },
   { href: '/anketler', label: 'Anketler', icon: 'clipboard' },
   { href: '/degerlendirmeler', label: 'Değerlendirmeler', icon: 'target' },
+  { href: '/guclu-yonler', label: 'Güçlü Yönler', icon: 'star' },
+  { href: '/performans', label: 'Performans', icon: 'award' },
+  { href: '/kariyer', label: 'Kariyer', icon: 'compass' },
   { href: '/analytics', label: 'Analitik', icon: 'trending-up' },
   { href: '/aksiyonlar', label: 'Aksiyonlar', icon: 'list' },
   { href: '/ayarlar', label: 'Ayarlar', icon: 'settings' },
@@ -31,6 +34,9 @@ const ICONS: Record<string, React.ReactNode> = {
   settings: <><circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" /></>,
   'bar-chart': <><path strokeLinecap="round" strokeLinejoin="round" d="M18 20V10M12 20V4M6 20v-6" /></>,
   'trending-up': <><polyline points="23 6 13.5 15.5 8.5 10.5 1 18" /><polyline points="17 6 23 6 23 12" /></>,
+  star: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" /></>,
+  award: <><circle cx="12" cy="8" r="7" /><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" /></>,
+  compass: <><circle cx="12" cy="12" r="10" /><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76" /></>,
 };
 
 export function AppSidebar() {

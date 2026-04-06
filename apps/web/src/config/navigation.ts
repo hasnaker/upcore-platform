@@ -8,6 +8,7 @@ import {
   BarChart3,
   Flame,
   Target,
+  Compass,
   Settings,
   type LucideIcon,
 } from 'lucide-react';
@@ -37,6 +38,12 @@ export const appNavigation: NavSection[] = [
       { href: '/departmanlar', label: 'Departmanlar', icon: Network },
       { href: '/izinler', label: 'İzinler', icon: CalendarDays },
       { href: '/belgeler', label: 'Belgeler', icon: FileText },
+    ],
+  },
+  {
+    title: 'Gelisim',
+    items: [
+      { href: '/kariyer', label: 'Kariyer', icon: Compass },
     ],
   },
   {
