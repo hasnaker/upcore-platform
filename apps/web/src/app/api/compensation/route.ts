@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { createAuditLogger } from '@/lib/audit-logger';
 
 export async function GET() {
   try {
@@ -78,5 +79,57 @@ export async function GET() {
   } catch (error) {
     console.error('Compensation API error:', error);
     return NextResponse.json({ error: 'Ücret verileri alınamadı', employees: [], bands: [], reviews: [], stats: { avgSalary: 0, medianSalary: 0, totalPayroll: 0, avgCompaRatio: 1.0 } }, { status: 500 });
+  }
+}
+
+/**
+ * POST — Create compensation review (salary increase proposal)
+ */
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { employeeName, currentSalary, proposedSalary, increasePct, reason } = body;
+
+    if (!employeeName || !proposedSalary) {
+      return NextResponse.json({ error: 'employeeName ve proposedSalary zorunlu' }, { status: 400 });
+    }
+
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    // Find employee by name
+    const empResult = await pool.query(
+      `SELECT id FROM app.employees WHERE tenant_id = $1 AND CONCAT(ad, ' ', soyad) ILIKE $2 LIMIT 1`,
+      [TENANT_ID, `%${employeeName}%`]
+    );
+    const employeeId = empResult.rows[0]?.id;
+
+    if (!employeeId) {
+      await pool.end();
+      return NextResponse.json({ error: 'Çalışan bulunamadı' }, { status: 404 });
+    }
+
+    // Create compensation review
+    const result = await pool.query(
+      `INSERT INTO app.compensation_reviews (tenant_id, employee_id, review_cycle, current_salary, proposed_salary, increase_pct, increase_reason, status)
+       VALUES ($1, $2, '2026-Q2', $3, $4, $5, $6, 'pending')
+       RETURNING id`,
+      [TENANT_ID, employeeId, currentSalary, proposedSalary, increasePct, reason]
+    );
+
+    await pool.end();
+
+    // Audit log
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'hr_director';
+    const audit = createAuditLogger(actorId, actorRole);
+    void audit.log('create', 'compensation_review', result.rows[0]?.id, undefined, {
+      employeeName, currentSalary, proposedSalary, increasePct, reason,
+    });
+
+    return NextResponse.json({ success: true, id: result.rows[0]?.id });
+  } catch (error) {
+    console.error('Compensation review error:', error);
+    return NextResponse.json({ error: 'Teklif oluşturulamadı' }, { status: 500 });
   }
 }

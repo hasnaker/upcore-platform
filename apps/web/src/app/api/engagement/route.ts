@@ -80,9 +80,53 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { surveyId, employeeId, enpsScore, responses, comments } = body;
     const { Pool } = await import('pg');
     const pool = new Pool({ connectionString: DB_URL });
+
+    if (body.action === 'create_survey') {
+      const { name, surveyType, startDate, endDate } = body;
+      if (!name || !surveyType) {
+        return NextResponse.json({ error: 'name ve surveyType zorunludur' }, { status: 400 });
+      }
+      const result = await pool.query(
+        `INSERT INTO app.engagement_surveys (tenant_id, name, survey_type, status, start_date, end_date)
+         VALUES ($1, $2, $3, 'active', $4, $5) RETURNING id`,
+        [TENANT_ID, name, surveyType, startDate || null, endDate || null]
+      );
+      await pool.end();
+      return NextResponse.json({ success: true, id: result.rows[0]?.id, message: 'Anket oluşturuldu' });
+    }
+
+    if (body.action === 'create_action_plan') {
+      const { title, description, ownerId, dueDate, departmentId } = body;
+      if (!title) {
+        return NextResponse.json({ error: 'title zorunludur' }, { status: 400 });
+      }
+      const result = await pool.query(
+        `INSERT INTO app.engagement_action_plans (tenant_id, title, description, owner_id, due_date, department_id, status)
+         VALUES ($1, $2, $3, $4, $5, $6, 'planned') RETURNING id`,
+        [TENANT_ID, title, description || '', ownerId || null, dueDate || null, departmentId || null]
+      );
+      await pool.end();
+      return NextResponse.json({ success: true, id: result.rows[0]?.id, message: 'Aksiyon planı oluşturuldu' });
+    }
+
+    if (body.action === 'submit_response') {
+      const { surveyId, employeeId, enpsScore, responses, comments } = body;
+      if (!surveyId) {
+        return NextResponse.json({ error: 'surveyId zorunludur' }, { status: 400 });
+      }
+      await pool.query(
+        `INSERT INTO app.engagement_responses (survey_id, employee_id, enps_score, responses, comments)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [surveyId, employeeId || null, enpsScore, JSON.stringify(responses || {}), comments || null]
+      );
+      await pool.end();
+      return NextResponse.json({ success: true, message: 'Yanıt kaydedildi' });
+    }
+
+    // Legacy support: if no action field, treat as submit_response
+    const { surveyId, employeeId, enpsScore, responses, comments } = body;
     await pool.query(
       `INSERT INTO app.engagement_responses (survey_id, employee_id, enps_score, responses, comments)
        VALUES ($1, $2, $3, $4, $5)`,
@@ -92,6 +136,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error('Engagement submit error:', error);
-    return NextResponse.json({ error: 'Anket gönderilemedi' }, { status: 500 });
+    return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 });
   }
 }

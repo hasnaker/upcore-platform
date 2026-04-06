@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { DB_URL, TENANT_ID } from '@/lib/service-urls';
 
 export async function GET() {
@@ -61,5 +61,47 @@ export async function GET() {
   } catch (error) {
     console.error('Training API error:', error);
     return NextResponse.json({ error: 'Eğitim verileri alınamadı', programs: [], skills: [], stats: { totalPrograms: 0, completionRate: 0, avgFeedback: 0, skillGapCount: 0 } }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const body = await req.json();
+    const { Pool } = await import('pg');
+    const pool = new Pool({ connectionString: DB_URL });
+
+    if (body.action === 'enroll') {
+      const { employeeId, programId } = body;
+      if (!employeeId || !programId) {
+        return NextResponse.json({ error: 'employeeId ve programId zorunludur' }, { status: 400 });
+      }
+      await pool.query(
+        `INSERT INTO app.training_enrollments (tenant_id, employee_id, program_id, status, enrolled_at)
+         VALUES ($1, $2, $3, 'enrolled', NOW())`,
+        [TENANT_ID, employeeId, programId]
+      );
+      await pool.end();
+      return NextResponse.json({ success: true, message: 'Kayıt başarılı' });
+    }
+
+    if (body.action === 'create_program') {
+      const { code, name_tr, category, deliveryMode, durationHours, provider, costPerPerson, skillTags } = body;
+      if (!code || !name_tr) {
+        return NextResponse.json({ error: 'code ve name_tr zorunludur' }, { status: 400 });
+      }
+      const result = await pool.query(
+        `INSERT INTO app.training_programs (tenant_id, code, name_tr, category, delivery_mode, duration_hours, provider, cost_per_person, skill_tags, active)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, true) RETURNING id`,
+        [TENANT_ID, code, name_tr, category || 'technical', deliveryMode || 'online', durationHours || 0, provider || '', costPerPerson || 0, skillTags || []]
+      );
+      await pool.end();
+      return NextResponse.json({ success: true, id: result.rows[0]?.id, message: 'Program oluşturuldu' });
+    }
+
+    await pool.end();
+    return NextResponse.json({ error: 'Geçersiz action' }, { status: 400 });
+  } catch (error) {
+    console.error('Training POST error:', error);
+    return NextResponse.json({ error: 'İşlem başarısız' }, { status: 500 });
   }
 }
