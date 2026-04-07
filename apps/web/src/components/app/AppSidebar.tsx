@@ -25,6 +25,10 @@ const NAV_ITEMS = [
   { href: '/onboarding-yonetimi', label: 'Onboarding', icon: 'rocket' },
   { href: '/organizasyon', label: 'Organizasyon', icon: 'org' },
   { href: '/raporlar', label: 'Raporlar', icon: 'report' },
+  { href: '/mesai', label: 'Vardiya & Mesai', icon: 'clock' },
+  { href: '/bordro', label: 'Bordro', icon: 'wallet' },
+  { href: '/cikis-yonetimi', label: 'Çıkış Yönetimi', icon: 'door' },
+  { href: '/entegrasyonlar', label: 'Entegrasyonlar', icon: 'plug' },
   { href: '/analytics', label: 'Analitik', icon: 'trending-up' },
   { href: '/aksiyonlar', label: 'Aksiyonlar', icon: 'list' },
   { href: '/ayarlar', label: 'Ayarlar', icon: 'settings' },
@@ -55,6 +59,10 @@ const ICONS: Record<string, React.ReactNode> = {
   rocket: <><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z" /></>,
   org: <><circle cx="12" cy="5" r="3" /><path strokeLinecap="round" d="M12 8v4M6 16a2 2 0 100-4 2 2 0 000 4zM18 16a2 2 0 100-4 2 2 0 000 4zM12 12l-6 2M12 12l6 2" /></>,
   report: <><path strokeLinecap="round" strokeLinejoin="round" d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z" /><path strokeLinecap="round" d="M14 2v6h6M16 13H8M16 17H8M10 9H8" /></>,
+  clock: <><circle cx="12" cy="12" r="10" /><path strokeLinecap="round" d="M12 6v6l4 2" /></>,
+  wallet: <><path strokeLinecap="round" strokeLinejoin="round" d="M21 12V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2h14a2 2 0 002-2v-5z" /><path strokeLinecap="round" d="M16 12a1 1 0 102 0 1 1 0 00-2 0z" /></>,
+  door: <><path strokeLinecap="round" strokeLinejoin="round" d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" /></>,
+  plug: <><path strokeLinecap="round" strokeLinejoin="round" d="M12 22V18M7 18h10M8 14V8M16 14V8M6 8h12" /></>,
 };
 
 export function AppSidebar() {

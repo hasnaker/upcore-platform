@@ -10,6 +10,8 @@ import {
   Target,
   Compass,
   Settings,
+  LogOut,
+  Plug,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -56,7 +58,11 @@ export const appNavigation: NavSection[] = [
   },
   {
     title: 'Sistem',
-    items: [{ href: '/ayarlar', label: 'Ayarlar', icon: Settings }],
+    items: [
+      { href: '/cikis-yonetimi', label: 'Cikis Yonetimi', icon: LogOut },
+      { href: '/entegrasyonlar', label: 'Entegrasyonlar', icon: Plug },
+      { href: '/ayarlar', label: 'Ayarlar', icon: Settings },
+    ],
   },
 ];
 
