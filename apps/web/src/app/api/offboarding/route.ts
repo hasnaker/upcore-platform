@@ -21,8 +21,7 @@ export async function GET() {
         op.equipment_returned,
         op.access_revoked,
         op.knowledge_transfer_status,
-        op.created_at,
-        op.updated_at
+        op.created_at
       FROM app.offboarding_processes op
       JOIN app.employees e ON e.id = op.employee_id AND e.tenant_id = op.tenant_id
       LEFT JOIN app.departments d ON d.id = e.department_id
@@ -34,18 +33,18 @@ export async function GET() {
       SELECT
         ei.id as interview_id,
         ei.process_id,
-        ei.interviewer_name,
-        ei.interview_date,
         ei.overall_satisfaction,
-        ei.reason_for_leaving,
+        ei.reasons_for_leaving,
+        ei.what_could_improve,
         ei.would_recommend,
-        ei.feedback_summary,
-        ei.created_at
+        ei.would_return,
+        ei.comments,
+        ei.conducted_at
       FROM app.exit_interviews ei
       JOIN app.offboarding_processes op ON op.id = ei.process_id
       WHERE op.tenant_id = $1
-      ORDER BY ei.interview_date DESC
-    `, [TENANT_ID]);
+      ORDER BY ei.conducted_at DESC
+    `, [TENANT_ID]).catch(() => ({ rows: [] }));
 
     // Build summary
     const now = new Date();
@@ -61,12 +60,13 @@ export async function GET() {
       }
       if (p.status === 'completed') {
         completedCount++;
-        const updatedAt = new Date(p.updated_at);
-        if (updatedAt >= startOfMonth) {
+        // Use last_working_day as the completion reference (updated_at doesn't exist)
+        const completionDate = p.last_working_day ? new Date(p.last_working_day) : new Date(p.created_at);
+        if (completionDate >= startOfMonth) {
           completedThisMonth++;
         }
         const createdAt = new Date(p.created_at);
-        totalDurationDays += Math.ceil((updatedAt.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
+        totalDurationDays += Math.ceil((completionDate.getTime() - createdAt.getTime()) / (1000 * 60 * 60 * 24));
       }
     }
 
@@ -219,7 +219,7 @@ export async function PATCH(req: NextRequest) {
 
     await pool.query(`
       UPDATE app.offboarding_processes
-      SET ${field} = $1, updated_at = NOW()
+      SET ${field} = $1
       WHERE id = $2 AND tenant_id = $3
     `, [value, processId, TENANT_ID]);
 
@@ -241,7 +241,7 @@ export async function PATCH(req: NextRequest) {
       ) {
         await pool.query(`
           UPDATE app.offboarding_processes
-          SET status = 'completed', updated_at = NOW()
+          SET status = 'completed'
           WHERE id = $1 AND tenant_id = $2
         `, [processId, TENANT_ID]);
       }

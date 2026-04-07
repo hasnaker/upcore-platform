@@ -93,8 +93,9 @@ export async function GET() {
     // Payroll runs
     const runs = await pool.query(
       `SELECT pr.id, pr.period, pr.status, pr.employee_count,
-              pr.total_gross, pr.total_net, pr.total_sgk, pr.total_tax,
-              pr.total_employer_cost, pr.created_at, pr.approved_at, pr.paid_at
+              pr.total_gross, pr.total_net, pr.total_sgk_employee, pr.total_sgk_employer,
+              pr.total_income_tax, pr.total_stamp_tax,
+              pr.created_at, pr.approved_at, pr.approved_by
        FROM app.payroll_runs pr
        WHERE pr.tenant_id = $1
        ORDER BY pr.created_at DESC
@@ -124,17 +125,17 @@ export async function GET() {
     if (runs.rows.length > 0) {
       const latestRunId = runs.rows[0].id;
       const itemsResult = await pool.query(
-        `SELECT pi.id, pi.run_id, pi.employee_id,
+        `SELECT pi.id, pi.payroll_run_id, pi.employee_id,
                 pi.gross_salary, pi.sgk_employee, pi.sgk_employer,
                 pi.unemployment_employee, pi.unemployment_employer,
-                pi.income_tax, pi.stamp_tax, pi.total_deductions,
-                pi.net_salary, pi.employer_cost,
+                pi.income_tax, pi.stamp_tax, pi.net_salary,
+                pi.overtime_pay, pi.bonus, pi.deductions, pi.bank_iban,
                 e.ad AS first_name, e.soyad AS last_name,
                 d.name_tr AS department
          FROM app.payroll_items pi
-         JOIN app.employees e ON e.id = pi.employee_id AND e.tenant_id = pi.tenant_id
+         JOIN app.employees e ON e.id = pi.employee_id
          LEFT JOIN app.departments d ON d.id = e.department_id
-         WHERE pi.tenant_id = $1 AND pi.run_id = $2
+         WHERE e.tenant_id = $1 AND pi.payroll_run_id = $2
          ORDER BY pi.gross_salary DESC`,
         [TENANT_ID, latestRunId],
       );
@@ -163,9 +164,11 @@ export async function GET() {
     const stats = {
       totalGross: latestRun ? Number(latestRun.total_gross ?? 0) : 0,
       totalNet: latestRun ? Number(latestRun.total_net ?? 0) : 0,
-      totalSgk: latestRun ? Number(latestRun.total_sgk ?? 0) : 0,
-      totalTax: latestRun ? Number(latestRun.total_tax ?? 0) : 0,
-      totalEmployerCost: latestRun ? Number(latestRun.total_employer_cost ?? 0) : 0,
+      totalSgk: latestRun ? Number(latestRun.total_sgk_employee ?? 0) : 0,
+      totalTax: latestRun ? Number(latestRun.total_income_tax ?? 0) : 0,
+      totalEmployerCost: latestRun
+        ? Number(latestRun.total_sgk_employer ?? 0) + Number(latestRun.total_gross ?? 0)
+        : 0,
     };
 
     await pool.end();
@@ -178,12 +181,11 @@ export async function GET() {
         employeeCount: r.employee_count ?? 0,
         totalGross: Number(r.total_gross ?? 0),
         totalNet: Number(r.total_net ?? 0),
-        totalSgk: Number(r.total_sgk ?? 0),
-        totalTax: Number(r.total_tax ?? 0),
-        totalEmployerCost: Number(r.total_employer_cost ?? 0),
+        totalSgk: Number(r.total_sgk_employee ?? 0),
+        totalTax: Number(r.total_income_tax ?? 0),
+        totalEmployerCost: Number(r.total_sgk_employer ?? 0) + Number(r.total_gross ?? 0),
         createdAt: r.created_at,
         approvedAt: r.approved_at,
-        paidAt: r.paid_at,
       })),
       items,
       stats,
@@ -260,8 +262,8 @@ export async function POST(req: NextRequest) {
     const cumulativeResult = await pool.query(
       `SELECT pi.employee_id, COALESCE(SUM(pi.gross_salary), 0) AS cumulative_gross
        FROM app.payroll_items pi
-       JOIN app.payroll_runs pr ON pr.id = pi.run_id AND pr.tenant_id = pi.tenant_id
-       WHERE pi.tenant_id = $1 AND pr.period >= $2 AND pr.period < $3
+       JOIN app.payroll_runs pr ON pr.id = pi.payroll_run_id AND pr.tenant_id = pi.tenant_id
+       WHERE e.tenant_id = $1 AND pr.period >= $2 AND pr.period < $3
        GROUP BY pi.employee_id`,
       [TENANT_ID, yearStart, period],
     );
@@ -284,9 +286,10 @@ export async function POST(req: NextRequest) {
     // Calculate and insert payroll items for each employee
     let totalGross = 0;
     let totalNet = 0;
-    let totalSgk = 0;
-    let totalTax = 0;
-    let totalEmployerCost = 0;
+    let totalSgkEmployee = 0;
+    let totalSgkEmployer = 0;
+    let totalIncomeTax = 0;
+    let totalStampTax = 0;
 
     for (const emp of employees.rows) {
       const grossSalary = Number(emp.base_salary);
@@ -312,22 +315,25 @@ export async function POST(req: NextRequest) {
 
       totalGross += calc.gross;
       totalNet += calc.netSalary;
-      totalSgk += calc.sgkEmployee + calc.sgkEmployer;
-      totalTax += calc.incomeTax + calc.stampTax;
-      totalEmployerCost += calc.employerCost;
+      totalSgkEmployee += calc.sgkEmployee;
+      totalSgkEmployer += calc.sgkEmployer;
+      totalIncomeTax += calc.incomeTax;
+      totalStampTax += calc.stampTax;
     }
 
     // Update run totals
     await pool.query(
       `UPDATE app.payroll_runs
-       SET total_gross = $1, total_net = $2, total_sgk = $3, total_tax = $4, total_employer_cost = $5
-       WHERE id = $6 AND tenant_id = $7`,
+       SET total_gross = $1, total_net = $2, total_sgk_employee = $3, total_sgk_employer = $4,
+           total_income_tax = $5, total_stamp_tax = $6
+       WHERE id = $7 AND tenant_id = $8`,
       [
         Math.round(totalGross * 100) / 100,
         Math.round(totalNet * 100) / 100,
-        Math.round(totalSgk * 100) / 100,
-        Math.round(totalTax * 100) / 100,
-        Math.round(totalEmployerCost * 100) / 100,
+        Math.round(totalSgkEmployee * 100) / 100,
+        Math.round(totalSgkEmployer * 100) / 100,
+        Math.round(totalIncomeTax * 100) / 100,
+        Math.round(totalStampTax * 100) / 100,
         runId,
         TENANT_ID,
       ],
@@ -345,6 +351,8 @@ export async function POST(req: NextRequest) {
       totalNet,
     });
 
+    const totalEmployerCost = totalSgkEmployer + totalGross;
+
     return NextResponse.json({
       success: true,
       runId,
@@ -353,8 +361,10 @@ export async function POST(req: NextRequest) {
       totals: {
         gross: Math.round(totalGross * 100) / 100,
         net: Math.round(totalNet * 100) / 100,
-        sgk: Math.round(totalSgk * 100) / 100,
-        tax: Math.round(totalTax * 100) / 100,
+        sgkEmployee: Math.round(totalSgkEmployee * 100) / 100,
+        sgkEmployer: Math.round(totalSgkEmployer * 100) / 100,
+        incomeTax: Math.round(totalIncomeTax * 100) / 100,
+        stampTax: Math.round(totalStampTax * 100) / 100,
         employerCost: Math.round(totalEmployerCost * 100) / 100,
       },
     });
@@ -415,16 +425,25 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    const dateField = status === 'approved' ? 'approved_at' : 'paid_at';
-    await pool.query(
-      `UPDATE app.payroll_runs SET status = $1, ${dateField} = NOW(), updated_at = NOW()
-       WHERE id = $2 AND tenant_id = $3`,
-      [status, runId, TENANT_ID],
-    );
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+
+    if (status === 'approved') {
+      await pool.query(
+        `UPDATE app.payroll_runs SET status = $1, approved_at = NOW(), approved_by = $2
+         WHERE id = $3 AND tenant_id = $4`,
+        [status, actorId, runId, TENANT_ID],
+      );
+    } else {
+      // 'paid' — no paid_at column exists, just update status
+      await pool.query(
+        `UPDATE app.payroll_runs SET status = $1
+         WHERE id = $2 AND tenant_id = $3`,
+        [status, runId, TENANT_ID],
+      );
+    }
 
     await pool.end();
 
-    const actorId = req.headers.get('x-user-id') || 'anonymous';
     const actorRole = req.headers.get('x-user-role') || 'hr_director';
     const audit = createAuditLogger(actorId, actorRole);
     void audit.log('update', 'payroll_run', runId, undefined, { status, previousStatus: currentStatus });

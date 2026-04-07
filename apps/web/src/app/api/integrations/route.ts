@@ -10,15 +10,15 @@ export async function GET() {
     const [webhooksRes, apiKeysRes, logsRes] = await Promise.all([
       pool.query(`
         SELECT
-          id, name, url, events, is_active, secret_hash,
-          last_triggered_at, failure_count, created_at, updated_at
+          id, name, url, events, active, secret,
+          last_triggered_at, failure_count, created_at
         FROM app.webhooks
         WHERE tenant_id = $1
         ORDER BY created_at DESC
       `, [TENANT_ID]),
       pool.query(`
         SELECT
-          id, name, key_prefix, permissions, is_active,
+          id, name, key_prefix, permissions, active,
           last_used_at, expires_at, created_at
         FROM app.api_keys
         WHERE tenant_id = $1
@@ -26,9 +26,9 @@ export async function GET() {
       `, [TENANT_ID]),
       pool.query(`
         SELECT
-          id, integration_type, direction, status, url,
-          request_method, response_status, error_message,
-          duration_ms, created_at
+          id, integration_type, direction, status, request_url,
+          response_status, payload_size, error_message,
+          created_at
         FROM app.integration_logs
         WHERE tenant_id = $1
         ORDER BY created_at DESC
@@ -41,7 +41,7 @@ export async function GET() {
       name: w.name,
       url: w.url,
       events: w.events,
-      isActive: w.is_active,
+      isActive: w.active,
       lastTriggeredAt: w.last_triggered_at,
       failureCount: w.failure_count,
       createdAt: w.created_at,
@@ -52,7 +52,7 @@ export async function GET() {
       name: k.name,
       keyPrefix: k.key_prefix,
       permissions: k.permissions,
-      isActive: k.is_active,
+      isActive: k.active,
       lastUsedAt: k.last_used_at,
       expiresAt: k.expires_at,
       createdAt: k.created_at,
@@ -63,11 +63,10 @@ export async function GET() {
       integrationType: l.integration_type,
       direction: l.direction,
       status: l.status,
-      url: l.url,
-      requestMethod: l.request_method,
+      url: l.request_url,
       responseStatus: l.response_status,
       errorMessage: l.error_message,
-      durationMs: l.duration_ms,
+      payloadSize: l.payload_size,
       createdAt: l.created_at,
     }));
 
@@ -116,21 +115,20 @@ export async function POST(req: NextRequest) {
 
       // Generate a random secret for webhook signing
       const crypto = await import('crypto');
-      const secret = `whsec_${crypto.randomBytes(24).toString('hex')}`;
-      const secretHash = crypto.createHash('sha256').update(secret).digest('hex');
+      const webhookSecret = `whsec_${crypto.randomBytes(24).toString('hex')}`;
 
       const result = await pool.query(`
-        INSERT INTO app.webhooks (tenant_id, name, url, events, secret_hash, is_active, failure_count)
+        INSERT INTO app.webhooks (tenant_id, name, url, events, secret, active, failure_count)
         VALUES ($1, $2, $3, $4, $5, true, 0)
         RETURNING id
-      `, [TENANT_ID, name, url, JSON.stringify(events), secretHash]);
+      `, [TENANT_ID, name, url, JSON.stringify(events), webhookSecret]);
 
       await pool.end();
 
       return NextResponse.json({
         success: true,
         id: result.rows[0]?.id,
-        secret,
+        secret: webhookSecret,
         message: 'Webhook olusturuldu. Secret\'i kaydedin, tekrar gosterilemez.',
       }, { status: 201 });
     }
@@ -159,7 +157,7 @@ export async function POST(req: NextRequest) {
       : null;
 
     const result = await pool.query(`
-      INSERT INTO app.api_keys (tenant_id, name, key_prefix, key_hash, permissions, is_active, expires_at)
+      INSERT INTO app.api_keys (tenant_id, name, key_prefix, key_hash, permissions, active, expires_at)
       VALUES ($1, $2, $3, $4, $5, true, $6)
       RETURNING id
     `, [TENANT_ID, name, keyPrefix, keyHash, JSON.stringify(permissions), expiresAt]);
@@ -205,7 +203,7 @@ export async function PATCH(req: NextRequest) {
 
     await pool.query(`
       UPDATE ${table}
-      SET is_active = $1, updated_at = NOW()
+      SET active = $1
       WHERE id = $2 AND tenant_id = $3
     `, [isActive, id, TENANT_ID]);
 

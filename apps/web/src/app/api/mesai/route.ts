@@ -10,9 +10,17 @@ export async function GET() {
     const pool = new Pool({ connectionString: DB_URL });
 
     // Today's attendance entries joined with employees
+    // Fetch default shift start_time for late/on_time calculation
+    const defaultShiftResult = await pool.query(
+      `SELECT start_time FROM app.shift_definitions
+       WHERE tenant_id = $1 AND is_default = true LIMIT 1`,
+      [TENANT_ID],
+    );
+    const defaultShiftStart = defaultShiftResult.rows[0]?.start_time as string | undefined;
+
     const todayEntries = await pool.query(
       `SELECT te.id, te.employee_id, te.clock_in, te.clock_out,
-              te.work_hours, te.overtime_hours, te.status, te.approved,
+              te.work_minutes, te.overtime_minutes, te.approved_by,
               te.entry_date,
               e.ad AS first_name, e.soyad AS last_name,
               d.name_tr AS department
@@ -30,9 +38,8 @@ export async function GET() {
       `SELECT te.employee_id,
               e.ad AS first_name, e.soyad AS last_name,
               te.entry_date,
-              COALESCE(te.work_hours, 0) AS work_hours,
-              COALESCE(te.overtime_hours, 0) AS overtime_hours,
-              te.status
+              COALESCE(te.work_minutes, 0) AS work_minutes,
+              COALESCE(te.overtime_minutes, 0) AS overtime_minutes
        FROM app.time_entries te
        JOIN app.employees e ON e.id = te.employee_id AND e.tenant_id = te.tenant_id
        WHERE te.tenant_id = $1
@@ -54,7 +61,7 @@ export async function GET() {
     // Total active employee count for absent calculation
     const totalEmployees = await pool.query(
       `SELECT COUNT(*) AS count FROM app.employees
-       WHERE tenant_id = $1 AND status = 'active'`,
+       WHERE tenant_id = $1 AND employment_status = 'active'`,
       [TENANT_ID],
     );
 
@@ -62,22 +69,22 @@ export async function GET() {
     const presentToday = todayEntries.rows.length;
     const absentToday = Math.max(0, totalCount - presentToday);
 
-    // Average work hours today
-    const todayHours = todayEntries.rows
-      .map((r) => Number(r.work_hours ?? 0))
-      .filter((h) => h > 0);
+    // Average work hours today (convert minutes to hours)
+    const todayMinutes = todayEntries.rows
+      .map((r) => Number(r.work_minutes ?? 0))
+      .filter((m) => m > 0);
     const avgHoursToday =
-      todayHours.length > 0
-        ? Math.round((todayHours.reduce((a, b) => a + b, 0) / todayHours.length) * 10) / 10
+      todayMinutes.length > 0
+        ? Math.round((todayMinutes.reduce((a, b) => a + b, 0) / todayMinutes.length / 60) * 10) / 10
         : 0;
 
-    // Weekly overtime total
+    // Weekly overtime total (convert minutes to hours)
     const weeklyOvertimeTotal = weeklyEntries.rows.reduce(
-      (sum, r) => sum + Number(r.overtime_hours ?? 0),
+      (sum, r) => sum + Number(r.overtime_minutes ?? 0),
       0,
-    );
+    ) / 60;
 
-    // Build weekly summary per employee
+    // Build weekly summary per employee (convert minutes to hours for API output)
     const weeklyMap = new Map<
       string,
       { employeeId: string; name: string; days: Record<string, number>; totalHours: number; overtimeHours: number }
@@ -95,12 +102,23 @@ export async function GET() {
       }
       const entry = weeklyMap.get(key)!;
       const dayStr = new Date(row.entry_date).toISOString().slice(0, 10);
-      entry.days[dayStr] = Number(row.work_hours);
-      entry.totalHours += Number(row.work_hours);
-      entry.overtimeHours += Number(row.overtime_hours);
+      const workHours = Number(row.work_minutes) / 60;
+      entry.days[dayStr] = Math.round(workHours * 100) / 100;
+      entry.totalHours += workHours;
+      entry.overtimeHours += Number(row.overtime_minutes) / 60;
     }
 
     await pool.end();
+
+    // Helper: derive status from clock_in vs default shift start
+    const deriveStatus = (clockIn: string | null): string => {
+      if (!clockIn) return 'present';
+      if (!defaultShiftStart) return 'on_time';
+      const [hours, minutes] = defaultShiftStart.split(':').map(Number);
+      const shiftDate = new Date(clockIn);
+      shiftDate.setHours(hours ?? 9, minutes ?? 0, 0, 0);
+      return new Date(clockIn) > shiftDate ? 'late' : 'on_time';
+    };
 
     return NextResponse.json({
       today: todayEntries.rows.map((r) => ({
@@ -110,10 +128,10 @@ export async function GET() {
         department: r.department ?? '',
         clockIn: r.clock_in,
         clockOut: r.clock_out,
-        workHours: r.work_hours ? Number(r.work_hours) : null,
-        overtimeHours: r.overtime_hours ? Number(r.overtime_hours) : 0,
-        status: r.status ?? 'present',
-        approved: r.approved ?? false,
+        workHours: r.work_minutes ? Math.round(Number(r.work_minutes) / 60 * 100) / 100 : null,
+        overtimeHours: r.overtime_minutes ? Math.round(Number(r.overtime_minutes) / 60 * 100) / 100 : 0,
+        status: deriveStatus(r.clock_in),
+        approved: r.approved_by != null,
       })),
       weeklySummary: Array.from(weeklyMap.values()),
       shifts: shifts.rows.map((r) => ({
@@ -181,7 +199,7 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: 'Bu calisan bugun zaten giris yapmis' }, { status: 409 });
       }
 
-      // Determine late status based on default shift
+      // Determine late status based on default shift (for response only, not stored)
       const defaultShift = await pool.query(
         `SELECT start_time FROM app.shift_definitions
          WHERE tenant_id = $1 AND is_default = true LIMIT 1`,
@@ -201,10 +219,10 @@ export async function POST(req: NextRequest) {
       }
 
       const result = await pool.query(
-        `INSERT INTO app.time_entries (tenant_id, employee_id, entry_date, clock_in, status, approved)
-         VALUES ($1, $2, CURRENT_DATE, NOW(), $3, false)
-         RETURNING id, clock_in, status`,
-        [TENANT_ID, employeeId, status],
+        `INSERT INTO app.time_entries (tenant_id, employee_id, entry_date, clock_in)
+         VALUES ($1, $2, CURRENT_DATE, NOW())
+         RETURNING id, clock_in`,
+        [TENANT_ID, employeeId],
       );
 
       await pool.end();
@@ -220,7 +238,7 @@ export async function POST(req: NextRequest) {
 
       return NextResponse.json({
         success: true,
-        entry: result.rows[0],
+        entry: { ...result.rows[0], status },
         message: status === 'late' ? 'Giris yapildi (gec kalinmis)' : 'Giris yapildi',
       });
     }
@@ -241,17 +259,20 @@ export async function POST(req: NextRequest) {
     const clockIn = new Date(existing.rows[0].clock_in);
     const clockOut = new Date();
     const diffMs = clockOut.getTime() - clockIn.getTime();
-    const workHours = Math.round((diffMs / (1000 * 60 * 60)) * 100) / 100;
-    const overtimeHours = Math.max(0, Math.round((workHours - 8) * 100) / 100);
+    const workMinutes = Math.round(diffMs / (1000 * 60));
+    const overtimeMinutes = Math.max(0, workMinutes - 480); // 8 hours = 480 minutes
 
     await pool.query(
       `UPDATE app.time_entries
-       SET clock_out = NOW(), work_hours = $1, overtime_hours = $2
-       WHERE id = $3 AND tenant_id = $4`,
-      [workHours, overtimeHours, entryId, TENANT_ID],
+       SET clock_out = NOW(), overtime_minutes = $1
+       WHERE id = $2 AND tenant_id = $3`,
+      [overtimeMinutes, entryId, TENANT_ID],
     );
 
     await pool.end();
+
+    const workHours = Math.round((workMinutes / 60) * 100) / 100;
+    const overtimeHours = Math.round((overtimeMinutes / 60) * 100) / 100;
 
     const actorId = req.headers.get('x-user-id') || 'anonymous';
     const actorRole = req.headers.get('x-user-role') || 'hr_director';
@@ -259,8 +280,8 @@ export async function POST(req: NextRequest) {
     void audit.log('update', 'time_entry', entryId, undefined, {
       employeeId,
       action: 'clock_out',
-      workHours,
-      overtimeHours,
+      workMinutes,
+      overtimeMinutes,
     });
 
     return NextResponse.json({
@@ -286,14 +307,20 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'entryId ve approved (boolean) zorunludur' }, { status: 400 });
     }
 
+    const actorId = req.headers.get('x-user-id') || 'anonymous';
+    const actorRole = req.headers.get('x-user-role') || 'hr_director';
+
     const { Pool } = await import('pg');
     const pool = new Pool({ connectionString: DB_URL });
 
+    // approved_by: set to actorId when approving, NULL when revoking
+    const approvedByValue = approved ? actorId : null;
+
     const result = await pool.query(
-      `UPDATE app.time_entries SET approved = $1, updated_at = NOW()
+      `UPDATE app.time_entries SET approved_by = $1
        WHERE id = $2 AND tenant_id = $3
-       RETURNING id, employee_id, approved`,
-      [approved, entryId, TENANT_ID],
+       RETURNING id, employee_id, approved_by`,
+      [approvedByValue, entryId, TENANT_ID],
     );
 
     if (result.rowCount === 0) {
@@ -303,12 +330,17 @@ export async function PATCH(req: NextRequest) {
 
     await pool.end();
 
-    const actorId = req.headers.get('x-user-id') || 'anonymous';
-    const actorRole = req.headers.get('x-user-role') || 'hr_director';
     const audit = createAuditLogger(actorId, actorRole);
     void audit.log('update', 'time_entry', entryId, undefined, { approved });
 
-    return NextResponse.json({ success: true, entry: result.rows[0] });
+    return NextResponse.json({
+      success: true,
+      entry: {
+        id: result.rows[0].id,
+        employeeId: result.rows[0].employee_id,
+        approved: result.rows[0].approved_by != null,
+      },
+    });
   } catch (error) {
     console.error('Mesai API PATCH error:', error);
     return NextResponse.json({ error: 'Onay islemi basarisiz' }, { status: 500 });
