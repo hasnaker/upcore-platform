@@ -78,6 +78,9 @@ func main() {
 	// Background workers
 	schedulerWorker := service.NewSchedulerWorker(scheduleRepo, distSvc, cfg, logger)
 	reminderWorker := service.NewReminderWorker(invitationRepo, distRepo, publisher, cfg, logger)
+	// Sentiment analysis worker — serbest metin yanıtları için sentiment +
+	// tema çıkarımı. HeuristicScorer dev fallback; production'da ML service.
+	sentimentWorker := service.NewSentimentWorker(sqlDB, service.HeuristicScorer{}, logger)
 
 	// Start workers
 	go func() {
@@ -90,6 +93,7 @@ func main() {
 			logger.Error().Err(err).Msg("reminder worker stopped")
 		}
 	}()
+	go sentimentWorker.Run(ctx)
 
 	// HTTP router
 	r := newRouter(cfg, logger, authChecker, surveySvc, scheduleSvc, distSvc, responseSvc, aggSvc)

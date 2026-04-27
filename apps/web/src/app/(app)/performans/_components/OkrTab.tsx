@@ -1,128 +1,50 @@
 'use client';
 
-import React, { useState, useCallback, useEffect } from 'react';
-import { ChevronDown, ChevronRight, Plus, X, User, Calendar, Target } from 'lucide-react';
+import React, { useMemo, useState } from 'react';
+import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
+import { toast } from 'sonner';
+import {
+  AlertCircle,
+  Building2,
+  Calendar,
+  ChevronDown,
+  ChevronRight,
+  Lock,
+  Plus,
+  RefreshCw,
+  Target,
+  Trash2,
+  User,
+  Users,
+} from 'lucide-react';
 
-/* ─── Types ─── */
+import {
+  isCycleClosing,
+  isCycleEditable,
+  useCreateOkr,
+  useOkrTree,
+  usePerformanceCycles,
+  useUpdateKeyResult,
+  useUpdateOkr,
+  type OKR,
+  type OKRKeyResult,
+  type OKROwnerType,
+  type OKRTreeNode,
+  type PerformanceCycle,
+} from '@/hooks/usePerformance';
+import { useEmployees } from '@/hooks/useEmployees';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 
-interface KeyResult {
-  id: string;
-  title: string;
-  progress: number;
-  target: string;
-}
+/* ─────────────────────────────────────────────────────────────
+ * OKR Tab — live data (no mocks).
+ * API: /cycles, /okrs/tree, /okrs, /okrs/{id}/key-results/{krId}.
+ * ───────────────────────────────────────────────────────────── */
 
-interface OkrItem {
-  id: string;
-  objective: string;
-  progress: number;
-  owner: string;
-  deadline: string;
-  updatedAt?: string;
-  level: 'company' | 'team' | 'individual';
-  team?: string;
-  keyResults: KeyResult[];
-}
-
-/* ─── Fallback Data (used if API unavailable) ─── */
-
-const FALLBACK_OKRS: OkrItem[] = [
-  {
-    id: 'o1',
-    objective: 'Musteri memnuniyetini artir',
-    progress: 72,
-    owner: 'Hasan Aker',
-    deadline: '2026-06-30',
-    level: 'company',
-    keyResults: [
-      { id: 'kr1-1', title: 'NPS skoru 45\'ten 60\'a cikar', progress: 65, target: '60' },
-      { id: 'kr1-2', title: 'Destek ticket cozum suresi <4 saat', progress: 80, target: '<4 saat' },
-      { id: 'kr1-3', title: 'Musteri kaybi orani <%3', progress: 70, target: '<%3' },
-    ],
-  },
-  {
-    id: 'o2',
-    objective: 'Satis gelirini %30 artir',
-    progress: 52,
-    owner: 'Elif Demir',
-    deadline: '2026-12-31',
-    level: 'company',
-    keyResults: [
-      { id: 'kr2-1', title: 'Yeni musteri sayisi +25', progress: 55, target: '+25' },
-      { id: 'kr2-2', title: 'Upsell orani %15', progress: 40, target: '%15' },
-      { id: 'kr2-3', title: 'Pipeline degeri 5M TL', progress: 60, target: '5M TL' },
-    ],
-  },
-  {
-    id: 'o3',
-    objective: 'Urun kalitesini iyilestir',
-    progress: 68,
-    owner: 'Murat Yilmaz',
-    deadline: '2026-09-30',
-    level: 'company',
-    keyResults: [
-      { id: 'kr3-1', title: 'Bug fix suresi ortalama <2 gun', progress: 75, target: '<2 gun' },
-      { id: 'kr3-2', title: 'Test coverage %80\'e cikar', progress: 60, target: '%80' },
-      { id: 'kr3-3', title: 'Kullanici sikayet orani <%1', progress: 70, target: '<%1' },
-    ],
-  },
-  {
-    id: 'o4',
-    objective: 'Satis ekibinin donusum oranini artir',
-    progress: 48,
-    owner: 'Selin Ozturk',
-    deadline: '2026-06-30',
-    level: 'team',
-    team: 'Satis',
-    keyResults: [
-      { id: 'kr4-1', title: 'Demo\'dan satisa donusum %25', progress: 50, target: '%25' },
-      { id: 'kr4-2', title: 'Ortalama satis dongusu 30 gune dusur', progress: 45, target: '30 gun' },
-      { id: 'kr4-3', title: 'Lead kalifikasyon skoru >70', progress: 48, target: '>70' },
-    ],
-  },
-  {
-    id: 'o5',
-    objective: 'Muhendislik deploy hizini artir',
-    progress: 78,
-    owner: 'Ahmet Kaya',
-    deadline: '2026-06-30',
-    level: 'team',
-    team: 'Muhendislik',
-    keyResults: [
-      { id: 'kr5-1', title: 'Haftalik deploy sayisi >10', progress: 85, target: '>10' },
-      { id: 'kr5-2', title: 'Rollback orani <%5', progress: 70, target: '<%5' },
-      { id: 'kr5-3', title: 'CI/CD pipeline suresi <10dk', progress: 80, target: '<10dk' },
-    ],
-  },
-  {
-    id: 'o6',
-    objective: 'Kisisel liderlik becerilerini gelistir',
-    progress: 55,
-    owner: 'Zeynep Arslan',
-    deadline: '2026-06-30',
-    level: 'individual',
-    keyResults: [
-      { id: 'kr6-1', title: '2 liderlik egitimi tamamla', progress: 50, target: '2 egitim' },
-      { id: 'kr6-2', title: '360 liderlik skoru >4.0', progress: 60, target: '>4.0' },
-      { id: 'kr6-3', title: 'Mentorluk programina katil', progress: 55, target: 'Katilim' },
-    ],
-  },
-  {
-    id: 'o7',
-    objective: 'Teknik yetkinlikleri derinlestir',
-    progress: 62,
-    owner: 'Can Demir',
-    deadline: '2026-09-30',
-    level: 'individual',
-    keyResults: [
-      { id: 'kr7-1', title: 'AWS sertifikasi al', progress: 70, target: 'Sertifika' },
-      { id: 'kr7-2', title: '3 teknik blog yazisi yayinla', progress: 33, target: '3 yazi' },
-      { id: 'kr7-3', title: 'Kod review katilim orani >%90', progress: 82, target: '>%90' },
-    ],
-  },
-];
-
-/* ─── Helpers ─── */
+// ============================================================================
+// Helpers
+// ============================================================================
 
 const progressColor = (p: number) => {
   if (p >= 70) return '#059669';
@@ -136,14 +58,72 @@ const progressBg = (p: number) => {
   return '#FEF2F2';
 };
 
-/* ─── Progress Bar ─── */
+const ownerTypeLabel: Record<OKROwnerType, string> = {
+  company: 'Şirket',
+  department: 'Departman',
+  team: 'Takım',
+  individual: 'Bireysel',
+};
 
-const ProgressBar = ({ progress, height = 8 }: { progress: number; height?: number }) => (
-  <div className="w-full rounded-full" style={{ background: progressBg(progress), height }}>
+const cycleStatusLabel: Record<PerformanceCycle['status'], string> = {
+  planning: 'Planlama',
+  goal_setting: 'Hedef Belirleme',
+  active: 'Aktif',
+  in_review: 'Değerlendirme',
+  calibration: 'Kalibrasyon',
+  closed: 'Kapalı',
+  archived: 'Arşivlenmiş',
+};
+
+const formatDate = (iso: string | null | undefined) => {
+  if (!iso) return '—';
+  try {
+    return new Date(iso).toLocaleDateString('tr-TR', {
+      day: 'numeric',
+      month: 'short',
+      year: 'numeric',
+    });
+  } catch {
+    return '—';
+  }
+};
+
+// Walk the tree and flatten so metric cards can compute aggregates.
+function flattenTree(nodes: OKRTreeNode[] | undefined): OKRTreeNode[] {
+  if (!nodes) return [];
+  const out: OKRTreeNode[] = [];
+  const stack = [...nodes];
+  while (stack.length) {
+    const n = stack.pop();
+    if (!n) continue;
+    out.push(n);
+    stack.push(...n.children);
+  }
+  return out;
+}
+
+// ============================================================================
+// Progress Bar (shared with KR + OKR cards)
+// ============================================================================
+
+interface ProgressBarProps {
+  progress: number;
+  height?: number;
+}
+
+const ProgressBar = ({ progress, height = 8 }: ProgressBarProps) => (
+  <div
+    className="w-full rounded-full"
+    style={{ background: progressBg(progress), height }}
+    role="progressbar"
+    aria-valuenow={progress}
+    aria-valuemin={0}
+    aria-valuemax={100}
+  >
     <div
-      className="rounded-full transition-all duration-500"
+      className="rounded-full transition-all duration-300"
       style={{
-        width: `${Math.min(progress, 100)}%`,
+        width: `${Math.min(Math.max(progress, 0), 100)}%`,
         height,
         background: progressColor(progress),
       }}
@@ -151,112 +131,347 @@ const ProgressBar = ({ progress, height = 8 }: { progress: number; height?: numb
   </div>
 );
 
-/* ─── OKR Card ─── */
+// ============================================================================
+// KR Progress Popover — inline % + confidence editor
+// ============================================================================
 
-const OkrCard = ({ okr, onProgressUpdate }: { okr: OkrItem; onProgressUpdate: (krId: string, progress: number) => void }) => {
-  const [expanded, setExpanded] = useState(false);
+interface KrProgressPopoverProps {
+  okrId: string;
+  kr: OKRKeyResult;
+  cycleStatus: PerformanceCycle['status'];
+  children: React.ReactNode;
+}
+
+const KrProgressPopover = ({ okrId, kr, cycleStatus, children }: KrProgressPopoverProps) => {
+  const [open, setOpen] = useState(false);
+  const [progress, setProgress] = useState(kr.progress_pct);
+  const [confidence, setConfidence] = useState(kr.confidence_score ?? 50);
+  const [score, setScore] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
+  const update = useUpdateKeyResult(okrId);
+  const closing = isCycleClosing(cycleStatus);
+
+  React.useEffect(() => {
+    setProgress(kr.progress_pct);
+    setConfidence(kr.confidence_score ?? 50);
+  }, [kr.progress_pct, kr.confidence_score]);
+
+  const handleSave = async () => {
+    if (closing) {
+      if (score < 0 || score > 1) {
+        toast.error('Skor 0 ile 1 arası olmalı');
+        return;
+      }
+      if (!comment.trim()) {
+        toast.error('Kapanış yorumu zorunludur');
+        return;
+      }
+    }
+    try {
+      await update.mutateAsync({
+        id: kr.id,
+        patch: {
+          progress_pct: progress,
+          confidence_score: confidence,
+          current_value:
+            kr.target_value > kr.start_value
+              ? kr.start_value + ((kr.target_value - kr.start_value) * progress) / 100
+              : progress,
+        },
+      });
+      toast.success('KR güncellendi');
+      setOpen(false);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Güncelleme başarısız');
+    }
+  };
+
+  if (!isCycleEditable(cycleStatus) && !closing) {
+    return <>{children}</>;
+  }
 
   return (
-    <div className="rounded-xl border border-[#f0f0f0] bg-white transition-shadow hover:shadow-sm">
+    <div className="relative">
       <button
-        onClick={() => setExpanded(!expanded)}
-        className="flex w-full items-center gap-4 px-5 py-4 text-left"
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="w-full text-left"
       >
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg" style={{ background: progressBg(okr.progress) }}>
+        {children}
+      </button>
+      {open && (
+        <>
+          <button
+            type="button"
+            aria-label="Kapat"
+            className="fixed inset-0 z-40"
+            onClick={() => setOpen(false)}
+          />
+          <div className="absolute right-0 top-full z-50 mt-2 w-[320px] rounded-lg border border-[#E5E5E5] bg-white p-4 shadow-lg">
+            <h4 className="mb-3 text-[13px] font-semibold text-[#0A0A0A]">
+              {closing ? 'Çeyrek kapanış değerlendirmesi' : 'İlerleme güncelle'}
+            </h4>
+
+            {!closing && (
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-medium text-[#525252]">
+                    <span>İlerleme</span>
+                    <span className="font-semibold">%{progress}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={progress}
+                    onChange={(e) => setProgress(Number(e.target.value))}
+                    className="mt-1 w-full accent-[#5E5CE6]"
+                    aria-label="İlerleme yüzdesi"
+                  />
+                </div>
+                <div>
+                  <div className="flex items-center justify-between text-[11px] font-medium text-[#525252]">
+                    <span>Güven (confidence)</span>
+                    <span className="font-semibold">%{confidence}</span>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    value={confidence}
+                    onChange={(e) => setConfidence(Number(e.target.value))}
+                    className="mt-1 w-full accent-[#5E5CE6]"
+                    aria-label="Güven skoru"
+                  />
+                </div>
+              </div>
+            )}
+
+            {closing && (
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-[11px] font-medium text-[#525252]">
+                    Kapanış skoru (0.0 – 1.0)
+                  </label>
+                  <input
+                    type="number"
+                    step={0.1}
+                    min={0}
+                    max={1}
+                    value={score}
+                    onChange={(e) => setScore(Number(e.target.value))}
+                    className="mt-1 w-full rounded-md border border-[#E5E5E5] px-2 py-1.5 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] font-medium text-[#525252]">
+                    Değerlendirme yorumu
+                  </label>
+                  <textarea
+                    value={comment}
+                    onChange={(e) => setComment(e.target.value)}
+                    rows={3}
+                    placeholder="Bu çeyrekteki performansı kısaca değerlendir"
+                    className="mt-1 w-full rounded-md border border-[#E5E5E5] px-2 py-1.5 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                className="rounded-md border border-[#E5E5E5] px-3 py-1.5 text-[12px] font-medium text-[#525252] hover:bg-[#FAFAFA]"
+              >
+                Vazgeç
+              </button>
+              <button
+                type="button"
+                onClick={handleSave}
+                disabled={update.isPending}
+                className="rounded-md bg-[#5E5CE6] px-3 py-1.5 text-[12px] font-medium text-white hover:bg-[#4B49B6] disabled:opacity-50"
+              >
+                {update.isPending ? 'Kaydediliyor…' : 'Kaydet'}
+              </button>
+            </div>
+          </div>
+        </>
+      )}
+    </div>
+  );
+};
+
+// ============================================================================
+// OKR Card — recursive
+// ============================================================================
+
+interface OkrCardProps {
+  node: OKRTreeNode;
+  cycleStatus: PerformanceCycle['status'];
+  depth: number;
+}
+
+const ownerIcon: Record<OKROwnerType, React.ReactNode> = {
+  company: <Building2 className="h-3.5 w-3.5" />,
+  department: <Users className="h-3.5 w-3.5" />,
+  team: <Users className="h-3.5 w-3.5" />,
+  individual: <User className="h-3.5 w-3.5" />,
+};
+
+const OkrCard = ({ node, cycleStatus, depth }: OkrCardProps) => {
+  const [expanded, setExpanded] = useState(depth < 2);
+  const closing = isCycleClosing(cycleStatus);
+  const okrUpdate = useUpdateOkr(node.id);
+  const p = node.progress_pct;
+
+  const onStatusChange = async (status: OKR['status']) => {
+    try {
+      await okrUpdate.mutateAsync({ status });
+      toast.success('Durum güncellendi');
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Güncelleme başarısız');
+    }
+  };
+
+  return (
+    <div
+      className="rounded-xl border border-[#F0F0F0] bg-white"
+      style={{ marginLeft: depth * 24 }}
+      data-testid="okr-card"
+    >
+      <div className="flex w-full items-start gap-3 p-4">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-md hover:bg-[#F5F5F5]"
+          aria-label={expanded ? 'Daralt' : 'Genişlet'}
+        >
           {expanded ? (
-            <ChevronDown className="h-4 w-4" style={{ color: progressColor(okr.progress) }} />
+            <ChevronDown className="h-4 w-4 text-[#737373]" />
           ) : (
-            <ChevronRight className="h-4 w-4" style={{ color: progressColor(okr.progress) }} />
+            <ChevronRight className="h-4 w-4 text-[#737373]" />
           )}
-        </div>
+        </button>
 
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-3">
-            <span className="text-[14px] font-semibold text-[#0A0A0A]">{okr.objective}</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-[14px] font-semibold text-[#0A0A0A]">
+              {node.objective_tr}
+            </span>
             <span
-              className="shrink-0 rounded-full px-2.5 py-0.5 text-[11px] font-semibold"
-              style={{ background: progressBg(okr.progress), color: progressColor(okr.progress) }}
+              className="inline-flex items-center gap-1 rounded-full bg-[#F5F5F5] px-2 py-0.5 text-[11px] font-medium text-[#525252]"
+              title="Sahip türü"
             >
-              %{okr.progress}
+              {ownerIcon[node.owner_type]}
+              {ownerTypeLabel[node.owner_type]}
+            </span>
+            <span
+              className="rounded-full px-2 py-0.5 text-[11px] font-semibold"
+              style={{ background: progressBg(p), color: progressColor(p) }}
+            >
+              %{p}
+            </span>
+            {node.confidence_score != null && (
+              <span className="rounded-full bg-[#EFF6FF] px-2 py-0.5 text-[11px] font-medium text-[#1D4ED8]">
+                Güven %{node.confidence_score}
+              </span>
+            )}
+            <span className="rounded-full border border-[#E5E5E5] px-2 py-0.5 text-[11px] font-medium text-[#525252]">
+              {node.status}
             </span>
           </div>
           <div className="mt-2">
-            <ProgressBar progress={okr.progress} />
+            <ProgressBar progress={p} />
           </div>
+          {node.description && (
+            <p className="mt-2 text-[12px] text-[#737373]">{node.description}</p>
+          )}
         </div>
 
-        <div className="hidden shrink-0 items-center gap-4 text-[12px] text-[#737373] sm:flex">
-          <span className="flex items-center gap-1">
-            <User className="h-3.5 w-3.5" />
-            {okr.owner}
-          </span>
-          <span className="flex items-center gap-1">
-            <Calendar className="h-3.5 w-3.5" />
-            {okr.deadline}
-          </span>
+        <div className="flex shrink-0 items-center gap-2">
+          {isCycleEditable(cycleStatus) && (
+            <select
+              aria-label="OKR durumu"
+              value={node.status}
+              onChange={(e) => onStatusChange(e.target.value as OKR['status'])}
+              disabled={okrUpdate.isPending}
+              className="rounded-md border border-[#E5E5E5] px-2 py-1 text-[11px] text-[#525252] focus:border-[#5E5CE6] focus:outline-none"
+            >
+              <option value="draft">Taslak</option>
+              <option value="active">Aktif</option>
+              <option value="on_track">Rayında</option>
+              <option value="at_risk">Riskli</option>
+              <option value="off_track">Saptı</option>
+              <option value="completed">Tamamlandı</option>
+              <option value="abandoned">İptal</option>
+            </select>
+          )}
+          {closing && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-[#FEF3C7] px-2 py-1 text-[11px] font-medium text-[#B45309]">
+              <Lock className="h-3 w-3" /> Kapanışta
+            </span>
+          )}
         </div>
-      </button>
+      </div>
 
       {expanded && (
-        <div className="border-t border-[#f5f5f5] px-5 pb-5 pt-4">
-          <div className="space-y-3">
-            {okr.keyResults.map((kr, i) => (
-              <div key={kr.id} className="flex items-center gap-4">
-                <span className="shrink-0 text-[12px] font-medium text-[#A3A3A3]">KR{i + 1}</span>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[13px] text-[#525252]">{kr.title}</span>
-                    <span
-                      className="shrink-0 text-[12px] font-semibold"
-                      style={{ color: progressColor(kr.progress) }}
-                    >
-                      %{kr.progress}
-                    </span>
+        <div className="border-t border-[#F5F5F5] px-5 pb-4 pt-3">
+          {node.key_results && node.key_results.length > 0 ? (
+            <ul className="space-y-3">
+              {node.key_results.map((kr, idx) => (
+                <li key={kr.id} className="flex items-start gap-3">
+                  <span className="mt-1 w-8 shrink-0 text-[11px] font-semibold text-[#A3A3A3]">
+                    KR{idx + 1}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <KrProgressPopover okrId={node.id} kr={kr} cycleStatus={cycleStatus}>
+                      <div className="rounded-md p-2 hover:bg-[#FAFAFA]">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[13px] text-[#525252]">{kr.title_tr}</span>
+                          <span
+                            className="shrink-0 text-[12px] font-semibold"
+                            style={{ color: progressColor(kr.progress_pct) }}
+                          >
+                            %{kr.progress_pct}
+                          </span>
+                        </div>
+                        <div className="mt-1">
+                          <ProgressBar progress={kr.progress_pct} height={6} />
+                        </div>
+                        <div className="mt-1 flex items-center gap-3 text-[11px] text-[#A3A3A3]">
+                          <span>
+                            Hedef: {kr.target_value}
+                            {kr.unit ? ` ${kr.unit}` : ''}
+                          </span>
+                          <span>
+                            Şimdiki: {kr.current_value}
+                            {kr.unit ? ` ${kr.unit}` : ''}
+                          </span>
+                          {kr.confidence_score != null && (
+                            <span>Güven %{kr.confidence_score}</span>
+                          )}
+                        </div>
+                      </div>
+                    </KrProgressPopover>
                   </div>
-                  <div className="mt-1.5 flex items-center gap-2">
-                    <input
-                      type="range"
-                      min={0}
-                      max={100}
-                      value={kr.progress}
-                      onChange={(e) => onProgressUpdate(kr.id, Number(e.target.value))}
-                      className="h-1.5 flex-1 cursor-pointer appearance-none rounded-full bg-[#f0f0f0] accent-[#5E5CE6]"
-                      style={{ accentColor: progressColor(kr.progress) }}
-                    />
-                    <input
-                      type="number"
-                      min={0}
-                      max={100}
-                      value={kr.progress}
-                      onChange={(e) => onProgressUpdate(kr.id, Math.min(100, Math.max(0, Number(e.target.value))))}
-                      className="w-[52px] rounded-md border border-[#e5e5e5] px-2 py-1 text-center text-[11px] font-semibold text-[#525252] outline-none focus:border-[#5E5CE6]"
-                    />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-[12px] text-[#A3A3A3]">Bu OKR için henüz anahtar sonuç yok.</p>
+          )}
 
-          {/* Mobile meta */}
-          <div className="mt-4 flex items-center gap-4 text-[12px] text-[#737373] sm:hidden">
-            <span className="flex items-center gap-1">
-              <User className="h-3.5 w-3.5" />
-              {okr.owner}
-            </span>
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3.5 w-3.5" />
-              {okr.deadline}
-            </span>
-          </div>
-
-          {/* Last updated timestamp */}
-          {okr.updatedAt && (
-            <div className="mt-3 flex items-center gap-2 text-[11px] text-[#A3A3A3]">
-              <svg className="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <circle cx="12" cy="12" r="10" />
-                <path d="M12 6v6l4 2" />
-              </svg>
-              Son guncelleme: {new Date(okr.updatedAt).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}
+          {node.children.length > 0 && (
+            <div className="mt-4 space-y-3 border-l-2 border-dashed border-[#EDEDED] pl-3">
+              {node.children.map((child) => (
+                <OkrCard
+                  key={child.id}
+                  node={child}
+                  cycleStatus={cycleStatus}
+                  depth={depth + 1}
+                />
+              ))}
             </div>
           )}
         </div>
@@ -265,297 +480,703 @@ const OkrCard = ({ okr, onProgressUpdate }: { okr: OkrItem; onProgressUpdate: (k
   );
 };
 
-/* ─── New OKR Modal ─── */
+// ============================================================================
+// New OKR form
+// ============================================================================
 
-interface NewOkrForm {
-  objective: string;
-  owner: string;
-  deadline: string;
-  level: 'company' | 'team' | 'individual';
-  team: string;
-  kr1: string;
-  kr2: string;
-  kr3: string;
-}
+const KrSchema = z.object({
+  title_tr: z.string().min(3, 'KR başlığı en az 3 karakter olmalı').max(200),
+  target_value: z.coerce
+    .number({ invalid_type_error: 'Sayısal hedef girin' })
+    .finite('Geçerli bir sayı girin'),
+  start_value: z.coerce.number().finite().default(0),
+  unit: z.string().max(20).optional(),
+  metric_type: z.enum(['numeric', 'percentage', 'boolean', 'milestone', 'qualitative']),
+});
 
-const emptyForm: NewOkrForm = {
-  objective: '',
-  owner: '',
-  deadline: '',
-  level: 'company',
-  team: '',
-  kr1: '',
-  kr2: '',
-  kr3: '',
-};
+const OkrFormSchema = z.object({
+  cycle_id: z.string().uuid({ message: 'Geçerli bir dönem seçin' }),
+  owner_type: z.enum(['company', 'department', 'team', 'individual']),
+  owner_id: z.string().uuid({ message: 'Sahip seçin' }).optional().or(z.literal('')),
+  parent_okr_id: z.string().uuid().optional().or(z.literal('')),
+  objective_tr: z.string().min(3, 'Hedef başlığı en az 3 karakter olmalı').max(200),
+  description: z.string().max(2000, 'Açıklama 2000 karakteri geçemez').optional().or(z.literal('')),
+  quarter_label: z.string().max(10).optional().or(z.literal('')),
+  key_results: z.array(KrSchema).min(1, 'En az 1 KR ekleyin').max(5, 'En fazla 5 KR eklenebilir'),
+});
 
-const NewOkrModal = ({
-  open,
-  onClose,
-  onSubmit,
-}: {
+type OkrFormValues = z.infer<typeof OkrFormSchema>;
+
+interface NewOkrDialogProps {
   open: boolean;
   onClose: () => void;
-  onSubmit: (form: NewOkrForm) => void;
-}) => {
-  const [form, setForm] = useState<NewOkrForm>(emptyForm);
+  cycles: PerformanceCycle[];
+  activeCycleId: string;
+  parentCandidates: OKRTreeNode[];
+}
 
-  const handleSubmit = useCallback(() => {
-    if (!form.objective || !form.owner || !form.deadline || !form.kr1) return;
-    onSubmit(form);
-    setForm(emptyForm);
-  }, [form, onSubmit]);
+function flattenForParent(nodes: OKRTreeNode[], depth = 0): Array<{ id: string; label: string }> {
+  const out: Array<{ id: string; label: string }> = [];
+  for (const n of nodes) {
+    out.push({
+      id: n.id,
+      label: `${'  '.repeat(depth)}${ownerTypeLabel[n.owner_type]} · ${n.objective_tr}`,
+    });
+    if (n.children.length) out.push(...flattenForParent(n.children, depth + 1));
+  }
+  return out;
+}
+
+const NewOkrDialog = ({
+  open,
+  onClose,
+  cycles,
+  activeCycleId,
+  parentCandidates,
+}: NewOkrDialogProps) => {
+  const createOkr = useCreateOkr();
+  const [ownerSearch, setOwnerSearch] = useState('');
+  const debouncedOwnerSearch = useDebouncedValue(ownerSearch, 250);
+  const { data: employees, isLoading: employeesLoading } = useEmployees({
+    search: debouncedOwnerSearch || undefined,
+    limit: 10,
+  });
+
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    reset,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<OkrFormValues>({
+    resolver: zodResolver(OkrFormSchema),
+    defaultValues: {
+      cycle_id: activeCycleId,
+      owner_type: 'company',
+      objective_tr: '',
+      description: '',
+      quarter_label: '',
+      parent_okr_id: '',
+      owner_id: '',
+      key_results: [
+        { title_tr: '', metric_type: 'numeric', start_value: 0, target_value: 100, unit: '' },
+      ],
+    },
+  });
+
+  React.useEffect(() => {
+    if (open) {
+      reset({
+        cycle_id: activeCycleId,
+        owner_type: 'company',
+        objective_tr: '',
+        description: '',
+        quarter_label: '',
+        parent_okr_id: '',
+        owner_id: '',
+        key_results: [
+          { title_tr: '', metric_type: 'numeric', start_value: 0, target_value: 100, unit: '' },
+        ],
+      });
+      setOwnerSearch('');
+    }
+  }, [open, activeCycleId, reset]);
+
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: 'key_results',
+  });
+
+  const ownerType = watch('owner_type');
+  const ownerId = watch('owner_id');
+  const selectedEmployee = employees?.items.find((e) => e.id === ownerId);
+
+  const parentFlat = useMemo(() => flattenForParent(parentCandidates), [parentCandidates]);
+
+  const onSubmit = async (values: OkrFormValues) => {
+    try {
+      const payload = {
+        cycle_id: values.cycle_id,
+        owner_type: values.owner_type,
+        objective_tr: values.objective_tr.trim(),
+        description: values.description?.trim() || undefined,
+        quarter_label: values.quarter_label?.trim() || undefined,
+        owner_id: values.owner_id || undefined,
+        parent_okr_id: values.parent_okr_id || undefined,
+        key_results: values.key_results.map((k, i) => ({
+          title_tr: k.title_tr.trim(),
+          metric_type: k.metric_type,
+          start_value: Number(k.start_value ?? 0),
+          target_value: Number(k.target_value),
+          unit: k.unit?.trim() || undefined,
+          order_index: i,
+        })),
+      };
+      await createOkr.mutateAsync(payload);
+      toast.success('OKR oluşturuldu');
+      onClose();
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'OKR oluşturulamadı');
+    }
+  };
 
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <div className="w-full max-w-[520px] rounded-2xl border border-[#f0f0f0] bg-white shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-[#f0f0f0] px-6 py-4">
-          <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Yeni OKR Ekle</h3>
-          <button onClick={onClose} className="rounded-lg p-1 text-[#A3A3A3] hover:bg-[#f5f5f5] hover:text-[#525252]">
-            <X className="h-5 w-5" />
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-black/40 p-4 backdrop-blur-sm">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="relative mt-10 w-full max-w-[640px] rounded-2xl border border-[#F0F0F0] bg-white shadow-2xl"
+      >
+        <header className="flex items-center justify-between border-b border-[#F0F0F0] px-6 py-4">
+          <div>
+            <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Yeni OKR</h3>
+            <p className="text-[12px] text-[#737373]">
+              Bir hedef ve 1-5 arası ölçülebilir anahtar sonuç ekleyin.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md p-1 text-[#A3A3A3] hover:bg-[#F5F5F5] hover:text-[#525252]"
+            aria-label="Kapat"
+          >
+            ×
           </button>
-        </div>
+        </header>
 
-        {/* Body */}
         <div className="space-y-4 px-6 py-5">
           <div>
-            <label className="mb-1.5 block text-[12px] font-medium text-[#525252]">Hedef (Objective)</label>
-            <input
-              value={form.objective}
-              onChange={(e) => setForm({ ...form, objective: e.target.value })}
-              placeholder="Ornegin: Musteri memnuniyetini artir"
-              className="w-full rounded-lg border border-[#e5e5e5] px-3 py-2.5 text-[13px] text-[#0A0A0A] outline-none transition focus:border-[#5E5CE6] focus:ring-2 focus:ring-[#5E5CE6]/10"
-            />
+            <label className="mb-1 block text-[12px] font-medium text-[#525252]">Dönem</label>
+            <select
+              {...register('cycle_id')}
+              className="w-full rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+            >
+              {cycles.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {c.name_tr} · {cycleStatusLabel[c.status]}
+                </option>
+              ))}
+            </select>
+            {errors.cycle_id && (
+              <p className="mt-1 text-[11px] text-[#DC2626]">{errors.cycle_id.message}</p>
+            )}
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-[#525252]">Seviye</label>
-              <select
-                value={form.level}
-                onChange={(e) => setForm({ ...form, level: e.target.value as NewOkrForm['level'] })}
-                className="w-full rounded-lg border border-[#e5e5e5] px-3 py-2.5 text-[13px] text-[#0A0A0A] outline-none transition focus:border-[#5E5CE6] focus:ring-2 focus:ring-[#5E5CE6]/10"
-              >
-                <option value="company">Sirket</option>
-                <option value="team">Takim</option>
-                <option value="individual">Bireysel</option>
-              </select>
-            </div>
-            {form.level === 'team' && (
-              <div>
-                <label className="mb-1.5 block text-[12px] font-medium text-[#525252]">Takim</label>
-                <input
-                  value={form.team}
-                  onChange={(e) => setForm({ ...form, team: e.target.value })}
-                  placeholder="Satis, Muhendislik..."
-                  className="w-full rounded-lg border border-[#e5e5e5] px-3 py-2.5 text-[13px] text-[#0A0A0A] outline-none transition focus:border-[#5E5CE6] focus:ring-2 focus:ring-[#5E5CE6]/10"
-                />
-              </div>
+          <div>
+            <label className="mb-1 block text-[12px] font-medium text-[#525252]">Hedef</label>
+            <input
+              {...register('objective_tr')}
+              placeholder="Ör: Müşteri memnuniyetini yükselt"
+              className="w-full rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+            />
+            {errors.objective_tr && (
+              <p className="mt-1 text-[11px] text-[#DC2626]">{errors.objective_tr.message}</p>
+            )}
+          </div>
+
+          <div>
+            <label className="mb-1 block text-[12px] font-medium text-[#525252]">
+              Açıklama (opsiyonel)
+            </label>
+            <textarea
+              {...register('description')}
+              rows={2}
+              placeholder="Neden önemli? Hangi stratejik temayı destekliyor?"
+              className="w-full rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+            />
+            {errors.description && (
+              <p className="mt-1 text-[11px] text-[#DC2626]">{errors.description.message}</p>
             )}
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-[#525252]">Sorumlu</label>
-              <input
-                value={form.owner}
-                onChange={(e) => setForm({ ...form, owner: e.target.value })}
-                placeholder="Ad Soyad"
-                className="w-full rounded-lg border border-[#e5e5e5] px-3 py-2.5 text-[13px] text-[#0A0A0A] outline-none transition focus:border-[#5E5CE6] focus:ring-2 focus:ring-[#5E5CE6]/10"
-              />
+              <label className="mb-1 block text-[12px] font-medium text-[#525252]">Seviye</label>
+              <select
+                {...register('owner_type')}
+                className="w-full rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+              >
+                <option value="company">Şirket</option>
+                <option value="department">Departman</option>
+                <option value="team">Takım</option>
+                <option value="individual">Bireysel</option>
+              </select>
             </div>
             <div>
-              <label className="mb-1.5 block text-[12px] font-medium text-[#525252]">Son Tarih</label>
-              <input
-                type="date"
-                value={form.deadline}
-                onChange={(e) => setForm({ ...form, deadline: e.target.value })}
-                className="w-full rounded-lg border border-[#e5e5e5] px-3 py-2.5 text-[13px] text-[#0A0A0A] outline-none transition focus:border-[#5E5CE6] focus:ring-2 focus:ring-[#5E5CE6]/10"
-              />
+              <label className="mb-1 block text-[12px] font-medium text-[#525252]">
+                Üst OKR (opsiyonel)
+              </label>
+              <select
+                {...register('parent_okr_id')}
+                className="w-full rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+              >
+                <option value="">— Yok —</option>
+                {parentFlat.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="mb-1.5 block text-[12px] font-medium text-[#525252]">Anahtar Sonuclar (Key Results)</label>
-            {[1, 2, 3].map((n) => (
-              <input
-                key={n}
-                value={form[`kr${n}` as keyof NewOkrForm]}
-                onChange={(e) => setForm({ ...form, [`kr${n}`]: e.target.value })}
-                placeholder={`KR${n}: Ornegin: NPS skoru 60'a cikar`}
-                className="w-full rounded-lg border border-[#e5e5e5] px-3 py-2.5 text-[13px] text-[#0A0A0A] outline-none transition focus:border-[#5E5CE6] focus:ring-2 focus:ring-[#5E5CE6]/10"
-              />
-            ))}
+          {ownerType === 'individual' && (
+            <div>
+              <label className="mb-1 block text-[12px] font-medium text-[#525252]">
+                Çalışan sahip
+              </label>
+              {selectedEmployee ? (
+                <div className="flex items-center justify-between rounded-md border border-[#E5E5E5] bg-[#F9FAFB] px-3 py-2">
+                  <div className="text-[13px] text-[#0A0A0A]">
+                    {selectedEmployee.tamAd}
+                    <span className="ml-2 text-[11px] text-[#737373]">
+                      ({selectedEmployee.email})
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setValue('owner_id', '');
+                      setOwnerSearch('');
+                    }}
+                    className="text-[11px] text-[#5E5CE6] hover:underline"
+                  >
+                    Değiştir
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <input
+                    type="text"
+                    value={ownerSearch}
+                    onChange={(e) => setOwnerSearch(e.target.value)}
+                    placeholder="Çalışan ara (ad / e-posta)"
+                    aria-label="Çalışan ara"
+                    className="w-full rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+                  />
+                  {debouncedOwnerSearch.length > 0 && (
+                    <ul className="mt-1 max-h-40 overflow-y-auto rounded-md border border-[#E5E5E5] bg-white shadow-sm">
+                      {employeesLoading && (
+                        <li className="px-3 py-2 text-[12px] text-[#A3A3A3]">Aranıyor…</li>
+                      )}
+                      {!employeesLoading && (employees?.items ?? []).length === 0 && (
+                        <li className="px-3 py-2 text-[12px] text-[#A3A3A3]">
+                          Eşleşen çalışan yok
+                        </li>
+                      )}
+                      {(employees?.items ?? []).map((e) => (
+                        <li key={e.id}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setValue('owner_id', e.id, { shouldValidate: true });
+                              setOwnerSearch('');
+                            }}
+                            className="flex w-full flex-col items-start px-3 py-2 text-left hover:bg-[#F5F5F5]"
+                          >
+                            <span className="text-[13px] text-[#0A0A0A]">{e.tamAd}</span>
+                            <span className="text-[11px] text-[#737373]">{e.email}</span>
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              )}
+              {errors.owner_id && (
+                <p className="mt-1 text-[11px] text-[#DC2626]">{errors.owner_id.message}</p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="text-[12px] font-medium text-[#525252]">
+                Anahtar Sonuçlar ({fields.length}/5)
+              </label>
+              {fields.length < 5 && (
+                <button
+                  type="button"
+                  onClick={() =>
+                    append({
+                      title_tr: '',
+                      metric_type: 'numeric',
+                      start_value: 0,
+                      target_value: 100,
+                      unit: '',
+                    })
+                  }
+                  className="inline-flex items-center gap-1 text-[12px] font-medium text-[#5E5CE6] hover:underline"
+                >
+                  <Plus className="h-3 w-3" /> KR ekle
+                </button>
+              )}
+            </div>
+            <div className="mt-2 space-y-3">
+              {fields.map((field, index) => (
+                <div
+                  key={field.id}
+                  className="rounded-md border border-[#E5E5E5] bg-[#FAFAFA] p-3"
+                  data-testid={`kr-row-${index}`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="text-[11px] font-semibold text-[#A3A3A3]">KR{index + 1}</span>
+                    {fields.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => remove(index)}
+                        className="text-[#A3A3A3] hover:text-[#DC2626]"
+                        aria-label="KR'yi sil"
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    {...register(`key_results.${index}.title_tr`)}
+                    placeholder="Ör: NPS skoru 45'ten 60'a çıksın"
+                    className="mt-2 w-full rounded-md border border-[#E5E5E5] bg-white px-2 py-1.5 text-[12px] focus:border-[#5E5CE6] focus:outline-none"
+                  />
+                  {errors.key_results?.[index]?.title_tr && (
+                    <p className="mt-1 text-[11px] text-[#DC2626]">
+                      {errors.key_results[index]?.title_tr?.message}
+                    </p>
+                  )}
+                  <div className="mt-2 grid grid-cols-4 gap-2">
+                    <Controller
+                      control={control}
+                      name={`key_results.${index}.metric_type`}
+                      render={({ field: f }) => (
+                        <select
+                          {...f}
+                          className="rounded-md border border-[#E5E5E5] bg-white px-2 py-1.5 text-[11px] focus:border-[#5E5CE6] focus:outline-none"
+                        >
+                          <option value="numeric">Sayısal</option>
+                          <option value="percentage">Yüzde</option>
+                          <option value="boolean">Evet/Hayır</option>
+                          <option value="milestone">Kilometre taşı</option>
+                          <option value="qualitative">Nitel</option>
+                        </select>
+                      )}
+                    />
+                    <input
+                      {...register(`key_results.${index}.start_value`)}
+                      type="number"
+                      step="any"
+                      placeholder="Başl."
+                      className="rounded-md border border-[#E5E5E5] bg-white px-2 py-1.5 text-[11px] focus:border-[#5E5CE6] focus:outline-none"
+                    />
+                    <input
+                      {...register(`key_results.${index}.target_value`)}
+                      type="number"
+                      step="any"
+                      placeholder="Hedef"
+                      className="rounded-md border border-[#E5E5E5] bg-white px-2 py-1.5 text-[11px] focus:border-[#5E5CE6] focus:outline-none"
+                    />
+                    <input
+                      {...register(`key_results.${index}.unit`)}
+                      placeholder="Birim"
+                      className="rounded-md border border-[#E5E5E5] bg-white px-2 py-1.5 text-[11px] focus:border-[#5E5CE6] focus:outline-none"
+                    />
+                  </div>
+                  {errors.key_results?.[index]?.target_value && (
+                    <p className="mt-1 text-[11px] text-[#DC2626]">
+                      {errors.key_results[index]?.target_value?.message}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+            {errors.key_results?.message && (
+              <p className="mt-1 text-[11px] text-[#DC2626]">{errors.key_results.message}</p>
+            )}
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 border-t border-[#f0f0f0] px-6 py-4">
+        <footer className="flex items-center justify-end gap-3 border-t border-[#F0F0F0] px-6 py-4">
           <button
+            type="button"
             onClick={onClose}
-            className="rounded-lg border border-[#e5e5e5] px-4 py-2 text-[13px] font-medium text-[#525252] hover:bg-[#f5f5f5]"
+            className="rounded-md border border-[#E5E5E5] px-4 py-2 text-[13px] font-medium text-[#525252] hover:bg-[#F5F5F5]"
           >
-            Iptal
+            Vazgeç
           </button>
           <button
-            onClick={handleSubmit}
-            disabled={!form.objective || !form.owner || !form.deadline || !form.kr1}
-            className="rounded-lg bg-[#5E5CE6] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[#4B49B6] disabled:opacity-40"
+            type="submit"
+            disabled={isSubmitting || createOkr.isPending}
+            data-testid="submit-new-okr"
+            className="rounded-md bg-[#5E5CE6] px-4 py-2 text-[13px] font-medium text-white hover:bg-[#4B49B6] disabled:opacity-50"
           >
-            Kaydet
+            {isSubmitting || createOkr.isPending ? 'Oluşturuluyor…' : 'Kaydet'}
           </button>
-        </div>
-      </div>
+        </footer>
+      </form>
     </div>
   );
 };
 
-/* ─── Main OKR Tab ─── */
+// ============================================================================
+// Main Tab
+// ============================================================================
 
 export const OkrTab = () => {
-  const [okrs, setOkrs] = useState<OkrItem[]>(FALLBACK_OKRS);
-  const [showModal, setShowModal] = useState(false);
+  const [cycleId, setCycleId] = useState<string>('');
+  const [newDialog, setNewDialog] = useState(false);
 
-  useEffect(() => {
-    fetch('/api/okr')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.okrs && data.okrs.length > 0) {
-          setOkrs(data.okrs);
-        }
-      })
-      .catch(() => {});
-  }, []);
+  const cyclesQuery = usePerformanceCycles();
+  const cycles = useMemo(() => cyclesQuery.data?.items ?? [], [cyclesQuery.data]);
 
-  // Debounced progress update — persists to DB via PATCH /api/okr
-  const progressTimers = React.useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
+  // Default to the first active / goal_setting / planning cycle.
+  React.useEffect(() => {
+    if (cycleId || cycles.length === 0) return;
+    const pickOrder: PerformanceCycle['status'][] = [
+      'active',
+      'in_review',
+      'calibration',
+      'goal_setting',
+      'planning',
+      'closed',
+      'archived',
+    ];
+    const picked = pickOrder
+      .map((status) => cycles.find((c) => c.status === status))
+      .find(Boolean);
+    if (picked) setCycleId(picked.id);
+  }, [cycles, cycleId]);
 
-  const handleProgressUpdate = useCallback((krId: string, newProgress: number) => {
-    // Update local state immediately
-    setOkrs((prev) =>
-      prev.map((okr) => {
-        const updatedKrs = okr.keyResults.map((kr) =>
-          kr.id === krId ? { ...kr, progress: newProgress } : kr
-        );
-        const hasKr = updatedKrs.some((kr) => kr.id === krId);
-        if (!hasKr) return okr;
-        // Auto-calculate objective progress from KR average
-        const avgProgress = Math.round(updatedKrs.reduce((sum, kr) => sum + kr.progress, 0) / updatedKrs.length);
-        return { ...okr, keyResults: updatedKrs, progress: avgProgress };
-      })
-    );
-
-    // Debounce the API call (500ms)
-    const existing = progressTimers.current.get(krId);
-    if (existing) clearTimeout(existing);
-    progressTimers.current.set(krId, setTimeout(() => {
-      fetch('/api/okr', {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ keyResultId: krId, progress: newProgress }),
-      }).catch(() => {});
-      progressTimers.current.delete(krId);
-    }, 500));
-  }, []);
-
-  const companyOkrs = okrs.filter((o) => o.level === 'company');
-  const teamOkrs = okrs.filter((o) => o.level === 'team');
-  const individualOkrs = okrs.filter((o) => o.level === 'individual');
-
-  const handleAdd = useCallback((form: NewOkrForm) => {
-    const krs: KeyResult[] = [];
-    if (form.kr1) krs.push({ id: `new-kr-${Date.now()}-1`, title: form.kr1, progress: 0, target: '' });
-    if (form.kr2) krs.push({ id: `new-kr-${Date.now()}-2`, title: form.kr2, progress: 0, target: '' });
-    if (form.kr3) krs.push({ id: `new-kr-${Date.now()}-3`, title: form.kr3, progress: 0, target: '' });
-
-    const newOkr: OkrItem = {
-      id: `o-${Date.now()}`,
-      objective: form.objective,
-      progress: 0,
-      owner: form.owner,
-      deadline: form.deadline,
-      level: form.level,
-      team: form.team || undefined,
-      keyResults: krs,
-    };
-
-    setOkrs((prev) => [...prev, newOkr]);
-    setShowModal(false);
-  }, []);
-
-  const renderSection = (title: string, items: OkrItem[], icon: React.ReactNode) => (
-    <div>
-      <div className="mb-4 flex items-center gap-2">
-        {icon}
-        <h3 className="text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">{title}</h3>
-        <span className="rounded-full bg-[#f5f5f5] px-2 py-0.5 text-[11px] font-medium text-[#737373]">
-          {items.length}
-        </span>
-      </div>
-      <div className="space-y-3">
-        {items.map((okr) => (
-          <OkrCard key={okr.id} okr={okr} onProgressUpdate={handleProgressUpdate} />
-        ))}
-      </div>
-    </div>
+  const activeCycle = cycles.find((c) => c.id === cycleId);
+  const treeQuery = useOkrTree(cycleId || null);
+  const tree = useMemo<OKRTreeNode[]>(
+    () => treeQuery.data?.items ?? [],
+    [treeQuery.data],
   );
+  const flat = useMemo(() => flattenTree(tree), [tree]);
+
+  const avgProgress =
+    flat.length === 0 ? 0 : Math.round(flat.reduce((s, n) => s + n.progress_pct, 0) / flat.length);
+  const onTrackCount = flat.filter((n) => n.progress_pct >= 70).length;
+  const atRiskCount = flat.filter((n) => n.progress_pct < 40).length;
 
   return (
-    <div className="space-y-8">
-      {/* Header with Add button */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6" data-testid="okr-tab">
+      {/* Header + cycle selector */}
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-[15px] font-semibold text-[#0A0A0A]">OKR Yonetimi</h2>
-          <p className="mt-0.5 text-[12px] text-[#737373]">Sirket, takim ve bireysel hedefleri takip edin</p>
+          <h2 className="text-[15px] font-semibold text-[#0A0A0A]">OKR Yönetimi</h2>
+          <p className="mt-0.5 text-[12px] text-[#737373]">
+            Aktif dönemde şirket, departman ve bireysel hedefleri takip edin.
+          </p>
         </div>
-        <button
-          onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 rounded-lg bg-[#5E5CE6] px-4 py-2.5 text-[13px] font-medium text-white transition hover:bg-[#4B49B6]"
-        >
-          <Plus className="h-4 w-4" />
-          Yeni OKR Ekle
-        </button>
+        <div className="flex flex-wrap items-center gap-2">
+          <select
+            value={cycleId}
+            onChange={(e) => setCycleId(e.target.value)}
+            disabled={cyclesQuery.isLoading || cycles.length === 0}
+            className="rounded-md border border-[#E5E5E5] px-3 py-2 text-[13px] focus:border-[#5E5CE6] focus:outline-none"
+            aria-label="Dönem seç"
+            data-testid="cycle-selector"
+          >
+            {cycles.length === 0 && <option value="">Dönem yok</option>}
+            {cycles.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name_tr} — {cycleStatusLabel[c.status]}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={() => treeQuery.refetch()}
+            disabled={!cycleId || treeQuery.isFetching}
+            className="inline-flex items-center gap-1 rounded-md border border-[#E5E5E5] px-3 py-2 text-[12px] font-medium text-[#525252] hover:bg-[#FAFAFA] disabled:opacity-40"
+            aria-label="Yenile"
+          >
+            <RefreshCw
+              className={`h-3.5 w-3.5 ${treeQuery.isFetching ? 'animate-spin' : ''}`}
+            />
+            Yenile
+          </button>
+          <button
+            type="button"
+            onClick={() => setNewDialog(true)}
+            disabled={!activeCycle || !isCycleEditable(activeCycle.status)}
+            data-testid="new-okr-btn"
+            className="inline-flex items-center gap-2 rounded-md bg-[#5E5CE6] px-3 py-2 text-[13px] font-medium text-white hover:bg-[#4B49B6] disabled:opacity-40"
+          >
+            <Plus className="h-4 w-4" /> Yeni OKR
+          </button>
+        </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Ortalama Ilerleme', value: `%${Math.round(okrs.reduce((s, o) => s + o.progress, 0) / okrs.length)}`, color: '#5E5CE6' },
-          { label: 'Hedefe Yakin (>%70)', value: okrs.filter((o) => o.progress >= 70).length.toString(), color: '#059669' },
-          { label: 'Riskli (<%40)', value: okrs.filter((o) => o.progress < 40).length.toString(), color: '#DC2626' },
-        ].map((card) => (
-          <div key={card.label} className="rounded-xl border border-[#f0f0f0] bg-white p-5">
-            <div className="text-[12px] font-medium text-[#737373]">{card.label}</div>
-            <div className="mt-1 text-[24px] font-bold" style={{ color: card.color }}>{card.value}</div>
+      {/* Active cycle banner */}
+      {activeCycle && (
+        <div className="flex flex-wrap items-center gap-4 rounded-lg border border-[#E5E5E5] bg-[#F9FAFB] px-4 py-3 text-[12px] text-[#525252]">
+          <span className="inline-flex items-center gap-1">
+            <Calendar className="h-3.5 w-3.5" />
+            {formatDate(activeCycle.period_start)} — {formatDate(activeCycle.period_end)}
+          </span>
+          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-medium text-[#525252] ring-1 ring-[#E5E5E5]">
+            {cycleStatusLabel[activeCycle.status]}
+          </span>
+          {isCycleClosing(activeCycle.status) && (
+            <span className="inline-flex items-center gap-1 rounded-md bg-[#FEF3C7] px-2 py-1 text-[11px] font-medium text-[#B45309]">
+              <Lock className="h-3 w-3" />
+              Çeyrek kapanış modu: KR düzenleme kapalı, skor + yorum zorunlu.
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Metric cards */}
+      {cycleId && treeQuery.isSuccess && flat.length > 0 && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-[#F0F0F0] bg-white p-5">
+            <div className="text-[12px] font-medium text-[#737373]">Ortalama İlerleme</div>
+            <div className="mt-1 text-[24px] font-bold text-[#5E5CE6]">%{avgProgress}</div>
           </div>
-        ))}
-      </div>
-
-      {/* OKR Sections */}
-      {renderSection(
-        'Sirket Hedefleri',
-        companyOkrs,
-        <Target className="h-4 w-4 text-[#5E5CE6]" />
-      )}
-      {renderSection(
-        'Takim Hedefleri',
-        teamOkrs,
-        <svg className="h-4 w-4 text-[#D97706]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
-          <circle cx="9" cy="7" r="4" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
-        </svg>
-      )}
-      {renderSection(
-        'Bireysel Hedefler',
-        individualOkrs,
-        <User className="h-4 w-4 text-[#059669]" />
+          <div className="rounded-xl border border-[#F0F0F0] bg-white p-5">
+            <div className="text-[12px] font-medium text-[#737373]">Hedefe Yakın (≥%70)</div>
+            <div className="mt-1 text-[24px] font-bold text-[#059669]">{onTrackCount}</div>
+          </div>
+          <div className="rounded-xl border border-[#F0F0F0] bg-white p-5">
+            <div className="text-[12px] font-medium text-[#737373]">Riskli (&lt;%40)</div>
+            <div className="mt-1 text-[24px] font-bold text-[#DC2626]">{atRiskCount}</div>
+          </div>
+        </div>
       )}
 
-      <NewOkrModal open={showModal} onClose={() => setShowModal(false)} onSubmit={handleAdd} />
+      {/* Body */}
+      {cyclesQuery.isLoading && <LoadingSkeleton />}
+      {cyclesQuery.isError && (
+        <ErrorState
+          message={cyclesQuery.error?.message ?? 'Dönemler yüklenemedi'}
+          onRetry={() => cyclesQuery.refetch()}
+        />
+      )}
+      {cyclesQuery.isSuccess && cycles.length === 0 && (
+        <EmptyCard
+          icon={<Target className="h-5 w-5 text-[#A3A3A3]" />}
+          title="Henüz dönem tanımlı değil"
+          description="OKR kullanabilmek için önce Ayarlar → Performans'tan bir dönem oluşturun."
+        />
+      )}
+
+      {cycleId && treeQuery.isLoading && <LoadingSkeleton />}
+      {cycleId && treeQuery.isError && (
+        <ErrorState
+          message={treeQuery.error?.message ?? 'OKR ağacı yüklenemedi'}
+          onRetry={() => treeQuery.refetch()}
+        />
+      )}
+      {cycleId && treeQuery.isSuccess && flat.length === 0 && activeCycle && (
+        <EmptyCard
+          icon={<Target className="h-5 w-5 text-[#A3A3A3]" />}
+          title="Bu dönemde henüz OKR yok"
+          description="İlk OKR'nizi oluşturun ve takımınızı strateji etrafında hizalayın."
+          action={
+            <button
+              type="button"
+              onClick={() => setNewDialog(true)}
+              disabled={!isCycleEditable(activeCycle.status)}
+              className="inline-flex items-center gap-2 rounded-md bg-[#5E5CE6] px-3 py-2 text-[13px] font-medium text-white hover:bg-[#4B49B6] disabled:opacity-40"
+            >
+              <Plus className="h-4 w-4" /> Yeni OKR oluştur
+            </button>
+          }
+        />
+      )}
+
+      {activeCycle && tree.length > 0 && (
+        <div className="space-y-3" data-testid="okr-tree">
+          {tree.map((node) => (
+            <OkrCard
+              key={node.id}
+              node={node}
+              cycleStatus={activeCycle.status}
+              depth={0}
+            />
+          ))}
+        </div>
+      )}
+
+      {activeCycle && (
+        <NewOkrDialog
+          open={newDialog}
+          onClose={() => setNewDialog(false)}
+          cycles={cycles.filter((c) => isCycleEditable(c.status))}
+          activeCycleId={activeCycle.id}
+          parentCandidates={tree}
+        />
+      )}
     </div>
   );
 };
+
+// ============================================================================
+// Skeleton / Error / Empty
+// ============================================================================
+
+const LoadingSkeleton = () => (
+  <div className="space-y-3" role="status" aria-live="polite">
+    {[0, 1, 2].map((i) => (
+      <div
+        key={i}
+        className="animate-pulse rounded-xl border border-[#F0F0F0] bg-white p-5"
+      >
+        <div className="h-4 w-48 rounded bg-[#F5F5F5]" />
+        <div className="mt-3 h-2 w-full rounded bg-[#F5F5F5]" />
+        <div className="mt-4 space-y-2">
+          <div className="h-3 w-2/3 rounded bg-[#F5F5F5]" />
+          <div className="h-3 w-1/2 rounded bg-[#F5F5F5]" />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+interface ErrorStateProps {
+  message: string;
+  onRetry: () => void;
+}
+
+const ErrorState = ({ message, onRetry }: ErrorStateProps) => (
+  <div
+    role="alert"
+    className="flex items-start gap-3 rounded-lg border border-[#FEE2E2] bg-[#FEF2F2] p-4"
+  >
+    <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#DC2626]" />
+    <div className="flex-1">
+      <p className="text-[13px] font-medium text-[#991B1B]">Bir hata oluştu</p>
+      <p className="mt-0.5 text-[12px] text-[#B91C1C]">{message}</p>
+    </div>
+    <button
+      type="button"
+      onClick={onRetry}
+      className="inline-flex items-center gap-1 rounded-md border border-[#DC2626] px-3 py-1.5 text-[12px] font-medium text-[#DC2626] hover:bg-white"
+    >
+      <RefreshCw className="h-3 w-3" /> Tekrar dene
+    </button>
+  </div>
+);
+
+interface EmptyCardProps {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  action?: React.ReactNode;
+}
+
+const EmptyCard = ({ icon, title, description, action }: EmptyCardProps) => (
+  <div className="flex flex-col items-center gap-3 rounded-lg border border-dashed border-[#E5E5E5] bg-white px-6 py-12 text-center">
+    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F5F5F5]">
+      {icon}
+    </div>
+    <div>
+      <p className="text-[13px] font-semibold text-[#0A0A0A]">{title}</p>
+      <p className="mt-1 text-[12px] text-[#737373]">{description}</p>
+    </div>
+    {action}
+  </div>
+);

@@ -1,0 +1,29 @@
+{
+  "id": "developer/kavramlar/mimari-genel-bakis",
+  "title": "Mimari genel bakış",
+  "description": "UpCore platformu microservice mimarisi üzerine kurulu.",
+  "source": "@site/docs/developer/kavramlar/mimari-genel-bakis.md",
+  "sourceDirName": "developer/kavramlar",
+  "slug": "/developer/kavramlar/mimari-genel-bakis",
+  "permalink": "/en/docs/developer/kavramlar/mimari-genel-bakis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/kavramlar/mimari-genel-bakis.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "mimari-genel-bakis",
+    "title": "Mimari genel bakış",
+    "sidebar_position": 1
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Başlangıç",
+    "permalink": "/en/docs/developer/giris"
+  },
+  "next": {
+    "title": "Kimlik doğrulama",
+    "permalink": "/en/docs/developer/kavramlar/kimlik-dogrulama"
+  }
+}

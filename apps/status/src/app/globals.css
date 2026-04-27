@@ -1,0 +1,7 @@
+@import '@upcore/design-system/styles.css';
+
+/* Status page — public, olabildiğince sade + okunabilir. */
+
+body {
+  background-color: var(--color-bg);
+}

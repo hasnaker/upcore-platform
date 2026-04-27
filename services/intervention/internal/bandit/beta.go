@@ -1,6 +1,7 @@
 package bandit
 
 import (
+	"hash/fnv"
 	"math"
 	"math/rand"
 	"sync"
@@ -14,13 +15,35 @@ type RNG struct {
 }
 
 // NewRNG creates a new RNG seeded with the current time.
+// Prefer NewRNGForTenant when reproducibility per tenant/bucket is required
+// (A/B test replay, audit, and algorithmic transparency under KVKK Madde 22).
 func NewRNG() *RNG {
 	// nolint:gosec // not used for crypto
 	return &RNG{r: rand.New(rand.NewSource(time.Now().UnixNano()))}
 }
 
-// NewRNGWithSeed creates a deterministic RNG (for tests).
+// NewRNGWithSeed creates a deterministic RNG (for tests or explicit seeds).
 func NewRNGWithSeed(seed int64) *RNG {
+	// nolint:gosec // not used for crypto
+	return &RNG{r: rand.New(rand.NewSource(seed))}
+}
+
+// NewRNGForTenant creates a deterministic RNG seeded by (tenantID, bucket).
+// Identical seeds produce identical sample sequences, enabling A/B reproducibility:
+// replay a recommendation session exactly by using the same tenant+bucket pair.
+// The bucket is typically a truncated timestamp (e.g., unix hour) so decisions
+// are stable inside a window but rotate across windows to avoid arm starvation.
+func NewRNGForTenant(tenantID string, bucket int64) *RNG {
+	h := fnv.New64a()
+	_, _ = h.Write([]byte(tenantID))
+	// mix bucket via domain-separating salt
+	var bk [8]byte
+	u := uint64(bucket)
+	for i := 0; i < 8; i++ {
+		bk[i] = byte(u >> (8 * i))
+	}
+	_, _ = h.Write(bk[:])
+	seed := int64(h.Sum64())
 	// nolint:gosec // not used for crypto
 	return &RNG{r: rand.New(rand.NewSource(seed))}
 }

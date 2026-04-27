@@ -1,0 +1,29 @@
+{
+  "id": "admin/iam/rbac-rol-yonetimi",
+  "title": "RBAC rol yönetimi",
+  "description": "Built-in roller",
+  "source": "@site/docs/admin/iam/rbac-rol-yonetimi.md",
+  "sourceDirName": "admin/iam",
+  "slug": "/admin/iam/rbac-rol-yonetimi",
+  "permalink": "/en/docs/admin/iam/rbac-rol-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/iam/rbac-rol-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "rbac-rol-yonetimi",
+    "title": "RBAC rol yönetimi",
+    "sidebar_position": 4
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "SCIM kullanıcı senkron",
+    "permalink": "/en/docs/admin/iam/scim-kullanici-senkron"
+  },
+  "next": {
+    "title": "MFA zorunlu kılma",
+    "permalink": "/en/docs/admin/iam/mfa-zorunlu-kilma"
+  }
+}

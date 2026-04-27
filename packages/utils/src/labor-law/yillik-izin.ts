@@ -12,7 +12,7 @@
  *
  * Not: Yıllık izne hak kazanmak için en az 1 yıl çalışmış olmak gerekir.
  */
-import { differenceInCalendarDays, differenceInYears } from 'date-fns';
+import { differenceInYears } from 'date-fns';
 
 interface LeaveBalance {
   entitled: number;

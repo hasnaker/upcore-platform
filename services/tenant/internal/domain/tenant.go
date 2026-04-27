@@ -40,6 +40,24 @@ func (t *Tenant) IsActive() bool {
 	return t.Status == TenantStatusActive || t.Status == TenantStatusTrial
 }
 
+// TenantAdminRow is the admin-facing listing projection: tenant core fields
+// joined with current subscription + latest employee-count usage counter.
+type TenantAdminRow struct {
+	ID            uuid.UUID    `db:"id" json:"id"`
+	Name          string       `db:"name" json:"name"`
+	Slug          string       `db:"slug" json:"slug"`
+	Country       string       `db:"country" json:"country"`
+	Locale        string       `db:"locale" json:"locale"`
+	Status        TenantStatus `db:"status" json:"status"`
+	TrialEndsAt   *time.Time   `db:"trial_ends_at" json:"trial_ends_at,omitempty"`
+	CreatedAt     time.Time    `db:"created_at" json:"created_at"`
+	UpdatedAt     time.Time    `db:"updated_at" json:"updated_at"`
+	PlanID        *string      `db:"plan_id" json:"plan_id,omitempty"`
+	SubStatus     *string      `db:"sub_status" json:"subscription_status,omitempty"`
+	Seats         *int         `db:"seats" json:"seats,omitempty"`
+	EmployeeCount int64        `db:"employee_count" json:"employee_count"`
+}
+
 // IsTrialing returns true while within the trial window.
 func (t *Tenant) IsTrialing() bool {
 	return t.Status == TenantStatusTrial && t.TrialEndsAt != nil && t.TrialEndsAt.After(time.Now())

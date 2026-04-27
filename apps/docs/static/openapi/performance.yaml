@@ -1,0 +1,724 @@
+openapi: 3.0.3
+info:
+  title: UpCore Performance Service
+  description: |
+    Performans modülü — dönemler, hedefler, OKR, reviewler, 9-kutu, yetkinlik
+    çerçevesi, PIP ve 360° geri bildirim kampanyaları.
+
+    Bu doküman 360° feedback endpoint'lerini ayrıntılı tanımlar; diğer
+    kaynaklar servis kodundaki Go yapılarından üretilir.
+  version: 1.1.0
+servers:
+  - url: http://localhost:8014
+    description: Local dev
+security:
+  - bearerAuth: []
+tags:
+  - name: Survey360
+    description: 360° Feedback kampanyaları, davetler, cevaplar ve radar raporu
+  - name: PIP
+    description: |
+      Performans İyileştirme Planı — İş Kanunu 25/2 ile uyumlu iş akışı.
+      State machine: draft → pending_legal → active ⇄ extended → {passed|terminated}.
+      Fesih (terminated) için legal_file_url zorunludur (mahkeme delili).
+paths:
+  /api/v1/performance/surveys/360/campaigns:
+    post:
+      tags: [Survey360]
+      summary: 360° kampanya oluştur
+      description: |
+        Manager/İK bir kişi (subject_user_id) için 360° kampanya başlatır.
+        `anonymity_mode` = anonymous (varsayılan) veya named.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCampaignRequest'
+      responses:
+        '201':
+          description: Draft kampanya
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Campaign'
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [Survey360]
+      summary: Konu bazında kampanya listesi
+      parameters:
+        - in: query
+          name: subject_user_id
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Kampanya listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Campaign' }
+
+  /api/v1/performance/surveys/360/campaigns/{id}:
+    get:
+      tags: [Survey360]
+      summary: Kampanya detayı
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Kampanya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campaign' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/performance/surveys/360/campaigns/{id}/invitations:
+    post:
+      tags: [Survey360]
+      summary: Reviewer davet ekle
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/InviteRequest' }
+      responses:
+        '201':
+          description: Davet oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invitation' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+    get:
+      tags: [Survey360]
+      summary: Kampanyaya ait davetler
+      description: |
+        Anonim modda ve çağıran owner (created_by) veya subject olmadığında
+        `reviewer_user_id` alanı gizlenir.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Davet listesi
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Invitation' }
+
+  /api/v1/performance/surveys/360/campaigns/{id}/distribute:
+    post:
+      tags: [Survey360]
+      summary: Kampanyayı dağıt
+      description: |
+        Min 3 peer + 1 manager daveti zorunludur. Dağıtım status makinesini
+        `draft → distributed` yapar ve per-invitation notification event yayar.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Distributed
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Campaign' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+  /api/v1/performance/surveys/360/campaigns/{id}/report:
+    get:
+      tags: [Survey360]
+      summary: Radar raporu
+      description: |
+        Min `min_responses` eşiği altında rapor kilitlidir (`unlocked=false` ve
+        `locked_reason`). Anonim modda reviewer kimliği hiçbir yerde yayılmaz.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Report
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Report' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/performance/surveys/360/invitations:
+    get:
+      tags: [Survey360]
+      summary: Reviewer'a ait davetler
+      parameters:
+        - in: query
+          name: reviewer_user_id
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Davetler
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Invitation' }
+
+  /api/v1/performance/surveys/360/invitations/{id}:
+    get:
+      tags: [Survey360]
+      summary: Davet detayı (reviewer own-only)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Davet
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Invitation' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/performance/surveys/360/invitations/{id}/responses:
+    post:
+      tags: [Survey360]
+      summary: Cevap gönder
+      description: |
+        İdempotent — ikinci submit 409 döner. Sadece davetin reviewer'ı gönderebilir.
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SubmitResponseRequest' }
+      responses:
+        '201':
+          description: Saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '422': { $ref: '#/components/responses/ValidationError' }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    Unauthorized:
+      description: Auth required
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Forbidden:
+      description: Access denied
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    Conflict:
+      description: Idempotency conflict / duplicate
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+    ValidationError:
+      description: Validation failed
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+  schemas:
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+        message: { type: string }
+        fields:
+          type: object
+          additionalProperties: { type: string }
+    Relation:
+      type: string
+      enum: [self, manager, peer, direct_report]
+    AnonymityMode:
+      type: string
+      enum: [anonymous, named]
+    CampaignStatus:
+      type: string
+      enum: [draft, distributed, collecting, complete, cancelled]
+    InvitationStatus:
+      type: string
+      enum: [pending, sent, responded, declined, expired]
+    CreateCampaignRequest:
+      type: object
+      required: [cycle_id, subject_user_id, due_date]
+      properties:
+        cycle_id: { type: string, format: uuid }
+        subject_user_id: { type: string, format: uuid }
+        anonymity_mode: { $ref: '#/components/schemas/AnonymityMode' }
+        due_date: { type: string, format: date }
+        min_responses: { type: integer, minimum: 1, default: 3 }
+    Campaign:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        cycle_id: { type: string, format: uuid }
+        subject_user_id: { type: string, format: uuid }
+        created_by: { type: string, format: uuid }
+        anonymity_mode: { $ref: '#/components/schemas/AnonymityMode' }
+        status: { $ref: '#/components/schemas/CampaignStatus' }
+        due_date: { type: string, format: date }
+        min_responses: { type: integer }
+        distributed_at: { type: string, format: date-time, nullable: true }
+        completed_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    InviteRequest:
+      type: object
+      required: [reviewer_user_id, relation]
+      properties:
+        reviewer_user_id: { type: string, format: uuid }
+        relation: { $ref: '#/components/schemas/Relation' }
+    Invitation:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        campaign_id: { type: string, format: uuid }
+        reviewer_user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Anonim modda owner/subject dışındaki çağırılarda gizlenir.
+        relation: { $ref: '#/components/schemas/Relation' }
+        status: { $ref: '#/components/schemas/InvitationStatus' }
+        sent_at: { type: string, format: date-time, nullable: true }
+        responded_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+    ResponseItem:
+      type: object
+      required: [competency_code, competency_name_tr, score]
+      properties:
+        competency_code: { type: string }
+        competency_name_tr: { type: string }
+        score: { type: integer, minimum: 1, maximum: 5 }
+        comment: { type: string, nullable: true }
+    SubmitResponseRequest:
+      type: object
+      required: [items]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ResponseItem' }
+          minItems: 1
+    CompetencyAggregate:
+      type: object
+      properties:
+        competency_code: { type: string }
+        competency_name_tr: { type: string }
+        average: { type: number, format: float }
+        sample_size: { type: integer }
+        by_relation:
+          type: object
+          additionalProperties: { type: number, format: float }
+    Report:
+      type: object
+      properties:
+        campaign_id: { type: string, format: uuid }
+        subject_user_id: { type: string, format: uuid }
+        anonymity_mode: { $ref: '#/components/schemas/AnonymityMode' }
+        status: { $ref: '#/components/schemas/CampaignStatus' }
+        response_count: { type: integer }
+        reviewer_count: { type: integer }
+        min_responses: { type: integer }
+        unlocked: { type: boolean }
+        locked_reason: { type: string }
+        competencies:
+          type: array
+          items: { $ref: '#/components/schemas/CompetencyAggregate' }
+        strengths:
+          type: array
+          items: { type: string }
+        growth_areas:
+          type: array
+          items: { type: string }
+
+    # ------------------------------------------------------------------
+    # PIP schemas
+    # ------------------------------------------------------------------
+    PipReasonCategory:
+      type: string
+      enum: [performance, attendance, conduct, competency]
+    PipStatus:
+      type: string
+      enum: [draft, pending_legal, active, extended, passed, terminated]
+    PipPriority:
+      type: string
+      enum: [low, medium, high]
+    PipCheckinTrack:
+      type: string
+      enum: [on_track, off_track]
+    PipOutcomeResult:
+      type: string
+      enum: [passed, extended, terminated]
+    PipGoal:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        case_id: { type: string, format: uuid }
+        description: { type: string }
+        measurable_target: { type: string }
+        deadline: { type: string, format: date }
+        priority: { $ref: '#/components/schemas/PipPriority' }
+    PipCheckin:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        case_id: { type: string, format: uuid }
+        week_number: { type: integer, minimum: 1, maximum: 52 }
+        on_track: { $ref: '#/components/schemas/PipCheckinTrack' }
+        manager_notes: { type: string, nullable: true }
+        employee_notes: { type: string, nullable: true }
+        acknowledged_by_employee: { type: string, format: date-time, nullable: true }
+        acknowledge_ip: { type: string, nullable: true }
+        acknowledge_user_agent: { type: string, nullable: true }
+    PipOutcome:
+      type: object
+      properties:
+        case_id: { type: string, format: uuid }
+        result: { $ref: '#/components/schemas/PipOutcomeResult' }
+        legal_file_url: { type: string, nullable: true }
+        outcome_notes: { type: string, nullable: true }
+        closed_at: { type: string, format: date-time }
+        closed_by: { type: string, format: uuid }
+    PipCase:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        initiated_by: { type: string, format: uuid }
+        hr_reviewer_id: { type: string, format: uuid, nullable: true }
+        legal_reviewer_id: { type: string, format: uuid, nullable: true }
+        legal_reviewed: { type: boolean }
+        reason_category: { $ref: '#/components/schemas/PipReasonCategory' }
+        reason_summary: { type: string }
+        start_date: { type: string, format: date }
+        duration_days: { type: integer, enum: [30, 60, 90] }
+        status: { $ref: '#/components/schemas/PipStatus' }
+        legal_file_url: { type: string, nullable: true }
+        outcome_reason: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+        goals: { type: array, items: { $ref: '#/components/schemas/PipGoal' } }
+        checkins: { type: array, items: { $ref: '#/components/schemas/PipCheckin' } }
+        outcome: { $ref: '#/components/schemas/PipOutcome' }
+
+paths_pip_note: &paths_pip_note |
+  PIP endpoints are grouped under /api/v1/performance/pip. See tag PIP.
+
+# ----------------------------------------------------------------------
+# PIP paths
+# ----------------------------------------------------------------------
+x-pip-paths:
+  /api/v1/performance/pip:
+    post:
+      tags: [PIP]
+      summary: Yeni PIP başlat (draft)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, reason_category, reason_summary, start_date, duration_days]
+              properties:
+                employee_id: { type: string, format: uuid }
+                hr_reviewer_id: { type: string, format: uuid }
+                reason_category: { $ref: '#/components/schemas/PipReasonCategory' }
+                reason_summary: { type: string }
+                start_date: { type: string, format: date }
+                duration_days: { type: integer, enum: [30, 60, 90] }
+                goals:
+                  type: array
+                  items:
+                    type: object
+                    required: [description, measurable_target, deadline]
+                    properties:
+                      description: { type: string }
+                      measurable_target: { type: string }
+                      deadline: { type: string, format: date }
+                      priority: { $ref: '#/components/schemas/PipPriority' }
+      responses:
+        '201':
+          description: Draft case
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+    get:
+      tags: [PIP]
+      summary: HR — tüm dosyalar (filtre)
+      parameters:
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/PipStatus' }
+        - in: query
+          name: reason
+          schema: { $ref: '#/components/schemas/PipReasonCategory' }
+      responses:
+        '200':
+          description: Dosyalar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/PipCase' } }
+                  total: { type: integer }
+
+  /api/v1/performance/pip/mine:
+    get:
+      tags: [PIP]
+      summary: Çalışan kendi dosyaları
+      responses:
+        '200':
+          description: Dosyalar
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/PipCase' } }
+
+  /api/v1/performance/pip/{id}:
+    get:
+      tags: [PIP]
+      summary: Dosya detay
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Dosya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+
+  /api/v1/performance/pip/{id}/submit-legal:
+    post:
+      tags: [PIP]
+      summary: Draft → pending_legal
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Güncellenmiş dosya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+
+  /api/v1/performance/pip/{id}/approve-legal:
+    post:
+      tags: [PIP]
+      summary: Legal → active (legal_file_url zorunlu)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [legal_file_url]
+              properties:
+                legal_file_url: { type: string }
+      responses:
+        '200':
+          description: Aktif dosya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+
+  /api/v1/performance/pip/{id}/checkins:
+    post:
+      tags: [PIP]
+      summary: Haftalık check-in ekle
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [week_number, on_track]
+              properties:
+                week_number: { type: integer, minimum: 1, maximum: 52 }
+                on_track: { $ref: '#/components/schemas/PipCheckinTrack' }
+                manager_notes: { type: string }
+                employee_notes: { type: string }
+      responses:
+        '201':
+          description: Checkin
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCheckin' }
+
+  /api/v1/performance/pip/checkins/{checkinId}/acknowledge:
+    post:
+      tags: [PIP]
+      summary: Çalışan check-in'i onaylar (IP + UA + zaman damgası kaydı)
+      parameters:
+        - in: path
+          name: checkinId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200': { description: OK }
+
+  /api/v1/performance/pip/{id}/extend:
+    post:
+      tags: [PIP]
+      summary: Süre uzatma (30/60/90)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [extension_days, reason]
+              properties:
+                extension_days: { type: integer, enum: [30, 60, 90] }
+                reason: { type: string }
+      responses:
+        '200':
+          description: Uzatılmış dosya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+
+  /api/v1/performance/pip/{id}/close-passed:
+    post:
+      tags: [PIP]
+      summary: Başarılı kapanış
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [outcome_reason]
+              properties:
+                outcome_reason: { type: string }
+                outcome_notes: { type: string }
+      responses:
+        '200':
+          description: Kapalı dosya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+
+  /api/v1/performance/pip/{id}/close-terminated:
+    post:
+      tags: [PIP]
+      summary: Fesih ile kapanış — İş Kanunu 25/2 (legal_file_url zorunlu)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [legal_file_url, outcome_reason]
+              properties:
+                legal_file_url: { type: string }
+                outcome_reason: { type: string }
+                outcome_notes: { type: string }
+      responses:
+        '200':
+          description: Feshedilmiş dosya
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PipCase' }
+
+  /api/v1/performance/pip/{id}/pdf:
+    get:
+      tags: [PIP]
+      summary: PDF export — İş Kanunu 25/2 belgesi
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: PDF akışı
+          content:
+            application/pdf:
+              schema:
+                type: string
+                format: binary

@@ -1,0 +1,11 @@
+# Bu dosyayı prod.tfvars olarak kopyala, kendi değerlerinle doldur.
+# prod.tfvars ASLA git'e commit edilmemeli (.gitignore'da).
+
+subscription_id = "00000000-0000-0000-0000-000000000000"
+tenant_id       = "00000000-0000-0000-0000-000000000000"
+location        = "North Europe"
+location_short  = "neu"
+
+# İlk canlıya çıkış için konservatif; ihtiyaca göre büyüt.
+pg_sku_name   = "GP_Standard_D2s_v3"
+pg_storage_mb = 131072

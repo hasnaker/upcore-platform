@@ -1,0 +1,29 @@
+{
+  "id": "developer/kavramlar/hata-kodlari",
+  "title": "Hata kodları",
+  "description": "HTTP status + error code + message.",
+  "source": "@site/docs/developer/kavramlar/hata-kodlari.md",
+  "sourceDirName": "developer/kavramlar",
+  "slug": "/developer/kavramlar/hata-kodlari",
+  "permalink": "/en/docs/developer/kavramlar/hata-kodlari",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/kavramlar/hata-kodlari.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "hata-kodlari",
+    "title": "Hata kodları",
+    "sidebar_position": 4
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Çoklu tenant (multi-tenant)",
+    "permalink": "/en/docs/developer/kavramlar/coklu-tenant"
+  },
+  "next": {
+    "title": "Idempotency (tekrar güvenlik)",
+    "permalink": "/en/docs/developer/kavramlar/idempotency"
+  }
+}

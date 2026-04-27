@@ -58,6 +58,15 @@ func main() {
 		cfg.PartitionMonthsAhead, cfg.RetentionMonths,
 	)
 
+	// Cold-storage archive worker (KVKK 28: 7 yıl saklama).
+	// AUDIT_ARCHIVE_BACKEND=local|azure env seçer. Noop (default) skip eder.
+	uploader, upErr := service.ResolveUploader()
+	if upErr != nil {
+		logger.Warn().Err(upErr).Msg("audit archive uploader disabled")
+	}
+	archiveWorker := service.NewArchiveWorker(database, uploader, logger)
+	go archiveWorker.Run(ctx)
+
 	// Event publisher (no-op until Service Bus is wired)
 	publisher := event.NewNopPublisher(logger)
 	defer func() { _ = publisher.Close() }()
@@ -67,12 +76,16 @@ func main() {
 	kvkkRepo := repository.NewKVKKRepository(database)
 	dsrRepo := repository.NewDSRRepository(database)
 	exportRepo := repository.NewExportRepository(database)
+	consentRepo := repository.NewConsentRepository(database)
+	mlObjectionRepo := repository.NewMLObjectionRepository(database)
 
 	// Services
 	eventSvc := service.NewEventService(eventRepo, publisher, logger)
 	kvkkSvc := service.NewKVKKService(kvkkRepo, logger)
 	dsrSvc := service.NewDSRService(dsrRepo, publisher, cfg.DSRFanoutServices, logger)
 	exportSvc := service.NewExportService(exportRepo, eventRepo, logger)
+	consentSvc := service.NewConsentService(consentRepo, logger)
+	mlObjectionSvc := service.NewMLObjectionService(mlObjectionRepo, publisher, logger)
 
 	// Ingestion worker
 	worker := service.NewIngestionWorker(
@@ -100,7 +113,7 @@ func main() {
 	authChecker := middleware.NewAuthChecker("http://localhost:8001", 500*time.Millisecond)
 
 	// HTTP router
-	r := newRouter(cfg, logger, authChecker, eventSvc, kvkkSvc, dsrSvc, exportSvc)
+	r := newRouter(cfg, logger, authChecker, eventSvc, kvkkSvc, dsrSvc, exportSvc, consentSvc, mlObjectionSvc)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -146,6 +159,8 @@ func newRouter(
 	kvkkSvc *service.KVKKService,
 	dsrSvc *service.DSRService,
 	exportSvc *service.ExportService,
+	consentSvc *service.ConsentService,
+	mlObjectionSvc *service.MLObjectionService,
 ) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
@@ -166,6 +181,8 @@ func newRouter(
 	kvkkH := handler.NewKVKKHandler(kvkkSvc)
 	dsrH := handler.NewDSRHandler(dsrSvc)
 	exportH := handler.NewExportHandler(exportSvc)
+	consentH := handler.NewConsentHandler(consentSvc)
+	mlObjectionH := handler.NewMLObjectionHandler(mlObjectionSvc)
 
 	// Health
 	r.Get("/health", healthHandler)
@@ -206,6 +223,33 @@ func newRouter(
 		r.Post("/exports", exportH.Create)
 		r.Get("/exports", exportH.List)
 		r.Get("/exports/{id}", exportH.GetByID)
+
+		// ML objection review queue (KVKK Madde 22 — upc-ml-validation §7)
+		r.Post("/ml-objections", mlObjectionH.Create)
+		r.Get("/ml-objections", mlObjectionH.List)
+		r.Get("/ml-objections/overdue", mlObjectionH.ListOverdue)
+		r.Route("/ml-objections/{id}", func(r chi.Router) {
+			r.Get("/", mlObjectionH.GetByID)
+			r.Post("/verify", mlObjectionH.Verify)
+			r.Post("/process", mlObjectionH.Process)
+			r.Post("/complete", mlObjectionH.Complete)
+			r.Post("/reject", mlObjectionH.Reject)
+			// KVKK Madde 22 karar akışları — itirazı haklı bul (tahmini retract)
+			// veya DPO onayıyla reddet.
+			r.Post("/uphold", mlObjectionH.Uphold)
+			r.Post("/dismiss", mlObjectionH.Dismiss)
+		})
+	})
+
+	// KVKK çalışan rıza yönetimi — separate route group so the gateway can
+	// proxy /api/v1/kvkk/consents straight to the audit service.
+	r.Route("/api/v1/kvkk/consents", func(r chi.Router) {
+		r.Use(middleware.RequireAuth(checker))
+
+		r.Get("/", consentH.List)
+		r.Post("/", consentH.Upsert)
+		r.Get("/ai-allowed", consentH.GetAIAllowed)
+		r.Get("/history/{consentType}", consentH.GetHistory)
 	})
 
 	return r

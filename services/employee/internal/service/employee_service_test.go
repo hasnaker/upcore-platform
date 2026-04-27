@@ -227,6 +227,77 @@ func TestImportService_InvalidSchema(t *testing.T) {
 	assert.ErrorIs(t, err, domain.ErrCSVInvalidSchema)
 }
 
+// Onboarding wizard Step 4 — ValidateCSV is the dry-run twin of ImportCSV.
+// It must never call the repository.
+func TestImportService_Validate_DoesNotPersist(t *testing.T) {
+	ctx := context.Background()
+	empRepo := repository.NewFakeEmployeeRepo()
+	histRepo := repository.NewFakeHistoryRepo()
+	svc := NewImportService(empRepo, histRepo, event.NewInMemoryPublisher(), 1000, 100, zerolog.Nop())
+
+	csv := "sicil_no,ad,soyad,email,tckn,dogum_tarihi,ise_baslama_tarihi,departman,pozisyon,yonetici_email\n" +
+		"EMP001,Ayşe,Yılmaz,ayse@acme.com,12345678950,1985-03-15,2020-01-15,Pazarlama,Uzman,\n" +
+		"EMP002,Mehmet,Demir,mehmet@acme.com,,1990-05-20,2021-06-01,Satış,Uzman,\n"
+	res, err := svc.ValidateCSV(ctx, uuid.New(), bytes.NewBufferString(csv))
+	require.NoError(t, err)
+	assert.Equal(t, 2, res.Total)
+	assert.Equal(t, 2, res.Imported) // dry-run uses Imported as "would-import"
+	assert.Empty(t, res.Errors)
+	// Repo untouched: listing with a zero-filter should yield nothing.
+	list, _, lerr := empRepo.List(ctx, repository.ListFilter{TenantID: uuid.New()})
+	require.NoError(t, lerr)
+	assert.Len(t, list, 0, "ValidateCSV must not persist rows")
+}
+
+// 1000-row validation should finish well under 30 seconds (acceptance
+// criterion from the onboarding skill spec).
+func TestImportService_Validate_1000Rows_Under30s(t *testing.T) {
+	ctx := context.Background()
+	empRepo := repository.NewFakeEmployeeRepo()
+	histRepo := repository.NewFakeHistoryRepo()
+	svc := NewImportService(empRepo, histRepo, event.NewInMemoryPublisher(), 10_000, 500, zerolog.Nop())
+
+	var b bytes.Buffer
+	b.WriteString("sicil_no,ad,soyad,email,tckn,dogum_tarihi,ise_baslama_tarihi,departman,pozisyon,yonetici_email\n")
+	for i := 0; i < 1000; i++ {
+		// Real TCKN validation is strict, so leave blank; still valid row.
+		b.WriteString("EMP")
+		b.WriteString(strconvI(i + 1))
+		b.WriteString(",Ad,Soyad,u")
+		b.WriteString(strconvI(i + 1))
+		b.WriteString("@acme.com,,1990-01-01,2023-01-01,Dep,Poz,\n")
+	}
+	start := time.Now()
+	res, err := svc.ValidateCSV(ctx, uuid.New(), &b)
+	elapsed := time.Since(start)
+	require.NoError(t, err)
+	assert.Equal(t, 1000, res.Total)
+	assert.Equal(t, 1000, res.Imported)
+	assert.Less(t, elapsed, 30*time.Second, "1000-row validate should be well under 30s")
+}
+
+// strconvI is a tiny local helper so the import test file doesn't grow a
+// strconv dependency for two call sites.
+func strconvI(n int) string {
+	if n == 0 {
+		return "0"
+	}
+	var b []byte
+	neg := false
+	if n < 0 {
+		neg = true
+		n = -n
+	}
+	for n > 0 {
+		b = append([]byte{byte('0' + n%10)}, b...)
+		n /= 10
+	}
+	if neg {
+		b = append([]byte{'-'}, b...)
+	}
+	return string(b)
+}
+
 func TestSearchService(t *testing.T) {
 	ctx := context.Background()
 	empRepo := repository.NewFakeEmployeeRepo()

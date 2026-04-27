@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/yillik-rapor",
+  "title": "Yıllık rapor",
+  "description": "UpCore yıl sonunda kapsamlı rapor üretir.",
+  "source": "@site/docs/ik/modul/analitik/yillik-rapor.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/yillik-rapor",
+  "permalink": "/en/docs/ik/modul/analitik/yillik-rapor",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/yillik-rapor.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "yillik-rapor",
+    "title": "Yıllık rapor",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "ROI hesabı",
+    "permalink": "/en/docs/ik/modul/analitik/roi-hesabi"
+  },
+  "next": {
+    "title": "Departman karşılaştırma",
+    "permalink": "/en/docs/ik/modul/analitik/departman-karsilastirma"
+  }
+}

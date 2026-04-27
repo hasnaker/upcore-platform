@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/kidem-tazminati",
+  "title": "Kıdem tazminatı",
+  "description": "İş sözleşmesi sona erdiğinde çalışana ödenen tazminat.",
+  "source": "@site/docs/ik/modul/ik-ops/kidem-tazminati.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/kidem-tazminati",
+  "permalink": "/en/docs/ik/modul/ik-ops/kidem-tazminati",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/kidem-tazminati.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "kidem-tazminati",
+    "title": "Kıdem tazminatı",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Mesai ve fazla çalışma",
+    "permalink": "/en/docs/ik/modul/ik-ops/kiyafet-mesai"
+  },
+  "next": {
+    "title": "İş kazası bildirimi",
+    "permalink": "/en/docs/ik/modul/ik-ops/is-kazasi-bildirim"
+  }
+}

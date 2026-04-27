@@ -1,0 +1,23 @@
+{
+  "link.title.Doküman": { "message": "Documentation" },
+  "link.title.API": { "message": "API" },
+  "link.title.Uyum": { "message": "Compliance" },
+  "link.title.UpCore": { "message": "UpCore" },
+  "link.item.label.Çalışan rehberi": { "message": "Employee guide" },
+  "link.item.label.Yönetici rehberi": { "message": "Manager guide" },
+  "link.item.label.İK rehberi": { "message": "HR guide" },
+  "link.item.label.Admin rehberi": { "message": "Admin guide" },
+  "link.item.label.Geliştirici rehberi": { "message": "Developer guide" },
+  "link.item.label.REST API referans": { "message": "REST API reference" },
+  "link.item.label.Webhook": { "message": "Webhooks" },
+  "link.item.label.Rate limit": { "message": "Rate limit" },
+  "link.item.label.Durum sayfası": { "message": "Status page" },
+  "link.item.label.KVKK rehberi": { "message": "KVKK (GDPR-TR) guide" },
+  "link.item.label.DPIA şablonu": { "message": "DPIA template" },
+  "link.item.label.DPA şablonu": { "message": "DPA template" },
+  "link.item.label.ML model kartları": { "message": "ML model cards" },
+  "link.item.label.Ana sayfa": { "message": "Homepage" },
+  "link.item.label.Blog": { "message": "Blog" },
+  "link.item.label.İletişim": { "message": "Contact" },
+  "link.item.label.GitHub": { "message": "GitHub" }
+}

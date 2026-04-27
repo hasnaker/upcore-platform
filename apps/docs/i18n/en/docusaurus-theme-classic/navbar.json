@@ -1,0 +1,34 @@
+{
+  "title": {
+    "message": "UpCore",
+    "description": "The title in the navbar"
+  },
+  "logo.alt": {
+    "message": "UpCore",
+    "description": "The alt text of navbar logo"
+  },
+  "item.label.Çalışan": {
+    "message": "Employee"
+  },
+  "item.label.Yönetici": {
+    "message": "Manager"
+  },
+  "item.label.İK": {
+    "message": "HR"
+  },
+  "item.label.Admin": {
+    "message": "Admin"
+  },
+  "item.label.Geliştirici": {
+    "message": "Developer"
+  },
+  "item.label.Changelog": {
+    "message": "Changelog"
+  },
+  "item.label.Ürün": {
+    "message": "Product"
+  },
+  "item.label.GitHub": {
+    "message": "GitHub"
+  }
+}

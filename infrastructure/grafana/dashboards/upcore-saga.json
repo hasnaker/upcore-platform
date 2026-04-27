@@ -1,0 +1,109 @@
+{
+  "annotations": {"list": []},
+  "description": "UpCore Saga Orchestrator — instance lifecycle, step failures, duration",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "panels": [
+    {
+      "type": "row",
+      "title": "Throughput",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false
+    },
+    {
+      "type": "timeseries",
+      "title": "Saga starts (5m rate)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (saga) (rate(upcore_saga_instances_total[5m]))",
+          "legendFormat": "{{saga}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "gauge",
+      "title": "Success ratio (24h)",
+      "gridPos": {"h": 8, "w": 6, "x": 12, "y": 1},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(upcore_saga_instances_total{status=\"completed\"}[24h])) / sum(rate(upcore_saga_instances_total[24h]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "percentunit", "min": 0, "max": 1, "thresholds": {"mode": "absolute", "steps": [{"color": "red", "value": null}, {"color": "orange", "value": 0.9}, {"color": "green", "value": 0.98}]}}}
+    },
+    {
+      "type": "stat",
+      "title": "In-flight sagas",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 1},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "sum(upcore_saga_in_flight)", "refId": "A"}]
+    },
+    {
+      "type": "stat",
+      "title": "Failed in last 1h",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 5},
+      "datasource": "Prometheus",
+      "targets": [{"expr": "sum(increase(upcore_saga_instances_total{status=~\"failed|compensated\"}[1h]))", "refId": "A"}],
+      "fieldConfig": {"defaults": {"thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 1}, {"color": "red", "value": 10}]}}}
+    },
+    {
+      "type": "row",
+      "title": "Steps",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 9},
+      "collapsed": false
+    },
+    {
+      "type": "table",
+      "title": "Step failures (1h) by saga+step",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 10},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sort_desc(sum by (saga, step, direction) (increase(upcore_saga_steps_total{status=\"failed\"}[1h])))",
+          "refId": "A",
+          "format": "table",
+          "instant": true
+        }
+      ]
+    },
+    {
+      "type": "heatmap",
+      "title": "Step duration distribution",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 10},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (le) (rate(upcore_saga_duration_seconds_bucket[5m]))",
+          "format": "heatmap",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Saga p50/p95/p99 duration",
+      "gridPos": {"h": 8, "w": 24, "x": 0, "y": 18},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "histogram_quantile(0.50, sum by (saga, le) (rate(upcore_saga_duration_seconds_bucket[5m])))", "legendFormat": "{{saga}} p50", "refId": "A"},
+        {"expr": "histogram_quantile(0.95, sum by (saga, le) (rate(upcore_saga_duration_seconds_bucket[5m])))", "legendFormat": "{{saga}} p95", "refId": "B"},
+        {"expr": "histogram_quantile(0.99, sum by (saga, le) (rate(upcore_saga_duration_seconds_bucket[5m])))", "legendFormat": "{{saga}} p99", "refId": "C"}
+      ],
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "tags": ["upcore", "saga"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "title": "UpCore — Saga Orchestrator",
+  "uid": "upcore-saga-v1",
+  "version": 1
+}

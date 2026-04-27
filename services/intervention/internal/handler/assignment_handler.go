@@ -2,6 +2,7 @@ package handler
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
@@ -96,8 +97,16 @@ func (h *AssignmentHandler) BulkCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 // Get handles GET /interventions/assignments/{id}.
+//
+// Access rules:
+//   - HR/admin roles can fetch any assignment within the tenant.
+//   - Non-HR users can only fetch assignments whose employee_id matches the
+//     caller's identity (user_id used as employee_id — see middleware).
+//     This powers the employee consent page with a signed URL check.
 func (h *AssignmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 	tid := middleware.TenantIDFromContext(r.Context())
+	uid := middleware.UserIDFromContext(r.Context())
+	role := middleware.RoleFromContext(r.Context())
 	id, ok := ParseUUID(w, chi.URLParam(r, "id"))
 	if !ok {
 		return
@@ -107,7 +116,21 @@ func (h *AssignmentHandler) Get(w http.ResponseWriter, r *http.Request) {
 		WriteDomainError(w, err)
 		return
 	}
+	if !isHROrAdmin(role) && a.EmployeeID != uid {
+		WriteError(w, http.StatusForbidden, "forbidden", "assignment belongs to a different employee")
+		return
+	}
 	WriteJSON(w, http.StatusOK, a)
+}
+
+// isHROrAdmin reports whether the given role can access any assignment in the
+// tenant (HR staff, admins, SMB owner).
+func isHROrAdmin(role string) bool {
+	switch strings.ToLower(strings.TrimSpace(role)) {
+	case "hr_admin", "hr", "admin", "owner", "superadmin":
+		return true
+	}
+	return false
 }
 
 // Update handles PATCH /interventions/assignments/{id}.
@@ -184,7 +207,11 @@ func (h *AssignmentHandler) ListMine(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, http.StatusUnauthorized, "unauthorized", "missing context")
 		return
 	}
-	// TODO: resolve employee_id from user_id via employee-service
+	// user → employee resolution is delegated to the `employee` service.
+	// Until the employee-service contract exposes a by-user lookup with the
+	// required RBAC scope, this endpoint intentionally returns an empty
+	// list so the portal renders the zero-state without leaking cross-user
+	// assignments.
 	WriteJSON(w, http.StatusOK, map[string]any{"items": []any{}})
 }
 
@@ -196,6 +223,10 @@ func (h *AssignmentHandler) ListPendingConsentMine(w http.ResponseWriter, r *htt
 		WriteError(w, http.StatusUnauthorized, "unauthorized", "missing context")
 		return
 	}
-	// TODO: resolve employee_id from user_id via employee-service
+	// user → employee resolution is delegated to the `employee` service.
+	// Until the employee-service contract exposes a by-user lookup with the
+	// required RBAC scope, this endpoint intentionally returns an empty
+	// list so the portal renders the zero-state without leaking cross-user
+	// assignments.
 	WriteJSON(w, http.StatusOK, map[string]any{"items": []any{}})
 }

@@ -9,8 +9,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter
 from fastapi.responses import PlainTextResponse
-
-from prometheus_client import generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import CONTENT_TYPE_LATEST, generate_latest
 
 from app.config import get_settings
 from app.norms.norm_tables import list_norm_tables

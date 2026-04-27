@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { turkishCompare, sortTurkish, TR_COLLATOR } from './sort';
+import { turkishCompare, sortTurkish } from './sort';
 
 describe('turkishCompare', () => {
   it('sorts ç before d', () => {

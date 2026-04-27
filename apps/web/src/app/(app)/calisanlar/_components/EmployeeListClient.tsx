@@ -1,311 +1,402 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useMemo, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ChevronDown, ChevronUp, Search, Filter, Download } from 'lucide-react';
+import { useEmployees, type EmployeeQueryParams } from '@/hooks/useEmployees';
+import { useDepartments } from '@/hooks/useDepartments';
+import { useDebouncedValue } from '@/hooks/useDebouncedValue';
 import type { EmployeeView } from '@/lib/employee-mapper';
 
-/* ── Risk Intelligence Types ── */
-interface RiskSignal {
-  source: string;
-  severity: string;
-}
+type SortKey = 'ad' | 'employee_no' | 'hire_date' | 'employment_status';
+type SortDir = 'asc' | 'desc';
 
-interface RiskScore {
-  score: number;
-  level: 'low' | 'medium' | 'high' | 'critical';
-  signals: RiskSignal[];
-}
+const STATUS_OPTIONS = [
+  { value: '', label: 'Tüm durumlar' },
+  { value: 'active', label: 'Aktif' },
+  { value: 'on_leave', label: 'İzinde' },
+  { value: 'suspended', label: 'Askıda' },
+  { value: 'terminated', label: 'Ayrılmış' },
+  { value: 'retired', label: 'Emekli' },
+];
 
-interface EmployeeSynthesis {
-  riskScore: RiskScore;
-  overallHealth: 'good' | 'warning' | 'critical';
-  okrProgress: number;
-  burnoutScore: number;
-}
+const PAGE_SIZES = [10, 20, 50, 100];
 
-interface IntelEmployee {
-  id: string;
-  name: string;
-  department: string;
-  synthesis: EmployeeSynthesis;
-}
-
-interface RiskInfo {
-  level: RiskScore['level'];
-  label: string;
-  overallHealth: EmployeeSynthesis['overallHealth'];
-  criticalSource: string | null;
-}
-
-const RISK_BADGE: Record<RiskScore['level'], { bg: string; text: string; label: string }> = {
-  low:      { bg: 'bg-green-soft',  text: 'text-green',  label: 'Düşük' },
-  medium:   { bg: 'bg-amber-soft',  text: 'text-amber',  label: 'Orta' },
-  high:     { bg: 'bg-orange-100',  text: 'text-orange-600', label: 'Yüksek' },
-  critical: { bg: 'bg-red-soft',    text: 'text-red',    label: 'Kritik' },
+const renkToPillClass: Record<EmployeeView['durumRenk'], string> = {
+  green: 'bg-green-soft text-green',
+  amber: 'bg-amber-soft text-amber',
+  red: 'bg-red-soft text-red',
+  gray: 'bg-bg-3 text-ink-40',
 };
 
-const HEALTH_DOT: Record<EmployeeSynthesis['overallHealth'], string> = {
-  good:     'bg-green',
-  warning:  'bg-amber',
-  critical: 'bg-red',
-};
-
-interface Props {
-  employees: EmployeeView[];
-}
-
-const RENK_MAP: Record<string, { bg: string; text: string }> = {
-  green: { bg: 'bg-green-soft', text: 'text-green' },
-  amber: { bg: 'bg-amber-soft', text: 'text-amber' },
-  red:   { bg: 'bg-red-soft',   text: 'text-red' },
-  gray:  { bg: 'bg-bg-3',       text: 'text-ink-40' },
-};
-
-const PAGE_SIZE = 10;
-
-export function EmployeeListClient({ employees }: Props) {
+export function EmployeeListClient() {
   const router = useRouter();
-  const [search, setSearch] = useState('');
+
+  // Filtreler + pagination — controlled state
   const [page, setPage] = useState(1);
-  const [riskMap, setRiskMap] = useState<Map<string, RiskInfo>>(new Map());
+  const [limit, setLimit] = useState(20);
+  const [searchInput, setSearchInput] = useState('');
+  const [departmentFilter, setDepartmentFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [sortKey, setSortKey] = useState<SortKey>('ad');
+  const [sortDir, setSortDir] = useState<SortDir>('asc');
 
-  useEffect(() => {
-    let cancelled = false;
+  const search = useDebouncedValue(searchInput, 300);
 
-    async function loadRiskData() {
-      try {
-        const res = await fetch('/api/employee-intelligence');
-        if (!res.ok) return;
-        const json: { employees: IntelEmployee[] } = await res.json();
-        if (cancelled) return;
+  const params: EmployeeQueryParams = useMemo(
+    () => ({
+      page,
+      limit,
+      search: search || undefined,
+      department_id: departmentFilter || undefined,
+      employment_status: statusFilter || undefined,
+      sort: `${sortKey}:${sortDir}`,
+    }),
+    [page, limit, search, departmentFilter, statusFilter, sortKey, sortDir],
+  );
 
-        const map = new Map<string, RiskInfo>();
+  const { data, isLoading, isError, error, refetch, isFetching } = useEmployees(params);
+  const { data: departments = [] } = useDepartments();
 
-        // Build a name-based lookup as fallback
-        const nameToRisk = new Map<string, RiskInfo>();
+  const rows = data?.items ?? [];
+  const total = data?.total ?? 0;
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
-        for (const emp of json.employees) {
-          const criticalSignal = emp.synthesis.riskScore.signals.find(
-            (s) => s.severity === 'critical' || s.severity === 'error',
-          );
-          const info: RiskInfo = {
-            level: emp.synthesis.riskScore.level,
-            label: RISK_BADGE[emp.synthesis.riskScore.level]?.label ?? 'Bilinmiyor',
-            overallHealth: emp.synthesis.overallHealth,
-            criticalSource: criticalSignal?.source?.replace(/-TR$/, '') ?? null,
-          };
-          // Primary: match by ID
-          map.set(emp.id, info);
-          // Fallback: match by name (lowercased)
-          nameToRisk.set(emp.name.toLocaleLowerCase('tr-TR'), info);
-        }
-
-        // Also map by employee name for cases where IDs differ between systems
-        for (const employee of employees) {
-          if (!map.has(employee.id)) {
-            const nameLower = employee.tamAd.toLocaleLowerCase('tr-TR');
-            const found = nameToRisk.get(nameLower);
-            if (found) {
-              map.set(employee.id, found);
-            }
-          }
-        }
-
-        setRiskMap(map);
-      } catch {
-        // Silently fail — risk badges are supplementary
-      }
+  const toggleSort = (key: SortKey) => {
+    if (sortKey === key) setSortDir(sortDir === 'asc' ? 'desc' : 'asc');
+    else {
+      setSortKey(key);
+      setSortDir('asc');
     }
+    setPage(1);
+  };
 
-    loadRiskData();
-    return () => { cancelled = true; };
-  }, [employees]);
-
-  const filtered = useMemo(() => {
-    if (!search.trim()) return employees;
-    const q = search.toLocaleLowerCase('tr-TR');
-    return employees.filter(
-      (e) =>
-        e.tamAd.toLocaleLowerCase('tr-TR').includes(q) ||
-        e.sicilNo.toLocaleLowerCase('tr-TR').includes(q) ||
-        e.email.toLocaleLowerCase('tr-TR').includes(q),
+  const exportCSV = () => {
+    if (rows.length === 0) return;
+    const header = ['Sicil No', 'Ad', 'Soyad', 'Email', 'İşe Başlama', 'Kıdem (ay)', 'Durum'];
+    const lines = [header.join(',')].concat(
+      rows.map((e) =>
+        [e.sicilNo, e.ad, e.soyad, e.email, e.iseBaslama, e.kidemAy, e.durumLabel]
+          .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+          .join(','),
+      ),
     );
-  }, [employees, search]);
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
-  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `calisanlar-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Search */}
-      <div className="relative">
-        <svg
-          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-40"
-          fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-          placeholder="Ad, soyad, sicil no veya email ile arayın..."
-          className="h-10 w-full rounded-lg border border-line bg-bg pl-10 pr-4 text-sm text-ink placeholder:text-ink-40 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
-        />
+      {/* Toolbar */}
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div className="relative flex-1 lg:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-40" />
+          <input
+            type="search"
+            placeholder="Ad, soyad, email veya sicil no ara…"
+            value={searchInput}
+            onChange={(e) => {
+              setSearchInput(e.target.value);
+              setPage(1);
+            }}
+            className="h-10 w-full rounded-md border border-line bg-bg pl-9 pr-3 text-sm text-ink placeholder:text-ink-40 focus:border-accent focus:outline-none"
+          />
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1.5 text-[11px] text-ink-40">
+            <Filter className="h-3.5 w-3.5" />
+            Filtre
+          </div>
+          <select
+            value={departmentFilter}
+            onChange={(e) => {
+              setDepartmentFilter(e.target.value);
+              setPage(1);
+            }}
+            className="h-9 rounded-md border border-line bg-bg px-3 text-sm text-ink focus:border-accent focus:outline-none"
+          >
+            <option value="">Tüm departmanlar</option>
+            {departments.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name_tr}
+              </option>
+            ))}
+          </select>
+          <select
+            value={statusFilter}
+            onChange={(e) => {
+              setStatusFilter(e.target.value);
+              setPage(1);
+            }}
+            className="h-9 rounded-md border border-line bg-bg px-3 text-sm text-ink focus:border-accent focus:outline-none"
+          >
+            {STATUS_OPTIONS.map((s) => (
+              <option key={s.value} value={s.value}>
+                {s.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={exportCSV}
+            disabled={rows.length === 0}
+            className="inline-flex h-9 items-center gap-1.5 rounded-md border border-line bg-bg px-3 text-[13px] font-medium text-ink-60 transition-colors hover:border-ink-20 disabled:opacity-50"
+          >
+            <Download className="h-3.5 w-3.5" />
+            CSV
+          </button>
+        </div>
       </div>
 
       {/* Table */}
       <div className="overflow-hidden rounded-lg border border-line bg-bg">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-line bg-bg-2">
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40">Çalışan</th>
-              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 md:table-cell">Sicil No</th>
-              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 lg:table-cell">Email</th>
-              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 sm:table-cell">Başlama</th>
-              <th className="hidden px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40 sm:table-cell">Risk</th>
-              <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-ink-40">Durum</th>
-            </tr>
-          </thead>
-          <tbody>
-            {paginated.length === 0 ? (
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead className="bg-bg-2 text-[11px] uppercase tracking-wider text-ink-40">
               <tr>
-                <td colSpan={6} className="px-4 py-12 text-center">
-                  <div className="flex flex-col items-center gap-2">
-                    <svg className="h-10 w-10 text-ink-20" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128H5.228A2 2 0 013 17.208V5.802A2 2 0 015.228 4h8.544A2 2 0 0116 5.802V12" />
-                    </svg>
-                    <p className="text-sm font-medium text-ink-60">
-                      {search ? 'Aramanızla eşleşen çalışan bulunamadı.' : 'Henüz çalışan eklenmemiş.'}
-                    </p>
-                    {!search && (
-                      <button
-                        onClick={() => router.push('/calisanlar/yeni')}
-                        className="mt-2 text-sm font-medium text-accent hover:underline"
-                      >
-                        İlk çalışanınızı ekleyin →
-                      </button>
-                    )}
-                  </div>
-                </td>
+                <HeaderCell label="Çalışan" sortKey="ad" currentKey={sortKey} dir={sortDir} onSort={toggleSort} />
+                <HeaderCell label="Sicil No" sortKey="employee_no" currentKey={sortKey} dir={sortDir} onSort={toggleSort} />
+                <th className="px-4 py-3 text-left font-semibold">Email</th>
+                <HeaderCell
+                  label="İşe Başlama"
+                  sortKey="hire_date"
+                  currentKey={sortKey}
+                  dir={sortDir}
+                  onSort={toggleSort}
+                />
+                <HeaderCell
+                  label="Durum"
+                  sortKey="employment_status"
+                  currentKey={sortKey}
+                  dir={sortDir}
+                  onSort={toggleSort}
+                />
               </tr>
-            ) : (
-              paginated.map((emp) => {
-                const renk = RENK_MAP[emp.durumRenk] ?? RENK_MAP['gray']!;
-                const risk = riskMap.get(emp.id);
-                const badge = risk ? RISK_BADGE[risk.level] : null;
-                const healthDot = risk ? HEALTH_DOT[risk.overallHealth] : null;
-                return (
-                  <tr
-                    key={emp.id}
-                    onClick={() => router.push(`/calisanlar/${emp.id}`)}
-                    className="cursor-pointer border-b border-line transition-colors last:border-0 hover:bg-bg-2"
-                  >
-                    {/* Çalışan */}
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-3">
-                        <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-bold text-accent">
-                          {emp.initials}
-                          {/* Health dot on avatar */}
-                          {healthDot && (
-                            <span
-                              className={`absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full border-2 border-bg ${healthDot}`}
-                              title={`Sağlık: ${risk?.overallHealth}`}
-                            />
-                          )}
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <span className="truncate text-sm font-medium text-ink">{emp.tamAd}</span>
-                            {/* Inline risk badge on mobile (column hidden on sm-) */}
-                            {badge && (
-                              <span
-                                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-1.5 py-0.5 text-[10px] font-medium sm:hidden ${badge.bg} ${badge.text}`}
-                              >
-                                {badge.label}
-                              </span>
-                            )}
-                          </div>
-                          <div className="truncate text-xs text-ink-40 md:hidden">{emp.email}</div>
-                        </div>
+            </thead>
+            <tbody className="divide-y divide-line">
+              {isLoading && !data && <SkeletonRows count={Math.min(limit, 8)} />}
+
+              {isError && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-10">
+                    <div className="mx-auto max-w-md rounded-md border border-red/30 bg-red-soft px-4 py-4 text-center text-sm text-red">
+                      <p className="font-medium">Çalışanlar yüklenemedi.</p>
+                      <p className="mt-1 text-[12px]">{error?.message ?? 'Bilinmeyen hata'}</p>
+                      <button
+                        type="button"
+                        onClick={() => refetch()}
+                        className="mt-3 rounded-md bg-red px-3 py-1.5 text-[12px] font-medium text-white"
+                      >
+                        Yeniden dene
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              )}
+
+              {!isLoading && !isError && rows.length === 0 && (
+                <tr>
+                  <td colSpan={5} className="px-4 py-16 text-center">
+                    <p className="text-sm font-medium text-ink">Çalışan bulunamadı</p>
+                    <p className="mt-1 text-xs text-ink-40">
+                      {search || departmentFilter || statusFilter
+                        ? 'Filtrelerinizi değiştirmeyi veya ilk çalışanınızı eklemeyi deneyin.'
+                        : 'Henüz hiç çalışan eklenmemiş. İlk çalışanınızı ekleyin.'}
+                    </p>
+                    <Link
+                      href="/calisanlar/yeni"
+                      className="mt-4 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-[13px] font-semibold text-white"
+                    >
+                      + Yeni Çalışan
+                    </Link>
+                  </td>
+                </tr>
+              )}
+
+              {rows.map((emp) => (
+                <tr
+                  key={emp.id}
+                  onClick={() => router.push(`/calisanlar/${emp.id}`)}
+                  className="cursor-pointer transition-colors hover:bg-bg-2"
+                >
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
+                        {emp.initials}
                       </div>
-                    </td>
-
-                    {/* Sicil No */}
-                    <td className="hidden px-4 py-3 text-sm text-ink-60 md:table-cell">
-                      {emp.sicilNo}
-                    </td>
-
-                    {/* Email */}
-                    <td className="hidden px-4 py-3 text-sm text-ink-60 lg:table-cell">
-                      {emp.email}
-                    </td>
-
-                    {/* Başlama */}
-                    <td className="hidden px-4 py-3 text-sm text-ink-60 sm:table-cell">
-                      {emp.iseBaslama
-                        ? new Date(emp.iseBaslama).toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' })
-                        : '—'}
-                    </td>
-
-                    {/* Risk */}
-                    <td className="hidden px-4 py-3 sm:table-cell">
-                      {badge ? (
-                        <div className="flex items-center gap-1.5">
-                          <span
-                            className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ${badge.bg} ${badge.text}`}
-                          >
-                            {badge.label}
-                          </span>
-                          {risk?.criticalSource && (
-                            <span className="rounded bg-red-soft px-1 py-0.5 text-[10px] font-medium text-red">
-                              {risk.criticalSource}
-                            </span>
-                          )}
-                        </div>
-                      ) : (
-                        <span className="text-xs text-ink-20">—</span>
-                      )}
-                    </td>
-
-                    {/* Durum */}
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ${renk.bg} ${renk.text}`}>
-                        {emp.durumLabel}
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <p className="text-xs text-ink-40">
-            {filtered.length} çalışandan {(page - 1) * PAGE_SIZE + 1}-{Math.min(page * PAGE_SIZE, filtered.length)} gösteriliyor
-          </p>
-          <div className="flex gap-1">
-            <button
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              disabled={page === 1}
-              className="rounded-md border border-line bg-bg px-3 py-1.5 text-xs font-medium text-ink-60 transition-colors hover:bg-bg-2 disabled:opacity-40"
-            >
-              ← Önceki
-            </button>
-            <button
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              disabled={page === totalPages}
-              className="rounded-md border border-line bg-bg px-3 py-1.5 text-xs font-medium text-ink-60 transition-colors hover:bg-bg-2 disabled:opacity-40"
-            >
-              Sonraki →
-            </button>
-          </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-ink">{emp.tamAd}</p>
+                        <p className="truncate text-[11px] text-ink-40">
+                          {emp.kidemAy > 0
+                            ? `${Math.floor(emp.kidemAy / 12)} yıl ${emp.kidemAy % 12} ay`
+                            : 'Yeni'}
+                        </p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 tabular-nums text-ink-60">{emp.sicilNo || '—'}</td>
+                  <td className="px-4 py-3 text-ink-60">{emp.email || '—'}</td>
+                  <td className="px-4 py-3 tabular-nums text-ink-60">
+                    {emp.iseBaslama
+                      ? new Date(emp.iseBaslama).toLocaleDateString('tr-TR', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                        })
+                      : '—'}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-flex h-6 items-center rounded-full px-2 text-[11px] font-medium ${renkToPillClass[emp.durumRenk]}`}
+                    >
+                      {emp.durumLabel}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+
+        {rows.length > 0 && (
+          <div className="flex flex-col items-center justify-between gap-3 border-t border-line bg-bg-2 px-4 py-3 text-[12px] text-ink-60 sm:flex-row">
+            <div className="flex items-center gap-2">
+              <span>Sayfa başına:</span>
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value));
+                  setPage(1);
+                }}
+                className="h-7 rounded border border-line bg-bg px-2 text-xs focus:border-accent focus:outline-none"
+              >
+                {PAGE_SIZES.map((n) => (
+                  <option key={n} value={n}>
+                    {n}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="flex items-center gap-1 tabular-nums">
+              <span>
+                {total === 0 ? 0 : (page - 1) * limit + 1}–{Math.min(page * limit, total)} / {total}
+              </span>
+              {isFetching && <span className="ml-2 text-ink-40">yenileniyor…</span>}
+            </div>
+
+            <div className="flex items-center gap-1">
+              <button
+                type="button"
+                onClick={() => setPage(1)}
+                disabled={page === 1}
+                className="inline-flex h-7 items-center justify-center rounded border border-line bg-bg px-2 disabled:opacity-40"
+              >
+                ‹‹
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={page === 1}
+                className="inline-flex h-7 items-center justify-center rounded border border-line bg-bg px-2 disabled:opacity-40"
+              >
+                ‹
+              </button>
+              <span className="px-2 text-ink-60">
+                {page} / {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={page >= totalPages}
+                className="inline-flex h-7 items-center justify-center rounded border border-line bg-bg px-2 disabled:opacity-40"
+              >
+                ›
+              </button>
+              <button
+                type="button"
+                onClick={() => setPage(totalPages)}
+                disabled={page >= totalPages}
+                className="inline-flex h-7 items-center justify-center rounded border border-line bg-bg px-2 disabled:opacity-40"
+              >
+                ››
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+// ---------------------------------------------------------------------------
+
+const HeaderCell = ({
+  label,
+  sortKey,
+  currentKey,
+  dir,
+  onSort,
+}: {
+  label: string;
+  sortKey: SortKey;
+  currentKey: SortKey;
+  dir: SortDir;
+  onSort: (k: SortKey) => void;
+}) => {
+  const active = currentKey === sortKey;
+  return (
+    <th className="px-4 py-3 text-left font-semibold">
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`inline-flex items-center gap-1 transition-colors ${active ? 'text-ink-80' : 'text-ink-40 hover:text-ink-60'}`}
+      >
+        {label}
+        {active ? (
+          dir === 'asc' ? (
+            <ChevronUp className="h-3 w-3" />
+          ) : (
+            <ChevronDown className="h-3 w-3" />
+          )
+        ) : (
+          <ChevronDown className="h-3 w-3 opacity-30" />
+        )}
+      </button>
+    </th>
+  );
+};
+
+const SkeletonRows = ({ count }: { count: number }) => (
+  <>
+    {Array.from({ length: count }).map((_, i) => (
+      <tr key={i} className="animate-pulse">
+        <td className="px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="h-8 w-8 rounded-full bg-bg-3" />
+            <div className="h-3 w-32 rounded bg-bg-3" />
+          </div>
+        </td>
+        <td className="px-4 py-4">
+          <div className="h-3 w-16 rounded bg-bg-3" />
+        </td>
+        <td className="px-4 py-4">
+          <div className="h-3 w-40 rounded bg-bg-3" />
+        </td>
+        <td className="px-4 py-4">
+          <div className="h-3 w-20 rounded bg-bg-3" />
+        </td>
+        <td className="px-4 py-4">
+          <div className="h-6 w-16 rounded-full bg-bg-3" />
+        </td>
+      </tr>
+    ))}
+  </>
+);

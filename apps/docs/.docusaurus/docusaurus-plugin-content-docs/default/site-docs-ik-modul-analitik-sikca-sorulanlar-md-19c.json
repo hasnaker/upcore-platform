@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/sikca-sorulanlar",
+  "title": "Analitik — sıkça sorulanlar",
+  "description": "Veriler ne kadar gerçek zamanlıdır?",
+  "source": "@site/docs/ik/modul/analitik/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/analitik/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "Analitik — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İhracat ve entegrasyon",
+    "permalink": "/en/docs/ik/modul/analitik/ihracat-entegrasyon"
+  },
+  "next": {
+    "title": "KVKK rehberine genel bakış",
+    "permalink": "/en/docs/ik/kvkk/giris"
+  }
+}

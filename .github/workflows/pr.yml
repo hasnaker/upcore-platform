@@ -80,6 +80,9 @@ jobs:
           - intervention
           - mobility
           - ats
+          - billing
+          - bordro
+          - performance
     steps:
       - uses: actions/checkout@v4
 
@@ -100,6 +103,35 @@ jobs:
         run: |
           go test -race -coverprofile=coverage.out -covermode=atomic ./...
 
+      - name: Coverage gate
+        working-directory: services/${{ matrix.service }}
+        env:
+          # Hard floor per service — PR fails below this. Baseline alındı
+          # 2026-04-22; eşik zamanla yükseltilir. 0 = no gate (yeni servis).
+          # Services not listed here default to 0 (no gate).
+          GATES: |
+            auth=40
+            tenant=40
+            ats=30
+            billing=0
+            bordro=0
+            performance=0
+            audit=20
+            organization=40
+            assessment=60
+            notification=10
+            survey=10
+            intervention=10
+            leave=30
+            mobility=0
+        run: |
+          total=$(go tool cover -func=coverage.out | tail -n 1 | awk '{print $3}' | sed 's/%//')
+          echo "Coverage total: $total%"
+          threshold=$(echo "$GATES" | grep -E "^${{ matrix.service }}=" | cut -d= -f2 || echo "0")
+          threshold=${threshold:-0}
+          awk -v t="$total" -v h="$threshold" 'BEGIN{exit (t+0 < h+0)}' \
+            || { echo "::error::coverage $total% < gate $threshold% for ${{ matrix.service }}"; exit 1; }
+
       - name: Build
         working-directory: services/${{ matrix.service }}
         run: |
@@ -111,6 +143,63 @@ jobs:
         with:
           name: go-coverage-${{ matrix.service }}
           path: services/${{ matrix.service }}/coverage.out
+          retention-days: 7
+
+  # --------------------------------------------------------------------------
+  # Go shared packages (packages/go/*) — separate matrix, own gates.
+  # --------------------------------------------------------------------------
+  go-packages:
+    name: Go Packages
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.go == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        pkg:
+          - bordro
+          - saga
+          - webhooks
+          - featureflags
+          - tenantexport
+          - tenantprovision
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: packages/go/${{ matrix.pkg }}/go.sum
+
+      - name: Test
+        working-directory: packages/go/${{ matrix.pkg }}
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+
+      - name: Coverage gate
+        working-directory: packages/go/${{ matrix.pkg }}
+        env:
+          # Shared packages target — birden fazla servis etkiliyor, yüksek tutuldu.
+          GATES: |
+            bordro=80
+            saga=40
+            webhooks=20
+            featureflags=40
+            tenantexport=0
+            tenantprovision=0
+        run: |
+          total=$(go tool cover -func=coverage.out | tail -n 1 | awk '{print $3}' | sed 's/%//')
+          echo "Coverage total: $total%"
+          threshold=$(echo "$GATES" | grep -E "^${{ matrix.pkg }}=" | cut -d= -f2 || echo "0")
+          threshold=${threshold:-0}
+          awk -v t="$total" -v h="$threshold" 'BEGIN{exit (t+0 < h+0)}' \
+            || { echo "::error::coverage $total% < gate $threshold% for pkg ${{ matrix.pkg }}"; exit 1; }
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: go-pkg-coverage-${{ matrix.pkg }}
+          path: packages/go/${{ matrix.pkg }}/coverage.out
           retention-days: 7
 
   # --------------------------------------------------------------------------
@@ -142,11 +231,47 @@ jobs:
       - name: Type check
         run: pnpm exec tsc --noEmit
 
+      - name: Guard web API direct DB surface
+        run: pnpm check:web-api-db
+
       - name: Unit tests
         run: pnpm test -- --passWithNoTests
 
       - name: Build check
         run: pnpm build
+
+  # --------------------------------------------------------------------------
+  # E2E smoke (Playwright)
+  # --------------------------------------------------------------------------
+  e2e-smoke:
+    name: E2E Smoke
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.ts == 'true'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright (Chromium)
+        run: pnpm --filter @upcore/e2e exec playwright install --with-deps chromium
+
+      - name: Run smoke suite
+        env:
+          E2E_WEB_SERVER: "1"
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: pk_test_dummy
+          CLERK_SECRET_KEY: sk_test_dummy
+        run: pnpm --filter @upcore/e2e test:smoke
 
   # --------------------------------------------------------------------------
   # Python: lint + typecheck + test
@@ -251,14 +376,15 @@ jobs:
     name: PR Status
     runs-on: ubuntu-latest
     if: always()
-    needs: [go-checks, ts-checks, python-checks, docker-build]
+    needs: [go-checks, ts-checks, python-checks, docker-build, e2e-smoke]
     steps:
       - name: Check results
         run: |
           if [[ "${{ needs.go-checks.result }}" == "failure" ]] || \
              [[ "${{ needs.ts-checks.result }}" == "failure" ]] || \
              [[ "${{ needs.python-checks.result }}" == "failure" ]] || \
-             [[ "${{ needs.docker-build.result }}" == "failure" ]]; then
+             [[ "${{ needs.docker-build.result }}" == "failure" ]] || \
+             [[ "${{ needs.e2e-smoke.result }}" == "failure" ]]; then
             echo "::error::One or more checks failed"
             exit 1
           fi

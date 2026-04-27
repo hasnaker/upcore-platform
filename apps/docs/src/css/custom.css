@@ -1,0 +1,256 @@
+/**
+ * UpCore docs — custom theming.
+ * Docusaurus CSS variables reference: https://docusaurus.io/docs/styling-layout
+ */
+
+:root {
+  --ifm-color-primary: #2563eb;
+  --ifm-color-primary-dark: #1d4ed8;
+  --ifm-color-primary-darker: #1e40af;
+  --ifm-color-primary-darkest: #1e3a8a;
+  --ifm-color-primary-light: #3b82f6;
+  --ifm-color-primary-lighter: #60a5fa;
+  --ifm-color-primary-lightest: #93c5fd;
+
+  --ifm-code-font-size: 92%;
+  --docusaurus-highlighted-code-line-bg: rgba(37, 99, 235, 0.12);
+
+  --ifm-font-family-base: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --ifm-heading-font-weight: 700;
+  --ifm-h1-font-size: 2.4rem;
+  --ifm-h2-font-size: 1.6rem;
+
+  --ifm-background-color: #ffffff;
+  --ifm-background-surface-color: #f8fafc;
+
+  --upcore-green: #16a34a;
+  --upcore-amber: #f59e0b;
+  --upcore-red: #dc2626;
+}
+
+[data-theme="dark"] {
+  --ifm-color-primary: #60a5fa;
+  --ifm-color-primary-dark: #3b82f6;
+  --ifm-color-primary-darker: #2563eb;
+  --ifm-color-primary-darkest: #1d4ed8;
+  --ifm-color-primary-light: #93c5fd;
+  --ifm-color-primary-lighter: #bfdbfe;
+  --ifm-color-primary-lightest: #dbeafe;
+
+  --docusaurus-highlighted-code-line-bg: rgba(96, 165, 250, 0.18);
+  --ifm-background-color: #0b1220;
+  --ifm-background-surface-color: #111827;
+}
+
+/* Heading anchors */
+.anchor {
+  scroll-margin-top: calc(var(--ifm-navbar-height) + 1rem);
+}
+
+/* Callout / admonition tweaks */
+.theme-admonition {
+  border-radius: 0.5rem;
+}
+
+/* Inline code */
+code {
+  border-radius: 4px;
+  padding: 0.1rem 0.35rem;
+  font-weight: 500;
+}
+
+/* Feedback widget */
+.upcore-feedback {
+  border-top: 1px solid var(--ifm-color-emphasis-200);
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.upcore-feedback__title {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--ifm-color-emphasis-800);
+}
+
+.upcore-feedback__buttons {
+  display: inline-flex;
+  gap: 0.5rem;
+}
+
+.upcore-feedback__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.5rem;
+  background: var(--ifm-background-surface-color);
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  transition:
+    border-color 0.2s,
+    transform 0.1s;
+}
+
+.upcore-feedback__btn:hover {
+  border-color: var(--ifm-color-primary);
+}
+
+.upcore-feedback__btn:active {
+  transform: scale(0.97);
+}
+
+.upcore-feedback__btn[data-vote="up"][aria-pressed="true"] {
+  border-color: var(--upcore-green);
+  background: rgba(22, 163, 74, 0.08);
+}
+
+.upcore-feedback__btn[data-vote="down"][aria-pressed="true"] {
+  border-color: var(--upcore-red);
+  background: rgba(220, 38, 38, 0.08);
+}
+
+.upcore-feedback__comment {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.upcore-feedback__comment textarea {
+  width: 100%;
+  min-height: 90px;
+  padding: 0.6rem 0.8rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  resize: vertical;
+  font-family: inherit;
+  font-size: 0.95rem;
+  background: var(--ifm-background-color);
+  color: var(--ifm-font-color-base);
+}
+
+.upcore-feedback__submit {
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: none;
+  background: var(--ifm-color-primary);
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.upcore-feedback__submit[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upcore-feedback__thanks {
+  color: var(--upcore-green);
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+/* Homepage hero */
+.upcore-hero {
+  padding: 4rem 0 3rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+[data-theme="dark"] .upcore-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.upcore-hero__title {
+  font-size: clamp(1.9rem, 4vw, 3rem);
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 0.75rem;
+}
+
+.upcore-hero__subtitle {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  color: var(--ifm-color-emphasis-700);
+  max-width: 52rem;
+  margin-bottom: 1.5rem;
+}
+
+.upcore-hero__actions {
+  display: inline-flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.upcore-audience-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.25rem;
+  padding: 3rem 0;
+}
+
+.upcore-audience-card {
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 0.75rem;
+  background: var(--ifm-background-surface-color);
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.upcore-audience-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--ifm-color-primary);
+}
+
+.upcore-audience-card__icon {
+  font-size: 1.75rem;
+}
+
+.upcore-audience-card__title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.upcore-audience-card__desc {
+  color: var(--ifm-color-emphasis-700);
+  font-size: 0.95rem;
+  margin: 0;
+  flex: 1;
+}
+
+.upcore-model-card {
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  margin: 1.5rem 0;
+  background: var(--ifm-background-surface-color);
+}
+
+.upcore-model-card h3 {
+  margin-top: 0;
+}
+
+/* Footer lift */
+.footer--dark {
+  background-color: #0b1220;
+}
+
+/* Print/SEO readability */
+@media print {
+  .navbar,
+  .footer,
+  .upcore-feedback {
+    display: none !important;
+  }
+}

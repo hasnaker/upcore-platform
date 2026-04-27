@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/sikca-sorulanlar",
+  "title": "Sürdürme — sıkça sorulanlar",
+  "description": "Bir çalışanın cevabını görebilir miyim?",
+  "source": "@site/docs/ik/modul/surdurme/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/surdurme/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "Sürdürme — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Şablon kütüphanesi",
+    "permalink": "/en/docs/ik/modul/surdurme/sablon-kutuphanesi"
+  },
+  "next": {
+    "title": "Koruma modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/koruma/genel-bakis"
+  }
+}

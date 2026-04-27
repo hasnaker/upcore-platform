@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/genel-bakis",
+  "title": "Koruma modülü — genel bakış",
+  "description": "Koruma, Sürdürme modülünün ürettiği erken uyarı sinyallerine evidence-based müdahaleyle cevap veren modüldür.",
+  "source": "@site/docs/ik/modul/koruma/genel-bakis.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/genel-bakis",
+  "permalink": "/en/docs/ik/modul/koruma/genel-bakis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/genel-bakis.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "genel-bakis",
+    "title": "Koruma modülü — genel bakış",
+    "sidebar_position": 1
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Sürdürme — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/surdurme/sikca-sorulanlar"
+  },
+  "next": {
+    "title": "Müdahale kataloğu",
+    "permalink": "/en/docs/ik/modul/koruma/mudahale-katalogu"
+  }
+}

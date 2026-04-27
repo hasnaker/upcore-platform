@@ -1,0 +1,63 @@
+# ============================================================================
+# UpCore Integration Tests
+# Real PostgreSQL + Azurite + fake upstreams. "integration" build tag ile.
+# PR'da "integration" label'ı atıldığında tetiklenir; nightly de çalışır.
+# ============================================================================
+
+name: Integration
+
+on:
+  schedule:
+    - cron: '0 3 * * *' # nightly 03:00 UTC
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+
+concurrency:
+  group: integration-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  billing:
+    name: Billing Integration
+    if: |
+      github.event_name == 'schedule' ||
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'integration')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_DB: upcore_test
+          POSTGRES_USER: upcore
+          POSTGRES_PASSWORD: upcore_test_pw
+        ports: ['5433:5432']
+        options: >-
+          --health-cmd "pg_isready -U upcore -d upcore_test"
+          --health-interval 2s --health-timeout 3s --health-retries 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+          cache-dependency-path: services/billing/go.sum
+
+      - name: Initialise test schema
+        env:
+          PGPASSWORD: upcore_test_pw
+        run: |
+          for f in database/migrations/*.up.sql; do
+            echo "Applying $(basename "$f")"
+            psql -h localhost -p 5433 -U upcore -d upcore_test -v ON_ERROR_STOP=1 -f "$f" || echo "WARN"
+          done
+
+      - name: Run integration tests
+        working-directory: services/billing
+        env:
+          INTEGRATION: '1'
+        run: |
+          go test -tags=integration -race -count=1 -timeout=10m ./test/integration/...

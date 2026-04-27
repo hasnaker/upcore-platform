@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/ats",
+  "title": "ATS Servisi API Referansı",
+  "description": "UpCore ATS servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/ats.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/ats",
+  "permalink": "/en/docs/developer/api/ats",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/ats.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 21,
+  "frontMatter": {
+    "id": "ats",
+    "title": "ATS Servisi API Referansı",
+    "sidebar_position": 21,
+    "slug": "/developer/api/ats",
+    "description": "UpCore ATS servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

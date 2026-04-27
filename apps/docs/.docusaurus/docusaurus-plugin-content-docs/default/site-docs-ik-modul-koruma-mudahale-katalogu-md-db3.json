@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/mudahale-katalogu",
+  "title": "Müdahale kataloğu",
+  "description": "UpCore'da 20+ evidence-based müdahale hazır gelir. Her biri akademik araştırmaya dayanır.",
+  "source": "@site/docs/ik/modul/koruma/mudahale-katalogu.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/mudahale-katalogu",
+  "permalink": "/en/docs/ik/modul/koruma/mudahale-katalogu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/mudahale-katalogu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "mudahale-katalogu",
+    "title": "Müdahale kataloğu",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Koruma modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/koruma/genel-bakis"
+  },
+  "next": {
+    "title": "Thompson sampling öneri motoru",
+    "permalink": "/en/docs/ik/modul/koruma/thompson-sampling"
+  }
+}

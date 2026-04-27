@@ -1,0 +1,48 @@
+{
+  "code": "belediye",
+  "name": "Belediye / Kamu",
+  "description": "Belediye kurumları için 657/4B/4857 memur tipleri ile önceden yapılandırılmış şablon.",
+  "default_locale": "tr-TR",
+  "default_country": "TR",
+  "default_plan_id": "platform",
+  "modules": [
+    "core_hris",
+    "assessment",
+    "burnout",
+    "payroll",
+    "kvkk",
+    "document",
+    "leave",
+    "performance"
+  ],
+  "departments": [
+    { "code": "BASKAN", "name": "Başkanlık Makamı" },
+    { "code": "BASKAN_YRD", "name": "Başkan Yardımcılığı", "parent": "BASKAN" },
+    { "code": "INSAN_KAYNAK", "name": "İnsan Kaynakları ve Eğitim Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "MALI", "name": "Mali Hizmetler Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "YAZI_ISLERI", "name": "Yazı İşleri Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "FEN", "name": "Fen İşleri Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "IMAR", "name": "İmar ve Şehircilik Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "TEMIZLIK", "name": "Temizlik İşleri Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "ZABITA", "name": "Zabıta Müdürlüğü", "parent": "BASKAN_YRD" },
+    { "code": "KULTUR", "name": "Kültür ve Sosyal İşler Müdürlüğü", "parent": "BASKAN_YRD" }
+  ],
+  "positions": [
+    { "code": "BASKAN", "name": "Belediye Başkanı", "department": "BASKAN", "personnel_type": "MEMUR_657" },
+    { "code": "BASKAN_YRD", "name": "Başkan Yardımcısı", "department": "BASKAN_YRD", "personnel_type": "MEMUR_657" },
+    { "code": "IK_MUDURU", "name": "İnsan Kaynakları Müdürü", "department": "INSAN_KAYNAK", "personnel_type": "MEMUR_657" },
+    { "code": "MALI_MUDURU", "name": "Mali Hizmetler Müdürü", "department": "MALI", "personnel_type": "MEMUR_657" },
+    { "code": "TEKNISYEN", "name": "Teknisyen", "department": "FEN", "personnel_type": "SOZLESMELI_4B" },
+    { "code": "ISCI_4857", "name": "İşçi", "department": "TEMIZLIK", "personnel_type": "ISCI_4857" }
+  ],
+  "kvkk_notices": [
+    { "audience": "employee", "version": "2025.01", "title": "Personel Aydınlatma Metni (657/4B/4857)" },
+    { "audience": "candidate", "version": "2025.01", "title": "Aday Aydınlatma Metni" },
+    { "audience": "citizen", "version": "2025.01", "title": "Vatandaş / Ziyaretçi Aydınlatma Metni" }
+  ],
+  "feature_flags": {
+    "payroll_657_module": true,
+    "kamu_hizmet_puani": true,
+    "verbis_required": true
+  }
+}

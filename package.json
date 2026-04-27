@@ -13,13 +13,15 @@
     "dev": "turbo dev --parallel",
     "lint": "turbo lint",
     "test": "turbo test",
-    "test:e2e": "turbo test:e2e",
+    "test:e2e": "pnpm --filter @upcore/e2e test:smoke",
+    "test:e2e:full": "pnpm --filter @upcore/e2e test:chromium",
     "typecheck": "turbo typecheck",
+    "check:web-api-db": "bash scripts/check-web-api-direct-db.sh",
     "clean": "turbo clean && rm -rf node_modules",
     "format": "prettier --write \"**/*.{ts,tsx,md,json,yaml,yml}\"",
     "format:check": "prettier --check \"**/*.{ts,tsx,md,json,yaml,yml}\"",
-    "db:migrate": "cd database && pnpm migrate",
-    "db:seed": "cd database && pnpm seed",
+    "db:migrate": "make -C database migrate-up",
+    "db:seed": "make -C database seed-dev",
     "services:up": "docker compose -f infrastructure/docker-compose.yml up -d",
     "services:down": "docker compose -f infrastructure/docker-compose.yml down",
     "prepare": "husky"
@@ -31,5 +33,12 @@
     "prettier": "^3.3.2",
     "turbo": "^2.0.6",
     "typescript": "^5.5.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "webpack": "5.97.1",
+      "@types/react": "18.3.12",
+      "@types/react-dom": "18.3.1"
+    }
   }
 }

@@ -1,167 +1,222 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DB_URL, TENANT_ID } from '@/lib/service-urls';
-import { compute9BoxCategory } from '@/lib/scoring-engine';
-import { parseAccessContext, getDataFilter } from '@/lib/rbac';
+import { SERVICES } from '@/lib/service-urls';
+import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
+
+type Band = 'low' | 'medium' | 'high';
+
+interface JsonRecord {
+  items?: unknown;
+}
+
+const readJson = async (response: Response): Promise<JsonRecord> => {
+  try {
+    const data = (await response.json()) as unknown;
+    if (data && typeof data === 'object') {
+      return data as JsonRecord;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
+
+type PerformanceCycle = {
+  id: string;
+  status?: string;
+  name_tr?: string;
+};
+
+type PerformanceEmployee = {
+  id: string;
+  ad?: string;
+  soyad?: string;
+  department_id?: string;
+};
+
+type PerformanceReview = {
+  id: string;
+  employee_id: string;
+  cycle_id: string;
+  performance_rating?: number | string | null;
+  potential_rating?: number | string | null;
+  goals_achieved_pct?: number | null;
+  status?: string;
+};
+
+type NineBoxItem = {
+  id: string;
+  employee_id: string;
+  cycle_id: string;
+  performance_band?: string;
+  potential_band?: string;
+  talent_segment?: string;
+  box_label?: string;
+};
+
+type ReviewPayloadItem = {
+  id: string;
+  employee: string;
+  department: string;
+  period: string;
+  okrScore: number | null;
+  competencyScore: number | null;
+  overallScore: number;
+  potentialScore: number | null;
+  potentialRating: 'high' | 'medium' | 'low';
+  status?: string;
+};
+
+const bandToScore = (band: string): number => {
+  switch ((band || '').toLowerCase()) {
+    case 'high':
+      return 85;
+    case 'medium':
+      return 65;
+    default:
+      return 40;
+  }
+};
+
+const ratingToPercent = (value: unknown): number | null => {
+  const num = typeof value === 'number' ? value : Number(value);
+  if (!Number.isFinite(num)) return null;
+  if (num <= 5) return Math.round((num / 5) * 100);
+  if (num <= 100) return Math.round(num);
+  return null;
+};
+
+const bandFromPercent = (value: number | null): Band => {
+  if (value === null) return 'medium';
+  if (value >= 75) return 'high';
+  if (value >= 50) return 'medium';
+  return 'low';
+};
+
+const potentialLabel = (value: number | null): 'high' | 'medium' | 'low' => {
+  if (value === null) return 'medium';
+  if (value >= 75) return 'high';
+  if (value >= 50) return 'medium';
+  return 'low';
+};
 
 export async function GET(req: NextRequest) {
   try {
-    // RBAC: determine data visibility based on actor role
-    const ctx = parseAccessContext(req.headers);
-    const filter = getDataFilter(ctx);
+    const ctx = getRequestContext(req);
+    const headers = buildServiceHeaders(ctx);
 
-    let filterClause = '';
-    const filterParams: string[] = [TENANT_ID];
-    if (filter.filterType === 'self' && filter.employeeId) {
-      filterClause = ' AND e.id = $2';
-      filterParams.push(filter.employeeId);
-    } else if (filter.filterType === 'department' && filter.departmentId) {
-      filterClause = ' AND e.department_id = $2';
-      filterParams.push(filter.departmentId);
-    }
+    const cyclesRes = await fetch(`${SERVICES.performance}/api/v1/performance/cycles?limit=20`, { headers });
+    const cyclesData = cyclesRes.ok ? await readJson(cyclesRes) : { items: [] };
+    const cycles = (Array.isArray(cyclesData.items) ? cyclesData.items : []) as PerformanceCycle[];
 
-    const { Pool } = await import('pg');
-    const pool = new Pool({ connectionString: DB_URL });
+    const activeCycle =
+      cycles.find((cycle) =>
+        ['goal_setting', 'active', 'in_review', 'calibration'].includes(String(cycle.status)),
+      ) || cycles[0];
 
-    // Performance reviews
-    const reviews = await pool.query(
-      `SELECT
-         pr.id, pr.period, pr.okr_score, pr.competency_score, pr.overall_score,
-         pr.potential_rating, pr.status, pr.manager_notes,
-         e.ad as first_name, e.soyad as last_name,
-         d.name_tr as department
-       FROM app.performance_reviews pr
-       JOIN app.employees e ON e.id = pr.employee_id
-       LEFT JOIN app.departments d ON d.id = e.department_id
-       WHERE pr.tenant_id = $1${filterClause}
-       ORDER BY pr.overall_score DESC NULLS LAST`,
-      filterParams
+    const cycleId = activeCycle?.id;
+
+    const reviewUrl = cycleId
+      ? `${SERVICES.performance}/api/v1/performance/reviews?cycle_id=${encodeURIComponent(cycleId)}`
+      : `${SERVICES.performance}/api/v1/performance/reviews`;
+
+    const [reviewsRes, employeesRes, nineBoxRes] = await Promise.all([
+      fetch(reviewUrl, { headers }),
+      fetch(`${SERVICES.employee}/api/v1/employees?limit=500`, { headers }),
+      cycleId
+        ? fetch(
+            `${SERVICES.performance}/api/v1/performance/nine-box/grid?cycle_id=${encodeURIComponent(cycleId)}`,
+            { headers },
+          )
+        : Promise.resolve(new Response(JSON.stringify({ items: [] }), { status: 200 })),
+    ]);
+
+    const reviewsData = reviewsRes.ok ? await readJson(reviewsRes) : { items: [] };
+    const employeesData = employeesRes.ok ? await readJson(employeesRes) : { items: [] };
+    const nineBoxData = nineBoxRes.ok ? await readJson(nineBoxRes) : { items: [] };
+
+    const reviews = (Array.isArray(reviewsData.items) ? reviewsData.items : []) as PerformanceReview[];
+    const employeeItems = (Array.isArray(employeesData.items)
+      ? employeesData.items
+      : []) as PerformanceEmployee[];
+    const nineBoxItems = (Array.isArray(nineBoxData.items) ? nineBoxData.items : []) as NineBoxItem[];
+
+    const cycleById = new Map<string, PerformanceCycle>(cycles.map((cycle) => [cycle.id, cycle]));
+    const employeeById = new Map<string, PerformanceEmployee>(
+      employeeItems.map((employee) => [employee.id, employee]),
     );
 
-    // Get 360 feedback averages per employee for potential calculation
-    const feedbackAvgs = await pool.query(
-      `SELECT
-         fr.evaluatee_id,
-         AVG((
-           SELECT AVG(val::numeric)
-           FROM jsonb_each_text(fr.scores) AS x(key, val)
-         )) as feedback_avg
-       FROM app.feedback_responses fr
-       JOIN app.feedback_cycles fc ON fc.id = fr.cycle_id
-       WHERE fc.tenant_id = $1 AND fr.completed_at IS NOT NULL
-       GROUP BY fr.evaluatee_id`,
-      [TENANT_ID]
-    ).catch(() => ({ rows: [] }));
-
-    const feedbackMap = new Map<string, number>();
-    for (const row of feedbackAvgs.rows) {
-      feedbackMap.set(row.evaluatee_id, Number(row.feedback_avg));
-    }
-
-    // Get strength depth per employee
-    const strengthDepths = await pool.query(
-      `SELECT employee_id, domain_scores
-       FROM app.strength_profiles
-       WHERE tenant_id = $1`,
-      [TENANT_ID]
-    ).catch(() => ({ rows: [] }));
-
-    const depthMap = new Map<string, number>();
-    for (const row of strengthDepths.rows) {
-      const scores = row.domain_scores as Record<string, number>;
-      const depth = Object.values(scores).filter((v) => v >= 4.0).length;
-      depthMap.set(row.employee_id, depth);
-    }
-
-    // Auto-compute 9-box categories using scoring engine
-    const autoNineBox = reviews.rows.map((r) => {
-      const employeeId = r.id; // review ID, need employee ID
-      const feedbackAvg = feedbackMap.get(r.id) ?? null; // approximate
-      const strengthsDepth = depthMap.get(r.id) ?? 0;
-
-      const category = compute9BoxCategory(
-        r.okr_score ? Number(r.okr_score) : null,
-        r.competency_score ? Number(r.competency_score) : null,
-        feedbackAvg,
-        strengthsDepth,
-        r.potential_rating,
-      );
+    const reviewPayload: ReviewPayloadItem[] = reviews.map((review) => {
+      const employee = employeeById.get(review.employee_id);
+      const performanceScore = ratingToPercent(review.performance_rating);
+      const okrScore =
+        typeof review.goals_achieved_pct === 'number' ? Number(review.goals_achieved_pct) : performanceScore;
+      const competencyScore = performanceScore;
+      const overallScore =
+        okrScore !== null && competencyScore !== null
+          ? Math.round((okrScore + competencyScore) / 2)
+          : okrScore ?? competencyScore ?? 0;
+      const potentialScore = ratingToPercent(review.potential_rating);
 
       return {
-        employee: `${r.first_name} ${r.last_name}`,
-        department: r.department,
-        ...category,
+        id: review.id,
+        employee: `${employee?.ad || ''} ${employee?.soyad || ''}`.trim() || review.employee_id,
+        department: employee?.department_id || '',
+        period: cycleById.get(review.cycle_id)?.name_tr || review.cycle_id,
+        okrScore,
+        competencyScore,
+        overallScore,
+        potentialScore,
+        potentialRating: potentialLabel(potentialScore),
+        status: review.status,
       };
     });
 
-    // Existing nine_box data from DB
-    const nineBox = await pool.query(
-      `SELECT
-         nb.id, nb.performance_score, nb.potential_score, nb.category, nb.period,
-         e.ad as first_name, e.soyad as last_name,
-         d.name_tr as department
-       FROM app.nine_box nb
-       JOIN app.employees e ON e.id = nb.employee_id
-       LEFT JOIN app.departments d ON d.id = e.department_id
-       WHERE nb.tenant_id = $1
-       ORDER BY nb.category, nb.performance_score DESC`,
-      [TENANT_ID]
-    );
+    const nineBoxPayload = nineBoxItems.map((item) => {
+      const employee = employeeById.get(item.employee_id);
+      const performanceBand = String(item.performance_band || 'medium');
+      const potentialBand = String(item.potential_band || 'medium');
+      return {
+        id: item.id,
+        employee: `${employee?.ad || ''} ${employee?.soyad || ''}`.trim() || item.employee_id,
+        department: employee?.department_id || '',
+        performanceScore: bandToScore(performanceBand),
+        potentialScore: bandToScore(potentialBand),
+        category: item.talent_segment || item.box_label || `${performanceBand}_${potentialBand}`,
+        period: cycleById.get(item.cycle_id)?.name_tr || '',
+      };
+    });
 
-    // Trend data from snapshots (last 8 weeks)
-    const trends = await pool.query(
-      `SELECT
-         e.ad as first_name, e.soyad as last_name,
-         ss.snapshot_date, ss.okr_progress, ss.burnout_score,
-         ss.performance_score, ss.risk_score
-       FROM app.score_snapshots ss
-       JOIN app.employees e ON e.id = ss.employee_id
-       WHERE ss.tenant_id = $1 AND ss.snapshot_date >= CURRENT_DATE - INTERVAL '60 days'
-       ORDER BY e.ad, ss.snapshot_date`,
-      [TENANT_ID]
-    ).catch(() => ({ rows: [] }));
-
-    // Group trends by employee
-    const trendsByEmployee = new Map<string, Array<{ date: string; okr: number | null; burnout: number | null; performance: number | null; risk: number | null }>>();
-    for (const row of trends.rows) {
-      const name = `${row.first_name} ${row.last_name}`;
-      if (!trendsByEmployee.has(name)) trendsByEmployee.set(name, []);
-      trendsByEmployee.get(name)!.push({
-        date: row.snapshot_date,
-        okr: row.okr_progress ? Number(row.okr_progress) : null,
-        burnout: row.burnout_score ? Number(row.burnout_score) : null,
-        performance: row.performance_score ? Number(row.performance_score) : null,
-        risk: row.risk_score ? Number(row.risk_score) : null,
-      });
-    }
-
-    await pool.end();
+    const autoNineBox = reviewPayload.map((review) => {
+      const performanceBand = bandFromPercent(
+        typeof review.overallScore === 'number' ? Number(review.overallScore) : null,
+      );
+      const potentialBand = bandFromPercent(
+        typeof review.potentialScore === 'number' ? Number(review.potentialScore) : null,
+      );
+      return {
+        employee: review.employee,
+        department: review.department,
+        performance: performanceBand,
+        potential: potentialBand,
+        performanceScore: typeof review.overallScore === 'number' ? review.overallScore : bandToScore(performanceBand),
+        potentialScore:
+          typeof review.potentialScore === 'number'
+            ? review.potentialScore
+            : bandToScore(potentialBand),
+      };
+    });
 
     return NextResponse.json({
-      reviews: reviews.rows.map((r) => ({
-        id: r.id,
-        employee: `${r.first_name} ${r.last_name}`,
-        department: r.department,
-        period: r.period,
-        okrScore: r.okr_score ? Number(r.okr_score) : null,
-        competencyScore: r.competency_score ? Number(r.competency_score) : null,
-        overallScore: r.overall_score ? Number(r.overall_score) : null,
-        potentialRating: r.potential_rating,
-        status: r.status,
-      })),
-      nineBox: nineBox.rows.map((nb) => ({
-        id: nb.id,
-        employee: `${nb.first_name} ${nb.last_name}`,
-        department: nb.department,
-        performanceScore: Number(nb.performance_score),
-        potentialScore: Number(nb.potential_score),
-        category: nb.category,
-        period: nb.period,
-      })),
-      autoNineBox, // algorithm-driven 9-box from scoring engine
-      trends: Object.fromEntries(trendsByEmployee), // 8-week trend per employee
+      reviews: reviewPayload,
+      nineBox: nineBoxPayload,
+      autoNineBox,
+      trends: {},
     });
   } catch (error) {
     console.error('Performance API error:', error);
-    return NextResponse.json({ error: 'Performans verileri alınamadı', reviews: [], nineBox: [], autoNineBox: [], trends: {} }, { status: 500 });
+    return NextResponse.json(
+      { error: 'Performans verileri alınamadı', reviews: [], nineBox: [], autoNineBox: [], trends: {} },
+      { status: 500 },
+    );
   }
 }

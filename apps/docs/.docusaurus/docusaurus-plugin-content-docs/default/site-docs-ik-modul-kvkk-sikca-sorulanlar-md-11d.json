@@ -1,0 +1,25 @@
+{
+  "id": "ik/modul/kvkk/sikca-sorulanlar",
+  "title": "KVKK/GRC — sıkça sorulanlar",
+  "description": "DPO atanmak zorunlu mu?",
+  "source": "@site/docs/ik/modul/kvkk/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/kvkk/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "KVKK/GRC — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Yurt dışı aktarım",
+    "permalink": "/en/docs/ik/modul/kvkk/yurtdisi-aktarim"
+  }
+}

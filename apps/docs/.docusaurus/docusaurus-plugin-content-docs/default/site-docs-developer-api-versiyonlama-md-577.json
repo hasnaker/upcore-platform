@@ -1,0 +1,29 @@
+{
+  "id": "developer/api/versiyonlama",
+  "title": "API versiyonlama",
+  "description": "Breaking change yönetimi.",
+  "source": "@site/docs/developer/api/versiyonlama.md",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/versiyonlama",
+  "permalink": "/en/docs/developer/api/versiyonlama",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/versiyonlama.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "versiyonlama",
+    "title": "API versiyonlama",
+    "sidebar_position": 3
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Rate limit",
+    "permalink": "/en/docs/developer/api/rate-limit"
+  },
+  "next": {
+    "title": "Try it out sandbox",
+    "permalink": "/en/docs/developer/api/try-it-out-sandbox"
+  }
+}

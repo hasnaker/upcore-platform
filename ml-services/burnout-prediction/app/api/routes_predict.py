@@ -3,13 +3,12 @@
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from uuid import UUID, uuid4
+from uuid import uuid4
 
 import structlog
 from fastapi import APIRouter, HTTPException, status
 
-from app.config import settings
-from app.inference.predict import predict_burnout
+from app.inference.predict import ConsentDeniedError, predict_burnout
 from app.schemas.requests import (
     BurnoutBatchRequest,
     BurnoutPredictRequest,
@@ -57,6 +56,25 @@ async def predict_endpoint(req: BurnoutPredictRequest) -> BurnoutPredictionRespo
             horizons=req.horizon_days,
             raw_signals=raw_signals,
         )
+    except ConsentDeniedError as exc:
+        # KVKK md.22 — çalışan AI kararından çekildi; 403 döner.
+        logger.info(
+            "prediction_consent_denied",
+            employee_id=str(req.employee_id),
+            consent_status=exc.consent_status,
+        )
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={
+                "error": "consent_denied",
+                "consent_type": "ai_recommendations",
+                "status": exc.consent_status,
+                "message": (
+                    "Çalışan AI tabanlı tahminlerden KVKK Madde 22 kapsamında "
+                    "çekilmiştir; tahmin üretilmez."
+                ),
+            },
+        ) from exc
     except Exception as exc:
         logger.error(
             "prediction_failed",

@@ -1,0 +1,29 @@
+{
+  "id": "ik/hizli-baslangic/ilk-15-dakika",
+  "title": "İlk 15 dakika — yeni İK için hızlı başlangıç",
+  "description": "Bu rehber, UpCore hesabınızı açtığınız andan itibaren çalıştırabilir bir sisteme sahip olmanız için 15 dakikalık bir akış sunar.",
+  "source": "@site/docs/ik/hizli-baslangic/ilk-15-dakika.md",
+  "sourceDirName": "ik/hizli-baslangic",
+  "slug": "/ik/hizli-baslangic/ilk-15-dakika",
+  "permalink": "/en/docs/ik/hizli-baslangic/ilk-15-dakika",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/hizli-baslangic/ilk-15-dakika.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "ilk-15-dakika",
+    "title": "İlk 15 dakika — yeni İK için hızlı başlangıç",
+    "sidebar_position": 1
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Başlangıç",
+    "permalink": "/en/docs/ik/giris"
+  },
+  "next": {
+    "title": "İlk pulse anketi — oluştur, gönder, yorumla",
+    "permalink": "/en/docs/ik/hizli-baslangic/ilk-pulse-anketi"
+  }
+}

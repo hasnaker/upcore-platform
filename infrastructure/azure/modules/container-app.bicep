@@ -71,6 +71,12 @@ param registryUsername string = ''
 @secure()
 param registryPassword string = ''
 
+@description('Key Vault URI for managed-identity secret references (e.g., https://upc-prod-kv.vault.azure.net/). Empty disables KV-backed secrets.')
+param keyVaultUri string = ''
+
+@description('Key Vault-backed secrets — pulled via system-assigned managed identity. Format: { name, keyVaultSecretName, envVarName }. App init reads them by `secretRef`. KV access RBAC ayrı modülde verilir.')
+param keyVaultSecrets array = []
+
 // ---------------------------------------------------------------------------
 // Variables
 // ---------------------------------------------------------------------------
@@ -83,6 +89,17 @@ var secretDefinitions = [
   }
 ]
 
+// Key Vault-backed secrets: değer container-app config'de tutulmaz, runtime'da
+// system-assigned managed identity kullanılarak Key Vault'tan pull edilir.
+// Container Apps platform secret'ı 5 dakikada bir cache'ler.
+var kvSecretDefinitions = [
+  for secret in keyVaultSecrets: {
+    name: secret.name
+    keyVaultUrl: '${keyVaultUri}secrets/${secret.keyVaultSecretName}'
+    identity: 'system'
+  }
+]
+
 var registrySecrets = !empty(registryPassword)
   ? [
       {
@@ -92,7 +109,7 @@ var registrySecrets = !empty(registryPassword)
     ]
   : []
 
-var allSecrets = concat(secretDefinitions, registrySecrets)
+var allSecrets = concat(secretDefinitions, kvSecretDefinitions, registrySecrets)
 
 var secretEnvVars = [
   for secret in secrets: {
@@ -101,7 +118,14 @@ var secretEnvVars = [
   }
 ]
 
-var allEnvVars = concat(envVars, secretEnvVars)
+var kvSecretEnvVars = [
+  for secret in keyVaultSecrets: {
+    name: secret.envVarName
+    secretRef: secret.name
+  }
+]
+
+var allEnvVars = concat(envVars, secretEnvVars, kvSecretEnvVars)
 
 var registries = !empty(registryPassword)
   ? [
@@ -123,6 +147,13 @@ resource containerApp 'Microsoft.App/containerApps@2024-03-01' = {
     'upcore-service': serviceName
     'upcore-environment': environment
   })
+  // System-assigned managed identity — Key Vault Secrets User RBAC bu
+  // identity'ye verilir (key-vault.bicep'deki containerAppPrincipalIds).
+  // Bu sayede container app secret değerlerini env var olarak değil,
+  // runtime'da KV'den pull eder; CI/CD plain-text secret yaymaz.
+  identity: {
+    type: 'SystemAssigned'
+  }
   properties: {
     managedEnvironmentId: containerAppsEnvId
     workloadProfileName: workloadProfileName
@@ -231,3 +262,5 @@ output appId string = containerApp.id
 output appName string = containerApp.name
 output appFqdn string = containerApp.properties.configuration.ingress.fqdn
 output latestRevisionName string = containerApp.properties.latestRevisionName
+// System-assigned managed identity principal ID — KV RBAC için kullanılır.
+output principalId string = containerApp.identity.principalId

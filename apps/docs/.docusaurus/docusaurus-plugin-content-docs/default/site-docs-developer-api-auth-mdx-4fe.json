@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/auth",
+  "title": "Auth Servisi API Referansı",
+  "description": "UpCore Auth servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/auth.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/auth",
+  "permalink": "/en/docs/developer/api/auth",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/auth.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "auth",
+    "title": "Auth Servisi API Referansı",
+    "sidebar_position": 10,
+    "slug": "/developer/api/auth",
+    "description": "UpCore Auth servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

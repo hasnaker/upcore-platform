@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/izleme-takvimi",
+  "title": "İzleme takvimi",
+  "description": "Müdahale süresince yapılan düzenli kontrollerin detayı.",
+  "source": "@site/docs/ik/modul/koruma/izleme-takvimi.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/izleme-takvimi",
+  "permalink": "/en/docs/ik/modul/koruma/izleme-takvimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/izleme-takvimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "izleme-takvimi",
+    "title": "İzleme takvimi",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Referral network (anonim profesyonel ağ)",
+    "permalink": "/en/docs/ik/modul/koruma/referral-network"
+  },
+  "next": {
+    "title": "Koruma — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/koruma/sikca-sorulanlar"
+  }
+}

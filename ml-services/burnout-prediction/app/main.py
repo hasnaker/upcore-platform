@@ -9,7 +9,9 @@ import structlog
 from fastapi import FastAPI
 from prometheus_client import make_asgi_app
 
+from app.api.routes_audit import router as audit_router
 from app.api.routes_calibration import router as calibration_router
+from app.api.routes_dashboard import router as dashboard_router
 from app.api.routes_explain import router as explain_router
 from app.api.routes_fairness import router as fairness_router
 from app.api.routes_health import router as health_router
@@ -70,12 +72,14 @@ def create_app() -> FastAPI:
 
     # Register routers
     application.include_router(health_router, tags=["health"])
-    application.include_router(predict_router, prefix="/v1/predict", tags=["predict"])
-    application.include_router(train_router, prefix="/v1/train", tags=["train"])
-    application.include_router(models_router, prefix="/v1/models", tags=["models"])
-    application.include_router(calibration_router, prefix="/v1/calibration", tags=["calibration"])
-    application.include_router(fairness_router, prefix="/v1/fairness", tags=["fairness"])
-    application.include_router(explain_router, prefix="/v1/explain", tags=["explain"])
+    application.include_router(dashboard_router, prefix="/api/v1/burnout", tags=["dashboard"])
+    application.include_router(predict_router, prefix="/api/v1/burnout/predict", tags=["predict"])
+    application.include_router(train_router, prefix="/api/v1/burnout/train", tags=["train"])
+    application.include_router(models_router, prefix="/api/v1/burnout/models", tags=["models"])
+    application.include_router(calibration_router, prefix="/api/v1/burnout/calibration", tags=["calibration"])
+    application.include_router(fairness_router, prefix="/api/v1/burnout/fairness", tags=["fairness"])
+    application.include_router(explain_router, prefix="/api/v1/burnout/explain", tags=["explain"])
+    application.include_router(audit_router, prefix="/api/v1/burnout", tags=["audit"])
 
     return application
 

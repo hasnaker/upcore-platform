@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/executive-dashboard",
+  "title": "Executive dashboard",
+  "description": "CEO/CHRO/Yönetim Kurulu için tek sayfalık özet.",
+  "source": "@site/docs/ik/modul/analitik/executive-dashboard.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/executive-dashboard",
+  "permalink": "/en/docs/ik/modul/analitik/executive-dashboard",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/executive-dashboard.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "executive-dashboard",
+    "title": "Executive dashboard",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Analitik modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/analitik/genel-bakis"
+  },
+  "next": {
+    "title": "Bias denetimi",
+    "permalink": "/en/docs/ik/modul/analitik/bias-denetimi"
+  }
+}

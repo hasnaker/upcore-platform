@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/plan-takibi",
+  "title": "Plan takibi",
+  "description": "Consent sonrası plan oluşturulur. İK'nın görebileceği plan detayları.",
+  "source": "@site/docs/ik/modul/koruma/plan-takibi.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/plan-takibi",
+  "permalink": "/en/docs/ik/modul/koruma/plan-takibi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/plan-takibi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "plan-takibi",
+    "title": "Plan takibi",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Consent (açık rıza) akışı",
+    "permalink": "/en/docs/ik/modul/koruma/consent-akisi"
+  },
+  "next": {
+    "title": "Etki ölçümü",
+    "permalink": "/en/docs/ik/modul/koruma/etki-olcumu"
+  }
+}

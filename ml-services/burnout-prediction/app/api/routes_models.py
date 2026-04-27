@@ -7,7 +7,6 @@ from datetime import datetime, timezone
 import structlog
 from fastapi import APIRouter, HTTPException, status
 
-from app.config import settings
 from app.schemas.requests import ModelPromoteRequest
 from app.schemas.responses import ModelRegistryEntry
 

@@ -45,7 +45,7 @@ export default function GucluYonlerPage() {
   const [departmentFilter, setDepartmentFilter] = useState('Tümü');
   const [employees, setEmployees] = useState<EmployeeStrengthSummary[]>([]);
   const [apiStats, setApiStats] = useState({ total: 0, assessed: 0, pending: 0, avgFitScore: 0 });
-  const [loading, setLoading] = useState(true);
+  const [, setLoading] = useState(true);
 
   useEffect(() => {
     fetch('/api/strengths')

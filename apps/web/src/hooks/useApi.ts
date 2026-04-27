@@ -20,7 +20,10 @@ export function useApiQuery<TData>(
   return useQuery<TData, Error, TData>({
     queryKey: key,
     queryFn: async () => {
-      const token = await getToken();
+      // `upcore` template = custom JWT with tenant_id, roles, email claims.
+      // Gateway's RequireTenant middleware depends on tenant_id — default
+      // session JWT doesn't include it.
+      const token = await getToken({ template: 'upcore' });
       return apiFetch<TData>(path, {
         method: 'GET',
         token,
@@ -43,7 +46,7 @@ export function useApiMutation<TData, TVariables>(
 
   return useMutation<TData, Error, TVariables>({
     mutationFn: async (variables) => {
-      const token = await getToken();
+      const token = await getToken({ template: 'upcore' });
       const resolvedPath = typeof path === 'function' ? path(variables) : path;
       return apiFetch<TData>(resolvedPath, {
         method,

@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/leave",
+  "title": "Leave Servisi API Referansı",
+  "description": "UpCore Leave servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/leave.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/leave",
+  "permalink": "/en/docs/developer/api/leave",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/leave.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 14,
+  "frontMatter": {
+    "id": "leave",
+    "title": "Leave Servisi API Referansı",
+    "sidebar_position": 14,
+    "slug": "/developer/api/leave",
+    "description": "UpCore Leave servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

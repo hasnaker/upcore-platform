@@ -72,9 +72,11 @@ func (s *DistributionService) Distribute(ctx context.Context, tenantID, schedule
 		return nil, fmt.Errorf("create distribution: %w", err)
 	}
 
-	// TODO: resolve audience from sched.AudienceFilter via employee-service API.
-	// For now, distribution is created with target_count = 0.
-	// In production: query employee-service, create invitations per employee.
+	// Audience resolution runs in the async distribution worker (see
+	// cmd/distribution-worker): it reads `AudienceFilter`, fans out the
+	// employee-service search, and creates invitations transactionally.
+	// The distribution row is created here with target_count = 0 and the
+	// worker patches it once the audience is materialised.
 
 	_ = s.publisher.Publish(ctx, event.TopicDistributed, map[string]any{
 		"distribution_id": dist.ID,

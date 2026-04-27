@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/ilk-kaynak-kutuphanesi",
+  "title": "Kaynak kütüphanesi",
+  "description": "Curated öğrenme kaynakları — herkes için erişilebilir.",
+  "source": "@site/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/ilk-kaynak-kutuphanesi",
+  "permalink": "/en/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "ilk-kaynak-kutuphanesi",
+    "title": "Kaynak kütüphanesi",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Mentorluk programı",
+    "permalink": "/en/docs/ik/modul/gelistirme/mentorluk"
+  },
+  "next": {
+    "title": "Bütçe yönetimi",
+    "permalink": "/en/docs/ik/modul/gelistirme/butce-yonetimi"
+  }
+}

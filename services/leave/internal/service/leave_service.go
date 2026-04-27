@@ -179,6 +179,50 @@ func (s *LeaveService) ListByStatus(ctx context.Context, tenantID uuid.UUID, sta
 	return s.requests.ListByTenantStatus(ctx, tenantID, status, limit, offset)
 }
 
+// ICSEvent is a calendar-ready payload for /calendar.ics consumers.
+type ICSEvent struct {
+	ID          string
+	Start       time.Time
+	End         time.Time
+	Title       string
+	Description string
+}
+
+// ListApprovedForUser returns the signed-in user's approved leave as
+// calendar-ready events. Employee ID is resolved from auth user; caller
+// passes the mapped employee_id (middleware does the lookup upstream).
+func (s *LeaveService) ListApprovedForUser(ctx context.Context, tenantID, employeeID uuid.UUID) ([]ICSEvent, error) {
+	if tenantID == uuid.Nil || employeeID == uuid.Nil {
+		return nil, nil
+	}
+	requests, err := s.requests.ListByEmployee(ctx, tenantID, employeeID, 500, 0)
+	if err != nil {
+		return nil, err
+	}
+	out := make([]ICSEvent, 0, len(requests))
+	for _, req := range requests {
+		if req.Status != domain.StatusApproved {
+			continue
+		}
+		title := "UpCore İzin"
+		if req.Reason != nil && *req.Reason != "" {
+			title = "UpCore İzin: " + *req.Reason
+		}
+		desc := ""
+		if req.Reason != nil {
+			desc = *req.Reason
+		}
+		out = append(out, ICSEvent{
+			ID:          req.ID.String(),
+			Start:       req.StartDate,
+			End:         req.EndDate,
+			Title:       title,
+			Description: desc,
+		})
+	}
+	return out, nil
+}
+
 // Update patches a pending/draft request.
 func (s *LeaveService) Update(ctx context.Context, tenantID, id uuid.UUID, in UpdateInput) (*domain.LeaveRequest, error) {
 	req, err := s.requests.Get(ctx, tenantID, id)

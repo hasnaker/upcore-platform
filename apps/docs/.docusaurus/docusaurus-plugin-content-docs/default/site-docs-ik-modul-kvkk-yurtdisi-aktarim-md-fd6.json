@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/yurtdisi-aktarim",
+  "title": "Yurt dışı aktarım",
+  "description": "KVKK Madde 9 — kişisel verinin yurt dışına aktarımı.",
+  "source": "@site/docs/ik/modul/kvkk/yurtdisi-aktarim.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/yurtdisi-aktarim",
+  "permalink": "/en/docs/ik/modul/kvkk/yurtdisi-aktarim",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/yurtdisi-aktarim.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "yurtdisi-aktarim",
+    "title": "Yurt dışı aktarım",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Saklama politikası",
+    "permalink": "/en/docs/ik/modul/kvkk/saklama-politikasi"
+  },
+  "next": {
+    "title": "KVKK/GRC — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/kvkk/sikca-sorulanlar"
+  }
+}

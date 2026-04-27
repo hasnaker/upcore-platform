@@ -9,7 +9,7 @@ import numpy as np
 import pytest
 
 from app.reliability.cronbach import cronbach_alpha, interpret_alpha
-from app.reliability.retest import split_half_reliability, compute_retest_correlation
+from app.reliability.retest import compute_retest_correlation, split_half_reliability
 
 
 class TestCronbachAlpha:

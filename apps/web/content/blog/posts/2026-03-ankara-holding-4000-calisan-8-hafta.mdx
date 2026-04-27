@@ -1,0 +1,176 @@
+---
+title: "Ankara Holding 4000 Çalışan · 8 Hafta Tükenmişlik Eğrisi"
+description: "Ankara merkezli 18 şirketli bir holdingde 4000 çalışanlık kapsamında yürütülen 8 haftalık tükenmişlik izleme ve müdahale pilotu. Farklı iş kollarında farklı etki büyüklükleri, CHRO panelinin canlı kararları."
+author: "hasan-aker"
+category: "vaka"
+tags: ["holding", "pilot", "tükenmişlik", "4000 çalışan", "CHRO"]
+publishedAt: "2026-03-30T08:00:00.000Z"
+heroImage: "/blog/heroes/ankara-holding-pilot.svg"
+heroAlt: "Ankara Holding 4000 çalışan tükenmişlik eğrisi grafiği"
+---
+
+Ankara merkezli, 18 farklı şirketi bünyesinde barındıran bir holding (müşteri gizliliği için *Ankara Holding* olarak anılacaktır) 2026 Q1 döneminde UpCore ile 4000 çalışanlık tükenmişlik izleme ve müdahale projesini tamamladı. Bu yazı projenin nasıl tasarlandığını, 8 haftada hangi verilerin gözlemlendiğini ve CHRO panelinin iş birimlerine dair nasıl gerçek zamanlı kararlar aldığını anlatıyor.
+
+## Holding profili
+
+- 18 şirket (üretim, perakende, gayrimenkul, finans, teknoloji, medya)
+- 4012 çalışan, 14 Türkiye şehri + 4 ülke ofisi
+- İstihdam kolları: 4857 tabanlı çalışan %93, 657 (iştirak üniversitesi) %4, yabancı %3
+
+Projeden önce mevcut durum: Bölgesel bir çalışan memnuniyeti anketi yılda bir yapılıyordu. Tükenmişlik özel olarak ölçülmüyordu. CHRO (baş insan kaynakları yetkilisi) her çeyrek kendi sezgisiyle şirket-seviyesi değerlendirme yapıyordu.
+
+## Hedefler
+
+1. **Holding geneli ve şirket bazlı BAT-TR baseline'ını 4 hafta içinde çıkar.**
+2. **Öncelikli 3 şirkette** (üretim A.Ş., perakende A.Ş., medya A.Ş.) 8 hafta müdahale uygula.
+3. **CHRO panelinde** gerçek zamanlı karar almayı mümkün kıl (her Pazartesi 09:00'da haftalık snapshot).
+4. Etki ölçümü: müdahale şirketleri vs kontrol şirketleri karşılaştırması.
+
+## Uygulanan çerçeve
+
+### Pulse metodu
+
+- Her Pazartesi sabah 08:00'da e-posta ve Teams üzerinden BAT-12-TR linki.
+- Yanıt süresi 48 saat. Süre sonrası 1 hatırlatma.
+- Anonim; "şirket + birim + kıdem grubu" üstü kırılım yok.
+
+### Müdahale seti
+
+- **Üretim A.Ş. için:** vardiya tasarımı revizyonu + haftalık ekip retrosu (yöneticisiz).
+- **Perakende A.Ş. için:** müşteri duygusal yük debrifi + dönem sonu motive-etme atölyesi.
+- **Medya A.Ş. için:** anlam ve amaç atölyesi + yönetici koçluğu programı.
+
+### Kontrol grupları
+
+- Her müdahale şirketi için benzer büyüklük ve iş koluna sahip bir kardeş şirket "wait-list" kontrol grubu oldu. Bu şirketler baseline ölçüme katıldı ama ilk 8 hafta müdahale almadı.
+
+## Haftalık trend
+
+<DataChart id="ankara-holding-burnout-8w" />
+
+Hafta bazında holding geneli skor:
+
+- Hafta 0 (baseline): 2.41 BAT-TR
+- Hafta 2: 2.38 — trend henüz belirgin değil, beklenen plato
+- Hafta 4: 2.22 — müdahale etkisi ilk gözlem
+- Hafta 6: 2.05 — iyileşme hızlanıyor
+- Hafta 8: 1.88 — %22'lik iyileşme, Cohen's d = 0.67 (orta-büyük etki)
+
+### Şirket bazında dağılım
+
+En yüksek etki **Üretim A.Ş.**'de: d = 0.89. Vardiya revizyonu doğrudan gereksinim azaltma ile çalıştı. En düşük etki **Medya A.Ş.**'de: d = 0.34 — ancak bu şirketin baseline'ı zaten düşüktü (1.92).
+
+Kontrol grubu şirketlerinde hafta 8 itibariyle ortalama sadece -0.08 puan değişim. Yani doğal dalgalanma müdahalenin etkisini açıklamıyor.
+
+## CHRO paneli canlı kararları
+
+UpCore dashboard'u CHRO'ya şu 5 görünümü canlı veriyordu:
+
+1. **Holding ısı haritası** — 18 şirket, 4 seviye (yeşil, sarı, turuncu, kırmızı).
+2. **Trend grafikleri** — her şirketin 8 haftalık eğrisi.
+3. **Müdahale etki ölçeri** — Cohen's d değeri, güven aralığı.
+4. **Hassas birim uyarıları** — alt-eşiği geçen birimler için yönetici atama.
+5. **Ayrılma riski tahmini** — XGBoost modeli + fairness audit.
+
+CHRO, 8 hafta boyunca paneli kullanarak şu 3 karara vardı:
+
+### Karar 1 — Finans A.Ş.'de acil müdahale
+
+Hafta 3 itibariyle Finans A.Ş.'nin mali raporlama departmanı kırmızı uyarı verdi. Sadece yıl sonu kapanış döneminin yorgunluğu değil, yapısal sorun tespit edildi. UpCore Koruma modülünden "Workload Reset" müdahalesi hızlı protokolle bu departmana uygulandı; 5. hafta itibariyle skor turuncuya gerilemişti.
+
+### Karar 2 — Medya A.Ş.'de yönetici değişikliği
+
+Medya A.Ş.'nin dijital bölümünde yönetici skoru özel olarak düşük çıktı (anonimlik korunurken, ekip seviyesinde sinyal alındı). CHRO, bölüm yöneticisiyle birebir değerlendirme toplantısı yaptı; yönetici geri bildirim atölyesine katıldı ve 4 hafta sonra ekip skoru stabilize oldu.
+
+### Karar 3 — Kapanış raporu ile iştirak CEO'larına paylaşım
+
+8. hafta sonunda her şirket CEO'suna kendi şirketlerinin BAT-TR raporu + müdahale etki özeti gönderildi. İlk defa iştirak bazında kıyaslama yapıldı; bu şeffaflık hafif rahatsız edici olsa da uzun dönemli iyileşme kültürü için temel atıldı.
+
+<Callout variant="info">
+CHRO'nun 1-1 geri bildirimi: "Paneldeki en değerli şey şu oldu — hiç daha önce 18 şirketin İK durumunu aynı ekranda göremedim. Sadece mevcut durum değil, değişim hızını da görüyorum. Buna göre yıl sonu strateji toplantısının gündemi ne olması gerektiğini netleştirdik."
+</Callout>
+
+## Ekonomik fayda
+
+- Pilot maliyet: 1.2 milyon TL (UpCore lisans + müdahale atölyeleri).
+- Beklenen yıllık faydada 3 ana kalem:
+  - **Ayrılma maliyeti azalması:** Önceki yıl holding devir hızı %19, tahmin %15'e düşüş → 640 kişi azalma × ortalama pozisyon başı 150 bin TL replacement maliyeti = 24 milyon TL.
+  - **Sağlık raporu günleri azalması:** tahmin 1600 günden 1100'e → iş gücü bedeli tasarrufu 3.8 milyon TL.
+  - **Verimlilik artışı:** 4000 × 2% verimlilik × 400 bin TL kişi başı gelir = 32 milyon TL gelir etkisi.
+
+Beklenen yıllık ROI: ~ 50 katı. Bu tahminler muhafazakar; gerçek etki pilotun ikinci çeyreğinden itibaren izlenecek.
+
+<Citation author="Schaufeli, W. B., & Bakker, A. B." year="2004" title="Job demands, job resources, and their relationship with burnout and engagement: A multi-sample study" journal="Journal of Organizational Behavior, 25(3), 293–315" doi="10.1002/job.248" />
+
+## Kritik başarı faktörleri
+
+**1. Üst yönetim sahiplenmesi.** CHRO haftalık paneli kendi takipinde tutması, alt yönetim katılımını garanti etti. Üst yönetim kendi kendi için meşru bulmadığı bir ölçümü alt yönetim ciddiye almıyor.
+
+**2. Kontrol grubu tasarımı.** Nedensellik iddiası için kontrol grupları olmazsa olmaz. Aksi halde "yoksa yılın bu döneminde zaten skor düşer miydi" sorusuna bilimsel cevap veremezsiniz.
+
+**3. Anonimlik + dürüstlük denklemi.** Çalışanların anonim olduğuna güvenmediği bir ankette cevaplar kozmetik olur. UpCore'un teknik anonimleştirme katmanı + hukuki uyum belgeleri olmadan bu güven oluşamazdı.
+
+**4. Müdahale tasarımı iş koluyla uyumlu.** Her şirkete aynı müdahale verilmedi; her şirketin dominant gereksinimi / eksik kaynağı tespit edildi ve hedefli müdahale seçildi.
+
+## Sonraki dalga
+
+Ankara Holding, pilot sonuçlarına dayanarak 2026 Q2'den itibaren:
+
+1. Pulse'ı **18 şirkete kalıcılaştırma** kararı verdi.
+2. Koruma modülünü **tüm iş kollarına yaygınlaştırma** bütçesi ayırdı.
+3. Mobility modülü pilotunu başlatma kararı verdi (önümüzdeki yazılarımızdan biri bu olacak).
+
+## Pilot sonrası kurumsal değişiklikler
+
+Pilot sonucundan 4 ay sonra Ankara Holding'te gözlenen kurumsal değişiklikler:
+
+1. **Yıllık çalışan memnuniyet anketi kapatıldı**, yerine UpCore'un haftalık BAT-TR pulse'ı standart oldu. Yıllık anket paradigmasının bittiği resmi belgelerle duyuruldu.
+2. **18 iştirak CEO'sunun yıllık performans değerlendirmesine** tükenmişlik skoru trend metriği eklendi. Skor kötüleşmeyen iştirakler bonus hesabında pozitif ağırlık alıyor.
+3. **Sağlık sigortası paketinde psikolog desteği** kapsama dahil edildi. Çalışanlar yılda 12 seans psikolog hizmeti alıyor, UpCore'un tavsiye ettiği Psikolog Referans Ağı üzerinden.
+4. **İK bütçesinde %3 artış**, pulse + müdahale programının kalıcılığı için ayrılan kaynak.
+
+## Şirket CEO'larıyla etkileşim: "rekabet raporu" diye adlandırılmayan ama öyle hissedilen şey
+
+Pilot sonunda CHRO'nun aldığı en zor karar, şirket CEO'larına kendi şirketlerinin skorlarını paylaşmaktı. Skor düşük olan şirketler için "bizim CEO'muz kötü mü?" duygusuna karşı nasıl dil geliştirilmeli? UpCore'un önerdiği çerçeve işe yaradı:
+
+1. **Rapor tek CEO için değil, CHRO-CEO ortak.** "Bu veriyle birlikte ne planlayabiliriz" sorusu merkezde.
+2. **Hiçbir şirket-CEO'su diğerlerinin skorunu görmez.** Yalnız kendi şirketini görür.
+3. **Holding ortalaması ile kıyas verilir, rakip şirket listesi değil.** "Sizin skorunuz holding ortalamasının 0.3 altında" dur; isim yok.
+4. **Geliştirme eylem planı şablonu ekteki.** Sayfa 1'de "sizin durumunuz", sayfa 2-3'te "1-3 aylık eylem planı".
+
+Bu yaklaşım rekabet güdüsünü değil, dayanışma güdüsünü harekete geçirdi. 18 CEO'dan 17'si 30 gün içinde kendi şirketleri için müdahale planı çalışması başlattı.
+
+## Kısıtlı koşullarda tasarım: Ramazan ayı
+
+Pilotun 4. ve 5. haftaları Ramazan ayına denk geldi. Oruç tutan çalışanların katılım oranı 8 puan düştü. Bu doğal etki tasarımda öngörülmüştü; Ramazan haftalarındaki veriler **Ramazan-dışı** verilerden ayrı analiz edildi. Bu, Türkiye'deki saha çalışmalarının unutulmaması gereken bir özelliği.
+
+Benzer şekilde yaz aylarında turizm sektörü çalışanlarında dinamikler değişir; kış aylarında inşaat sektörü personelinde stresörler farklılaşır. Türkiye'nin mevsimsel yapısal özellikleri ölçüm tasarımına yedirilmeli.
+
+## Yapay zeka ile genişletme: 2026 Q3 hedefi
+
+Pilot sonucunda tespit edilen bir fırsat: serbest metin cevaplarında LLM destekli tema çıkarımı. UpCore'un NLP ekibi, çalışanların yazdığı 2-3 cümlelik cevaplardan ana temaları (iş yükü, yönetim desteği, ödüllendirme, büyüme fırsatı, iş-yaşam dengesi) çıkaran modelini pilotta test etti.
+
+Sonuç: manuel analize göre %89 uyumlu tema sınıflaması. Avantaj: İK ekibi her hafta 4000 yanıtı okumadan ana sinyalleri alabiliyor. 2026 Q3'te bu yetenek UpCore platformunda genel kullanıcılara açılacak.
+
+<Callout variant="warning">
+LLM destekli analizde KVKK Madde 22 (otomatik karar) uyumu titiz tasarım gerektiriyor. UpCore'da model **sadece tema sınıflaması** yapar, bireysel karar alma ya da skor üretmez. Aksi halde KVKK ihlali riski doğar.
+</Callout>
+
+## ROI takip metrikleri 12 ay boyunca
+
+Ankara Holding ile 12 aylık takip anlaşması imzalandı. Her çeyrek şu metrikler ölçülüyor:
+
+- **BAT-TR ortalama skor** (holding ve iştirak bazında)
+- **Devamsızlık günü sayısı** (çalışan başına aylık)
+- **Gönüllü ayrılma oranı** (çalışan başına yıllık %)
+- **eNPS** (employee Net Promoter Score)
+- **İç transfer oranı** (açık pozisyonların iç doldurma yüzdesi)
+- **Psikolojik sermaye UpCap-TR skoru**
+
+Q2 raporunda müdahale yapılan 3 şirkette tüm metriklerin iyileşme yönünde trend gösterdiği görüldü. Özellikle **gönüllü ayrılma** oranında 4 puan düşüş (%19 → %15) başlıbaşına yıllık 8 milyon TL'lik kurumsal tasarruf anlamına geliyor.
+
+## Kapanış
+
+Ankara Holding pilotu; Türkiye'nin en büyük özel sektör işverenlerinden birinin tükenmişlik yönetimini veriyle yapılabilir olduğunu gösterdi. 4000 çalışan, 8 hafta, %22 iyileşme, çok şirketli görünüm. Bundan sonra hiçbir holding "biz İK'yı sezgiyle yönetiyoruz" cümlesini aynı güvenle söyleyemeyecek.
+
+<NewsletterCTA />

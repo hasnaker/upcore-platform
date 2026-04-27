@@ -1,0 +1,108 @@
+openapi: 3.1.0
+info:
+  title: UpCore Survey (Pulse Anketi) Servisi
+  version: 1.0.0
+  description: Pulse anketi oluşturma, gönderim, cevap toplama, heatmap üretimi, BAT-TR skorlama.
+servers:
+  - url: https://api.upcore.io
+  - url: http://localhost:8016
+security:
+  - bearerAuth: []
+tags:
+  - name: surveys
+  - name: responses
+  - name: analytics
+
+paths:
+  /api/v1/surveys:
+    get:
+      tags: [surveys]
+      summary: Anketleri listele
+      responses: { "200": { description: OK } }
+    post:
+      tags: [surveys]
+      summary: Yeni pulse anketi oluştur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/SurveyCreate" }
+      responses: { "201": { description: Oluşturuldu } }
+
+  /api/v1/surveys/{surveyId}/send:
+    post:
+      tags: [surveys]
+      summary: Anketi seçili kitleye gönder
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "202": { description: Gönderim kuyruğa alındı } }
+
+  /api/v1/surveys/{surveyId}/responses:
+    get:
+      tags: [responses]
+      summary: Anonim cevapları getir (agrega)
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: OK } }
+    post:
+      tags: [responses]
+      summary: Çalışan cevabını kaydet (anonim)
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/ResponseCreate" }
+      responses: { "201": { description: Kaydedildi } }
+
+  /api/v1/surveys/{surveyId}/heatmap:
+    get:
+      tags: [analytics]
+      summary: Departman × soru heatmap'i döndürür
+      parameters:
+        - name: surveyId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: OK } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    SurveyCreate:
+      type: object
+      required: [title, template_code, audience]
+      properties:
+        title: { type: string }
+        template_code: { type: string, enum: [bat_tr_12, uwes_9, copsoq_iii_tr, custom] }
+        audience:
+          type: object
+          properties:
+            department_ids: { type: array, items: { type: string, format: uuid } }
+            tenure_months_min: { type: integer }
+            tenure_months_max: { type: integer }
+        anonymous: { type: boolean, default: true }
+        min_response_threshold: { type: integer, default: 5, minimum: 3 }
+    ResponseCreate:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            required: [question_id, value]
+            properties:
+              question_id: { type: string, format: uuid }
+              value: { oneOf: [ { type: integer }, { type: string } ] }

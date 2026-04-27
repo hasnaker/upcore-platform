@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/referral-network",
+  "title": "Referral network (anonim profesyonel ağ)",
+  "description": "Bazı vakalar iç kaynaklarla çözülemez — lisanslı uzmanlara anonim yönlendirme gerekir.",
+  "source": "@site/docs/ik/modul/koruma/referral-network.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/referral-network",
+  "permalink": "/en/docs/ik/modul/koruma/referral-network",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/referral-network.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "referral-network",
+    "title": "Referral network (anonim profesyonel ağ)",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Cohen's d yorumu",
+    "permalink": "/en/docs/ik/modul/koruma/cohens-d-yorumu"
+  },
+  "next": {
+    "title": "İzleme takvimi",
+    "permalink": "/en/docs/ik/modul/koruma/izleme-takvimi"
+  }
+}

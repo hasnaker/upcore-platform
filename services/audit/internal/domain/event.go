@@ -120,6 +120,12 @@ type QueryFilter struct {
 	Result       string
 	From         time.Time
 	To           time.Time
+
+	// Keyset pagination cursor. When both are non-nil, (occurred_at, id) <
+	// (CursorCreatedAt, CursorID) is appended; DESC ordering on
+	// (occurred_at, id) is enforced and offset is ignored.
+	CursorCreatedAt *time.Time
+	CursorID        *uuid.UUID
 }
 
 // LogRequest is the payload accepted by the ingestion HTTP endpoint.

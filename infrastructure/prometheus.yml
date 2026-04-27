@@ -1,0 +1,33 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: upcore-dev
+
+scrape_configs:
+  - job_name: upcore-services
+    metrics_path: /metrics
+    scrape_timeout: 10s
+    static_configs:
+      - targets:
+          - employee:8003
+          - bordro:8015
+          - performance:8014
+          - leave:8005
+          - ats:8011
+        labels:
+          env: dev
+
+  - job_name: status
+    metrics_path: /metrics
+    scrape_timeout: 5s
+    static_configs:
+      - targets:
+          - status:8030
+        labels:
+          env: dev
+          service: status
+
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]

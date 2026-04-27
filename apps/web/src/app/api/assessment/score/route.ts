@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
-import { SERVICES, TENANT_ID } from '@/lib/service-urls';
+import { SERVICES } from '@/lib/service-urls';
+import { getRequestContext } from '@/lib/request-context';
 
 // Score an assessment via Python psychometric-scoring service
 export async function POST(request: Request) {
   try {
+    const ctx = getRequestContext(request);
     const body = await request.json();
     const { instrument, responses, tenantId, employeeId, assessmentId } = body;
 
     let endpoint = '/v1/score/bat12';
     let payload: Record<string, unknown> = {
-      tenant_id: tenantId || TENANT_ID,
-      employee_id: employeeId || '00000000-0000-0000-0000-000000000000',
+      tenant_id: tenantId || ctx.tenantId,
+      employee_id: employeeId || ctx.userId,
       assessment_id: assessmentId || '00000000-0000-0000-0000-000000000000',
       responses,
     };

@@ -1,0 +1,68 @@
+**/node_modules
+**/.next
+**/.turbo
+**/dist
+**/out
+**/.cache
+**/coverage
+.git
+.github
+.vscode
+.idea
+*.log
+.env*
+!.env.example
+**/tmp
+**/temp
+**/.DS_Store
+
+# Go build artifacts
+**/*.test
+**/vendor
+
+# Python build artifacts
+**/__pycache__
+**/*.pyc
+**/.venv
+**/venv
+
+# Test & docs
+**/*.md
+!apps/web/README.md
+architecture/
+docs/
+tests/e2e/
+tests/load/
+
+# Other services — not needed by web build
+services/
+packages/go/
+packages/python/
+
+# Web build için gereksiz alanlar (137MB → ~50MB hedef)
+ml-services/
+services/
+infrastructure/
+deploy/
+deploy.ARCHIVED/
+infrastructure.ARCHIVED/
+infrastructure/terraform.ARCHIVED/
+ops/
+compliance/
+legal/
+tests/load/
+tests/chaos/
+apps/admin/
+apps/status/
+apps/docs/
+apps/marketing/
+**/*.tar.gz
+**/*.zip
+**/coverage
+**/.pytest_cache
+**/.ruff_cache
+**/build_archive_*
+
+# Ek node_modules/build artifacts
+**/.next/cache
+**/node_modules/.cache

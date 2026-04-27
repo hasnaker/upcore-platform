@@ -1,0 +1,26 @@
+{
+  "id": "yonetici/giris",
+  "title": "Yönetici rehberine hoş geldiniz",
+  "description": "UpCore, bir yönetici olarak ekibinizin bağlılık, performans ve gelişim sinyallerini tek merkezden takip etmenizi sağlar.",
+  "source": "@site/docs/yonetici/giris.md",
+  "sourceDirName": "yonetici",
+  "slug": "/yonetici/giris",
+  "permalink": "/en/docs/yonetici/giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "giris",
+    "title": "Yönetici rehberine hoş geldiniz",
+    "slug": "/yonetici/giris",
+    "sidebar_position": 1
+  },
+  "sidebar": "managerSidebar",
+  "next": {
+    "title": "Ekip dashboard'u",
+    "permalink": "/en/docs/yonetici/ekip/ekip-dashboard"
+  }
+}

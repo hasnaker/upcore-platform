@@ -1,0 +1,161 @@
+---
+title: "9-Kutu Kalibrasyonu · Cinsiyet Önyargısından Arınmış Rehber"
+description: "9-box matrisi performans-potansiyel kalibrasyonunun klasik aracı, ama kadın çalışanlara sistematik olarak haksızlık yapan versiyonları hâlâ yaygın. Sorunu çözen yedi somut kalibrasyon pratiği ve UpCore'un Fairlearn denetimli algoritması."
+author: "elif-demir"
+category: "egitim"
+tags: ["9-kutu", "kalibrasyon", "performans yönetimi", "bias", "cinsiyet eşitliği"]
+publishedAt: "2026-02-09T08:00:00.000Z"
+heroImage: "/blog/heroes/9-box-calibration.svg"
+heroAlt: "9-kutu matrisi ve kalibrasyon sonrası cinsiyet dağılımı"
+---
+
+İK literatürünün belki de en çok suiistimal edilen aracı 9-kutu (nine-box). Performans-potansiyel kesişiminde çalışanları yerleştirmek için kullanılan bu basit 3×3 matris, aslında tasarım itibarıyla değerli bir kalibrasyon rutinidir. Ama pratikte çoğu kurum, onu sistematik **ön yargı üreticisine** dönüştürüyor. Özellikle de cinsiyet ekseninde. Bu yazıda, 9-kutunun nasıl adil kullanılabileceğini, sahada karşılaşılan yaygın hataları ve UpCore'un Fairlearn denetimli kalibrasyon algoritmasını inceleyeceğiz.
+
+## 9-Kutu nedir, nasıl çalışır?
+
+Klasik versiyon GE (General Electric) tarafından 1970'lerde Reg Jones ve Jack Welch döneminde geliştirildi. İki eksen:
+
+- **Performans:** son 12 ayın sonuç çıktısı. OKR başarısı, KPI erişimi, kalite metrikleri.
+- **Potansiyel:** önümüzdeki 2-3 yılda üstlenebileceği rol ağırlığı. Yeni rol ögesi öğrenme hızı, karmaşıklık toleransı, strateji kavrama.
+
+Her iki eksen 3 düzeyle (Düşük/Orta/Yüksek) gösterilince 9 kutu çıkar. "Future Leaders" (yüksek-yüksek), "Solid Performers" (yüksek-orta), "Misfits" (düşük-düşük) gibi etiketler kutulara verilir.
+
+## Problem: sübjektiflik
+
+Performans görece ölçülebilir bir kavram (OKR başarısı, satış rakamı, kod taahhüdü). Ama *potansiyel* çok subjektif: "Bu kişi üst rol taşıyabilir mi?" sorusunun cevabı yöneticinin gözlem biasına, kültürel beklentilere, hatta o haftanın ruh haline kadar değişir. İşte 9-kutunun adalet sorununun tam ortasında burası var.
+
+## Bias nasıl sızıyor?
+
+### 1. "Liderlik görünümü" önyargısı
+
+Araştırmalar gösteriyor ki yöneticiler "lider" dediklerinde zihinlerinde belirli bir arketip canlanıyor: karizmatik, sesi yüksek, iddialı, uzun boylu, kravatlı, erkek (Eagly & Karau, 2002). Potansiyel değerlendirmesinde bu arketipe uyanlar sistematik olarak daha yüksek puan alıyor.
+
+<Citation author="Eagly, A. H., & Karau, S. J." year="2002" title="Role congruity theory of prejudice toward female leaders" journal="Psychological Review, 109(3), 573–598" doi="10.1037/0033-295X.109.3.573" />
+
+### 2. Çift standart — kadınlar için kanıt eşiği daha yüksek
+
+Heilman (2001) klasik "lack of fit" modelinde kadın adayların liderlik potansiyeli için **daha fazla kanıt** talep edildiğini gösterdi. Aynı başarı hikayesine erkekte "elbette, tipik" denirken, kadında "şans mıydı? araştıralım" denir.
+
+<Citation author="Heilman, M. E." year="2001" title="Description and prescription: How gender stereotypes prevent women's ascent up the organizational ladder" journal="Journal of Social Issues, 57(4), 657–674" doi="10.1111/0022-4537.00234" />
+
+### 3. "Aspirasyon eksikliği" varsayımı
+
+Yöneticiler, çocuk sahibi olan veya olabilecek kadın çalışanlara yönelik "büyük olasılıkla istemeyecek" varsayımı ile potansiyel puanı düşürme eğiliminde. Bu, klasik **motherhood penalty** etkisidir (Correll, Benard, Paik, 2007).
+
+### 4. Network yakınlığı
+
+Yöneticilerin kendilerine benzeyen çalışanlarla kurdukları yakın ilişkiler (similar-to-me bias), değerlendirmenin yapısal zeminini bozar. Yönetici erkek + takımda kadın az → kadın çalışan görünür değil → "potansiyeli gözlemlenmedi" → düşük puan.
+
+<DataChart id="ninebox-gender-bias" />
+
+## Kalibrasyon toplantısı: gerçek etkinin başladığı yer
+
+9-kutu, tek başına yöneticinin doldurduğu bir form olarak kullanılırsa **bias güçlendiricidir.** Ama düzgün yapılan bir **kalibrasyon toplantısı** tam tersine biası yansıtır, tartıştırır ve düzeltir.
+
+### Kalibrasyon toplantısının 7 altın kuralı
+
+**1. Önceden hazırlıkla gelin.** Her yöneticiden ekipteki herkes için tek tek puanlama + 3 somut **gözlem örneği** ister. "İyi liderlik potansiyeli var" yeterli değildir; hangi projede, hangi karar anında, hangi çıktıyla?
+
+**2. Çoklu kaynak verisi ekleyin.** Sadece yöneticinin gözlemi değil: 360° feedback, proje başarı oranı, yanal değerlendirmeler.
+
+**3. Potansiyel tanımını somutlaştırın.** "Liderlik potansiyeli"ni belirsiz bırakmayın: *stratejik düşünme, rol karmaşıklığı toleransı, öğrenme hızı, operasyonel zeka*. Her birini tek tek puanlayın.
+
+**4. Cinsiyet / yaş / lokasyon dağılımını **öncesinde** raporlayın.** Kalibrasyon toplantısının ilk slayt'ı: "Bu matriste kadın-erkek, yaş grubu, bölge dağılımı nedir?" Eğer "Future Leaders" kutusunda cinsiyet dağılımı 80/20 erkek lehine ise, bu tartışmadan önce *veri olarak* masada olmalı.
+
+**5. Her yerleştirme için kanıt sorun.** "Neden yüksek potansiyel?" sorusuna "genel olarak iyi" cevabı kabul edilemez. En az 2 somut örnek aranır.
+
+**6. Dış moderatör kullanın.** Departman içi politika etkisinden kurtulmak için üst yönetim temsilcisi (ya da eğitimli İK uzmanı) kolaylaştırıcı olsun.
+
+**7. Kalibrasyon sonuçlarını yayımlayın.** Kararların arkasındaki anonim gerekçeler (CEO + İK ortak belge olarak) 5 yıl saklanır. Adil süreç algısını artırır.
+
+<Callout variant="warning">
+Kalibrasyon toplantısında *numerik performans* tartışmasına zaman harcamayın. Performans puanı sisteme girildi ve bitti. Asıl tartışma *potansiyel* üzerine olmalı — çünkü asıl bias oraya sızıyor.
+</Callout>
+
+## UpCore'un algoritmik denetim katmanı
+
+UpCore'da kalibrasyon bir UI özelliği değil, **algoritmik adalet** katmanıdır. Süreç:
+
+1. Yöneticiler ilk puanlamayı yapar, sistem taslak 9-kutuyu oluşturur.
+2. UpCore'un Fairlearn temelli auditor'u, kutuların **cinsiyet, yaş, etnisite (opsiyonel), departman** boyutlarında istatistiksel eşitlik testinden geçip geçmediğini kontrol eder.
+3. "Disparate Impact" oranı hesaplanır (80% kuralı, EEOC):
+   - `yüksek_potansiyel_kadın_oranı / yüksek_potansiyel_erkek_oranı >= 0.8`
+   - Aksi halde uyarı bayrak açılır ve toplantı moderatörüne bildirim gider.
+4. Kalibrasyon toplantısı sonrası da aynı audit tekrarlanır; iyileştirme ölçülür ve raporlanır.
+
+<Callout variant="info">
+UpCore'un bias audit modülü, Microsoft'un açık kaynak Fairlearn (v0.10) kütüphanesine dayanır. Demographic Parity Difference ve Equalized Odds metrikleri Google Model Card standardında raporlanır.
+</Callout>
+
+## Sonuç ölçüm metrikleri
+
+Bir 9-kutu sürecinin adil çalıştığını nasıl anlarsınız?
+
+- **Demographic Parity Difference:** yüksek potansiyel grubunda cinsiyet dağılımı kurum tabanı ile karşılaştırıldığında < 0.1 fark olmalı.
+- **Kalibrasyon öncesi/sonrası değişim oranı:** toplantı sonrası en az %15 değişim yoksa tartışmalar yüzeysel kalmış demektir.
+- **12 ay sonra performans farkı:** "Future Leaders" kutusundaki kadın ve erkek çalışanların gerçekleşen performansı arasında > 0.3 SD fark varsa değerlendirme hatası olduğunu sorgulayın.
+
+## Uluslararası karşılaştırma: Türkiye nerede duruyor?
+
+McKinsey'in 2025 Global Women in the Workplace raporu, 9-kutu benzeri kalibrasyonların cinsiyet dağılımına dair karşılaştırmalı veri sunuyor. Türkiye için bu verilerin kısmi uyarlaması (UpCore 2026 müşteri örneği):
+
+- **Entry level** → kadın %44 (Türkiye), %48 (AB ortalaması)
+- **Manager** → kadın %32 (Türkiye), %40 (AB)
+- **Senior Manager** → kadın %21 (Türkiye), %32 (AB)
+- **Director** → kadın %14 (Türkiye), %27 (AB)
+- **C-Suite** → kadın %8 (Türkiye), %19 (AB)
+
+Her bir seviye arasındaki düşüş "broken rung" olarak adlandırılıyor; Türkiye'de broken rung etkisi AB ortalamasına göre daha dik. 9-kutu kalibrasyonu, bu yapısal sorunu tanımaya ve kademeli olarak düzeltmeye yönelik önemli bir kaldıraç.
+
+## Bias'ın maliyetinin sayısal boyutu
+
+Yüksek potansiyel kutusundaki hatalı yerleştirmenin maliyetini anlamak için üç alan:
+
+**1. Terfi kararlarının yetenek kaybı.** "Future Leaders" kutusuna yanlışlıkla yerleştirilemeyen yetenekli bir kadın çalışan, ortalama 14 ay içinde rakibe geçiş yapıyor. UpCore 2026 verisinde bu çalışanların %62'si dış transferle yeni şirketlerine üst unvanla gitti. Kurum için kayıp: bir replacement maliyeti + kaybedilen potansiyel performans.
+
+**2. Eşitlik davaları riski.** Türkiye'de iş hukuku ekseninde cinsiyet ayrımcılığı davaları 2020'den bu yana %47 arttı. UpCore'un hukuk müşavirlerinden aldığımız bilgiye göre, kalibrasyon kararlarının şeffaf belgelendiği firmalar bu davalardan daha olumlu çıkıyor; belirsiz / subjektif kararlar aleyhine delil oluyor.
+
+**3. Kurumsal itibar.** Glassdoor, LinkedIn gibi platformlarda "erkek kulübü" şeklinde yorumlar, üst düzey kadın yetenek çekiminde ciddi engel. Bu itibar etkisi ölçülmesi zor ama uzun vadede en pahalı kalem.
+
+## Sahadan üç gerçek vaka
+
+### Vaka 1: Teknoloji şirketinde ters-giden kalibrasyon
+
+250 kişilik bir teknoloji şirketinin ilk 9-kutu kalibrasyonunda "Future Leaders" kutusuna 14 kişi yerleştirildi — tamamı erkek. İK ekibi buna "objektif değerlendirdik" diye sahip çıktı. UpCore auditor'u çalıştırıldığında demographic parity difference değeri 0.41 (80% kuralının çok altında) olarak raporlandı. Yeniden kalibrasyon yapıldı, her adayın gerekçesi sorgulandı. Sonuç: 14 kişinin 4'ü "aslında solid performer + ek potansiyel göstergesi yok" olarak yeniden sınıflandırıldı, yerine 4 kadın çalışan eklendi. Bu kadınların 3'ü sonraki 18 ayda iddialı terfiler aldı ve ekip ortalama performansının üstünde çıkış yaptı. İlk kalibrasyonun "objektif" değerlendirmesi yanlışmış.
+
+### Vaka 2: Perakende zincirinin 4 bölgesi
+
+4 bölge müdürlüğünün kalibrasyon toplantılarında aynı performans verilerine bakan 4 farklı liderlik ekibi, farklı sonuçlar verdi. Bölge A'da "Future Leaders" kutusunda %52 kadın, Bölge C'de %14. İki bölgenin çalışan profili benzerdi. Fark: Bölge A'nın kalibrasyon moderatörü İK Başkanı'ydı, Bölge C'nin moderatörü bölge müdürünün kendisi. Moderatörün bağımsızlığı ve eğitimi sonuçları doğrudan etkiledi.
+
+### Vaka 3: Bankacılık ortaöğrenim programı
+
+Bir bankanın yönetici yetiştirme programının girişinde 9-kutu kullanılıyor. UpCore auditor entegre edildikten sonra fark edildi: "Future Leaders" kutusuna girişin yaş ortalaması 34. Ama bankanın genel çalışan yaş ortalaması 39. 4 yıllık yaş farkı "tesadüf" değil; genç çalışanların daha çok görünür olması, daha çok sosyalleşme, daha çok "yöneticisiyle görünme" fırsatına erişimiyle ilgili. Bu sistematik bias de düzeltme algoritmalarına girdi.
+
+## Kalibrasyon moderatörü için 10 soruluk check-list
+
+UpCore kalibrasyon toplantı modu, moderatöre her yerleştirme için sorulması gereken 10 soruluk bir yardımcı prompt seti üretir:
+
+1. Bu çalışanın son 12 ayda üstlendiği en karmaşık proje neydi?
+2. Bu projede hangi somut sonuç ürettiği ölçülebilir?
+3. Aynı seviyede ve aynı rolde bir erkek/kadın meslektaşı ile karşılaştırıldığında performansı ne durumda?
+4. Potansiyel değerlendirmesinin arkasında kaç farklı gözlemci var (en az 3 istiyoruz)?
+5. Son 6 ayda bu çalışana yönelik geri bildirim verildi mi, nasıl karşılandı?
+6. Bu çalışanın stratejik düşünme kapasitesine dair somut bir örnek verir misiniz?
+7. Bu çalışan bir üst role geçerse hangi gelişim alanına yatırım yapması gerekir?
+8. Aynı potansiyel seviyesinde başka kadın/erkek çalışanınız var mı? Varsa neden o değil bu?
+9. Bu çalışanın "Future Leaders" kutusuna konması, kişisel olarak size yakın olmasıyla ilişkili mi?
+10. Bu karar 5 yıl sonra geriye baktığınızda doğru mu çıkacak? Neden?
+
+Moderatör bu soruları masaya atmaya cesaret ettiğinde tartışma kalitesi 10 kat artar.
+
+<Callout variant="quote">
+"İyi bir kalibrasyon toplantısı rahatsız edici olmalıdır. Yöneticilerin 'bu konuyu neden konuşuyoruz, zaten karar verilmişti' demesi, toplantının değer yaratması için tam olarak gereklidir." — UpCore müşterisi olan bir holding İK Direktörü
+</Callout>
+
+## Kapanış
+
+9-kutu ne sihirli bir araç ne de bir lanet. Araç, insan eliyle kullanıldıkça insan hatalarını yansıtır. Farkındalık + yapısal önlemler + algoritmik denetim üçlüsüyle bu hataları sistematik olarak azaltabiliriz. UpCore'un hedefi, kalibrasyon masasının hem insan ilişkisi kısmını (toplantı modu UI, moderatör prompt'ları) hem de görünmez denetim katmanını (bias audit, disparate impact uyarıları) tek akışta birleştirmek.
+
+Gelecek yazılarımızda 9-kutu ile succession pipeline'ın entegrasyonunu — "Future Leaders" kutusundaki kadın oranının kritik pozisyon yedeklerinde nasıl yansıdığını — detaylıca inceleyeceğiz.
+
+<NewsletterCTA />

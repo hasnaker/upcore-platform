@@ -1,0 +1,13 @@
+# UpCore Security Disclosure Policy
+# RFC 9116 — https://www.rfc-editor.org/rfc/rfc9116
+# Bu dosya UpCore platformu için güvenlik araştırmacılarının bildirim
+# kanallarını ve kurallarını tanımlar. Sorumlu ifşa için teşekkür ederiz.
+
+Contact: mailto:security@upcore.app
+Contact: https://upcore.app/guvenlik
+Expires: 2027-04-22T00:00:00.000Z
+Preferred-Languages: tr, en
+Canonical: https://upcore.app/.well-known/security.txt
+Policy: https://upcore.app/guvenlik
+Acknowledgments: https://upcore.app/guvenlik#tesekkurler
+Hiring: https://upcore.app/kariyer

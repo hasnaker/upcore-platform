@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/gateway",
+  "title": "API Gateway Referansı",
+  "description": "UpCore API Gateway servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/gateway.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/gateway",
+  "permalink": "/en/docs/developer/api/gateway",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/gateway.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 26,
+  "frontMatter": {
+    "id": "gateway",
+    "title": "API Gateway Referansı",
+    "sidebar_position": 26,
+    "slug": "/developer/api/gateway",
+    "description": "UpCore API Gateway servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

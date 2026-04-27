@@ -1,0 +1,29 @@
+{
+  "id": "developer/kavramlar/pagination",
+  "title": "Pagination (sayfalama)",
+  "description": "Büyük veri setlerini sayfa sayfa çekme.",
+  "source": "@site/docs/developer/kavramlar/pagination.md",
+  "sourceDirName": "developer/kavramlar",
+  "slug": "/developer/kavramlar/pagination",
+  "permalink": "/en/docs/developer/kavramlar/pagination",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/kavramlar/pagination.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "pagination",
+    "title": "Pagination (sayfalama)",
+    "sidebar_position": 6
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Idempotency (tekrar güvenlik)",
+    "permalink": "/en/docs/developer/kavramlar/idempotency"
+  },
+  "next": {
+    "title": "API genel bakış",
+    "permalink": "/en/docs/developer/api/genel-bakis"
+  }
+}

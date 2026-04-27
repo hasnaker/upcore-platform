@@ -48,7 +48,8 @@ export const useUpdateInterventionStatus = () => {
   return useMutation<
     Intervention,
     UpcoreApiError,
-    { id: string; status: string; notes?: string }
+    { id: string; status: string; notes?: string },
+    { previous: Intervention | undefined }
   >({
     mutationFn: async ({ id, status, notes }) => {
       return api

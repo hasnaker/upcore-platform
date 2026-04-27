@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import {
   AlertTriangle,
   TrendingUp,
   UserCheck,
   ChevronDown,
   ChevronUp,
+  ChevronRight,
   Check,
   X,
   Clock,
@@ -19,6 +21,7 @@ import {
   History,
   Activity,
 } from 'lucide-react';
+import { useActionFeedback } from '@/hooks/useActions';
 
 let toastCounter = 0;
 
@@ -52,7 +55,12 @@ interface DecisionRecord {
   category: ActionCategory;
 }
 
-/* ─── API Data Types ─── */
+interface PriorityActionsProps {
+  /** Action Center'dan gelen, panel/page.tsx'de ActionItem şekline mapping yapılmış aksiyon listesi. */
+  actions: ActionItem[];
+}
+
+/* ─── Legacy API data shape — korunur, kullanılmıyor ─── */
 
 interface BurnoutApiData {
   heatmap?: Array<{ department_name: string; week_start: string; avg_score: number; respondent_count: number }>;
@@ -61,12 +69,9 @@ interface BurnoutApiData {
   stats?: { avg_total: number; red_count: number; total_employees: number };
 }
 
-interface PriorityActionsProps {
-  burnoutData?: BurnoutApiData | null;
-}
-
-/* ─── Build actions from API data ─── */
-
+// buildActionsFromApi: legacy burnout→action mapping, ML action-center ayağa
+// kalkana kadar opsiyonel fallback olarak kullanılabilir.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const buildActionsFromApi = (data: BurnoutApiData): ActionItem[] => {
   const actions: ActionItem[] = [];
 
@@ -170,7 +175,7 @@ const buildActionsFromApi = (data: BurnoutApiData): ActionItem[] => {
 
 /* ─── Static Fallback Data ─── */
 
-const fallbackActions: ActionItem[] = [
+const _fallbackActions: ActionItem[] = [
   {
     id: '1',
     urgency: 'critical',
@@ -401,8 +406,8 @@ const Sparkline = ({
 
 /* ─── Main Component ─── */
 
-export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
-  const [actions, setActions] = useState<ActionItem[]>(fallbackActions);
+export const PriorityActions = ({ actions: actionsFromProps }: PriorityActionsProps) => {
+  const [actions, setActions] = useState<ActionItem[]>(actionsFromProps);
   const [expandedIds, setExpandedIds] = useState<Set<string>>(new Set());
   const [toasts, setToasts] = useState<
     Array<{ id: string; message: string; type: 'success' | 'warning' | 'danger' }>
@@ -412,20 +417,17 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
   const [activeFilter, setActiveFilter] = useState<ActionCategory | 'all'>('all');
   const [showHistory, setShowHistory] = useState(false);
 
-  // Load decision history from localStorage on mount
+  // localStorage'dan karar geçmişini yükle (ilk render'da)
   useEffect(() => {
     setDecisions(loadDecisions());
   }, []);
 
-  // Update actions from burnout API data when available
+  // Prop güncellenirse internal state'i senkronize et (query refetch durumu)
   useEffect(() => {
-    if (burnoutData && (burnoutData.critical || burnoutData.stats)) {
-      const apiActions = buildActionsFromApi(burnoutData);
-      if (apiActions.length > 0) {
-        setActions(apiActions);
-      }
-    }
-  }, [burnoutData]);
+    setActions(actionsFromProps);
+  }, [actionsFromProps]);
+
+  const feedback = useActionFeedback();
 
   const pendingCount = actions.filter((a) => a.status === 'pending').length;
 
@@ -467,7 +469,7 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
       const action = actions.find((a) => a.id === id);
       if (!action) return;
 
-      // Record decision
+      // Record decision locally + post to action-center backend
       if (newStatus === 'approved' || newStatus === 'rejected' || newStatus === 'deferred') {
         const record: DecisionRecord = {
           actionId: action.id,
@@ -478,6 +480,23 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
         };
         saveDecision(record);
         setDecisions(loadDecisions());
+
+        const feedbackType =
+          newStatus === 'approved' ? 'complete'
+          : newStatus === 'rejected' ? 'dismiss'
+          : 'snooze';
+        feedback.mutate(
+          {
+            action_id: action.id,
+            feedback_type: feedbackType,
+            snooze_hours: feedbackType === 'snooze' ? 24 : undefined,
+          },
+          {
+            onError: (err) => {
+              console.error('action-center feedback POST failed', err);
+            },
+          },
+        );
       }
 
       if (newStatus === 'approved') {
@@ -499,7 +518,7 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
         showToast(`Aksiyon ertelendi`, 'warning');
       }
     },
-    [actions, showToast],
+    [actions, showToast, feedback],
   );
 
   const toastBgConfig = {
@@ -738,25 +757,34 @@ export const PriorityActions = ({ burnoutData }: PriorityActionsProps) => {
                       </div>
                     )}
 
-                    {/* Expand/collapse reasoning */}
+                    {/* Expand/collapse reasoning + full decision link */}
                     {!isActioned && (
-                      <button
-                        type="button"
-                        onClick={() => toggleExpanded(action.id)}
-                        className="mt-3 flex items-center gap-1 text-[12px] font-medium text-[#5E5CE6] transition-colors hover:text-[#4B4AC5]"
-                      >
-                        {isExpanded ? (
-                          <>
-                            Gizle
-                            <ChevronUp className="h-3.5 w-3.5" />
-                          </>
-                        ) : (
-                          <>
-                            Bilimsel Gerekceler
-                            <ChevronDown className="h-3.5 w-3.5" />
-                          </>
-                        )}
-                      </button>
+                      <div className="mt-3 flex items-center gap-4">
+                        <button
+                          type="button"
+                          onClick={() => toggleExpanded(action.id)}
+                          className="flex items-center gap-1 text-[12px] font-medium text-[#5E5CE6] transition-colors hover:text-[#4B4AC5]"
+                        >
+                          {isExpanded ? (
+                            <>
+                              Gizle
+                              <ChevronUp className="h-3.5 w-3.5" />
+                            </>
+                          ) : (
+                            <>
+                              Bilimsel Gerekçeler
+                              <ChevronDown className="h-3.5 w-3.5" />
+                            </>
+                          )}
+                        </button>
+                        <Link
+                          href={`/panel/aksiyon/${action.id}`}
+                          className="flex items-center gap-1 text-[12px] font-medium text-[#888] transition-colors hover:text-[#5E5CE6]"
+                        >
+                          Tam karar akışı
+                          <ChevronRight className="h-3.5 w-3.5" />
+                        </Link>
+                      </div>
                     )}
 
                     {/* Reasoning bullets with academic citations */}

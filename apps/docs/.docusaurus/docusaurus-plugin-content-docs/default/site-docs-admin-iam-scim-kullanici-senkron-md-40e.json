@@ -1,0 +1,29 @@
+{
+  "id": "admin/iam/scim-kullanici-senkron",
+  "title": "SCIM kullanıcı senkron",
+  "description": "Otomatik kullanıcı provisioning + deprovisioning.",
+  "source": "@site/docs/admin/iam/scim-kullanici-senkron.md",
+  "sourceDirName": "admin/iam",
+  "slug": "/admin/iam/scim-kullanici-senkron",
+  "permalink": "/en/docs/admin/iam/scim-kullanici-senkron",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/iam/scim-kullanici-senkron.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "scim-kullanici-senkron",
+    "title": "SCIM kullanıcı senkron",
+    "sidebar_position": 3
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "SSO — OIDC (OpenID Connect) kurulum",
+    "permalink": "/en/docs/admin/iam/sso-oidc"
+  },
+  "next": {
+    "title": "RBAC rol yönetimi",
+    "permalink": "/en/docs/admin/iam/rbac-rol-yonetimi"
+  }
+}

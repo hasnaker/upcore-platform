@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/mobility",
+  "title": "Mobility Servisi API Referansı",
+  "description": "UpCore Mobility servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/mobility.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/mobility",
+  "permalink": "/en/docs/developer/api/mobility",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/mobility.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 20,
+  "frontMatter": {
+    "id": "mobility",
+    "title": "Mobility Servisi API Referansı",
+    "sidebar_position": 20,
+    "slug": "/developer/api/mobility",
+    "description": "UpCore Mobility servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

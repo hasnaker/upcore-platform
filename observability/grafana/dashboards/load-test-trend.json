@@ -1,0 +1,54 @@
+{
+  "title": "UpCore — k6 Load Test Trend",
+  "uid": "upcore-load-trend",
+  "schemaVersion": 39,
+  "tags": ["load", "k6", "upcore"],
+  "timezone": "browser",
+  "refresh": "1m",
+  "time": { "from": "now-7d", "to": "now" },
+  "panels": [
+    {
+      "id": 1,
+      "title": "p95 per scenario (ms)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(k6_http_req_duration_bucket[5m])) by (le, scenario))",
+          "legendFormat": "{{scenario}}"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Error rate",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "targets": [
+        {
+          "expr": "sum(rate(k6_http_req_failed_total[5m])) by (scenario) / sum(rate(k6_http_reqs_total[5m])) by (scenario)",
+          "legendFormat": "{{scenario}}"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "VUs",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "targets": [{ "expr": "k6_vus", "legendFormat": "vus" }]
+    },
+    {
+      "id": 4,
+      "title": "Throughput (req/s)",
+      "type": "timeseries",
+      "datasource": { "type": "prometheus", "uid": "prom" },
+      "targets": [
+        {
+          "expr": "sum(rate(k6_http_reqs_total[1m])) by (scenario)",
+          "legendFormat": "{{scenario}}"
+        }
+      ]
+    }
+  ]
+}

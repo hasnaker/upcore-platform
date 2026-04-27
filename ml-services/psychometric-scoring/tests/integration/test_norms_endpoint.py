@@ -41,7 +41,7 @@ class TestModelCardEndpoint:
 
     @pytest.mark.asyncio
     async def test_bat_model_card(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/model-card/bat")
+        resp = await client.get("/api/v1/score/model-card/bat")
         assert resp.status_code == 200
         data = resp.json()
         assert "card" in data
@@ -52,33 +52,33 @@ class TestModelCardEndpoint:
 
     @pytest.mark.asyncio
     async def test_jdr_model_card(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/model-card/jdr")
+        resp = await client.get("/api/v1/score/model-card/jdr")
         assert resp.status_code == 200
         data = resp.json()
         assert data["card"]["instrument"] == "JD-R-v0.1"
 
     @pytest.mark.asyncio
     async def test_upcap_model_card(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/model-card/upcap")
+        resp = await client.get("/api/v1/score/model-card/upcap")
         assert resp.status_code == 200
         data = resp.json()
         assert data["card"]["instrument"] == "UpCap-TR"
 
     @pytest.mark.asyncio
     async def test_copsoq_model_card(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/model-card/copsoq")
+        resp = await client.get("/api/v1/score/model-card/copsoq")
         assert resp.status_code == 200
 
     @pytest.mark.asyncio
     async def test_strengths_model_card(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/model-card/strengths")
+        resp = await client.get("/api/v1/score/model-card/strengths")
         assert resp.status_code == 200
         data = resp.json()
         assert data["card"]["instrument"] == "Strengths-TR"
 
     @pytest.mark.asyncio
     async def test_unknown_instrument_404(self, client: AsyncClient) -> None:
-        resp = await client.get("/v1/model-card/unknown_instrument")
+        resp = await client.get("/api/v1/score/model-card/unknown_instrument")
         assert resp.status_code == 404
 
 
@@ -88,7 +88,7 @@ class TestReliabilityEndpoint:
     @pytest.mark.asyncio
     async def test_returns_placeholder(self, client: AsyncClient) -> None:
         tid = str(uuid4())
-        resp = await client.get(f"/v1/reliability/{tid}/bat")
+        resp = await client.get(f"/api/v1/score/reliability/{tid}/bat")
         assert resp.status_code == 200
         data = resp.json()
         assert data["tenant_id"] == tid

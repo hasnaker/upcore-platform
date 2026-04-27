@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/dpia-sablon",
+  "title": "DPIA (Veri Koruma Etki Değerlendirmesi)",
+  "description": "Yüksek riskli veri işleme faaliyetleri için öncesinde zorunlu değerlendirme.",
+  "source": "@site/docs/ik/modul/kvkk/dpia-sablon.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/dpia-sablon",
+  "permalink": "/en/docs/ik/modul/kvkk/dpia-sablon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/dpia-sablon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "dpia-sablon",
+    "title": "DPIA (Veri Koruma Etki Değerlendirmesi)",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Açık rıza şablonu",
+    "permalink": "/en/docs/ik/modul/kvkk/acik-riza"
+  },
+  "next": {
+    "title": "İhlal bildirim (72 saat)",
+    "permalink": "/en/docs/ik/modul/kvkk/ihlal-bildirim-72-saat"
+  }
+}

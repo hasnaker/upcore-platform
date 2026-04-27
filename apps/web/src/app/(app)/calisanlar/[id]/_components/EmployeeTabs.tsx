@@ -369,7 +369,7 @@ function TrajectorySparkline({ points, predicted }: { points: number[]; predicte
 
 /* ─── Tükenmişlik Tab (DERİN — ENTERPRISE 360°) ─── */
 
-function TukenmislikTab({ employee }: { employee: EmployeeView }) {
+function TukenmislikTab({ employee: _employee }: { employee: EmployeeView }) {
   // Static data — will be replaced with API call
   const bat = { exhaustion: 3.2, mentalDistance: 2.8, cognitive: 2.1, emotional: 2.5, total: 2.65 };
   const riskScore = 62; // Composite 0-100 risk score
@@ -672,7 +672,7 @@ function IzinTab({ employee }: { employee: EmployeeView }) {
 
 /* ─── Belge Tab (DERİN) ─── */
 
-function BelgeTab({ employee }: { employee: EmployeeView }) {
+function BelgeTab({ employee: _employee }: { employee: EmployeeView }) {
   const belgeler = [
     { ad: 'İş Sözleşmesi.pdf', tip: 'Sözleşme', tarih: '15 Oca 2020', boyut: '2.4 MB', durum: 'ok' },
     { ad: 'Kimlik Fotokopisi.jpg', tip: 'Kimlik', tarih: '15 Oca 2020', boyut: '1.1 MB', durum: 'ok' },

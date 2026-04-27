@@ -1,0 +1,29 @@
+{
+  "id": "ik/hizli-baslangic/ilk-mudahale",
+  "title": "İlk müdahale — kırmızı band → Thompson → consent → plan",
+  "description": "Pulse sonuçlarında kırmızı banda düşen bir çalışan / ekip için adım-adım müdahale akışı.",
+  "source": "@site/docs/ik/hizli-baslangic/ilk-mudahale.md",
+  "sourceDirName": "ik/hizli-baslangic",
+  "slug": "/ik/hizli-baslangic/ilk-mudahale",
+  "permalink": "/en/docs/ik/hizli-baslangic/ilk-mudahale",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/hizli-baslangic/ilk-mudahale.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "ilk-mudahale",
+    "title": "İlk müdahale — kırmızı band → Thompson → consent → plan",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İlk pulse anketi — oluştur, gönder, yorumla",
+    "permalink": "/en/docs/ik/hizli-baslangic/ilk-pulse-anketi"
+  },
+  "next": {
+    "title": "Yıl sonu değerlendirme — 360 + OKR + 9-kutu tam senaryo",
+    "permalink": "/en/docs/ik/hizli-baslangic/yil-sonu-degerlendirme"
+  }
+}

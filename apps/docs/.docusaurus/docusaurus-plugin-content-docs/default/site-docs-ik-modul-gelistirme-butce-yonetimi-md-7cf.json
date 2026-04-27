@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/butce-yonetimi",
+  "title": "Bütçe yönetimi",
+  "description": "Eğitim bütçesinin dağılımı, harcaması, izlemesi.",
+  "source": "@site/docs/ik/modul/gelistirme/butce-yonetimi.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/butce-yonetimi",
+  "permalink": "/en/docs/ik/modul/gelistirme/butce-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/butce-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "butce-yonetimi",
+    "title": "Bütçe yönetimi",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Kaynak kütüphanesi",
+    "permalink": "/en/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi"
+  },
+  "next": {
+    "title": "Etki değerlendirme",
+    "permalink": "/en/docs/ik/modul/gelistirme/etki-degerlendirme"
+  }
+}

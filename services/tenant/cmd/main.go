@@ -12,6 +12,7 @@ import (
 	"github.com/go-chi/chi/v5"
 	chimw "github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/cors"
+	"github.com/jmoiron/sqlx"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
@@ -62,6 +63,7 @@ func main() {
 	planRepo := repository.NewPlanRepository(sqlDB)
 	subRepo := repository.NewSubscriptionRepository(sqlDB)
 	usageRepo := repository.NewUsageRepository(sqlDB)
+	draftRepo := repository.NewOnboardingDraftRepository(sqlDB)
 
 	// Services
 	txRunner := &service.SQLTxRunner{DB: sqlDB}
@@ -69,9 +71,10 @@ func main() {
 	subSvc := service.NewSubscriptionService(planRepo, subRepo, publisher, logger)
 	usageSvc := service.NewUsageService(usageRepo, subRepo, planRepo, publisher, logger)
 	billingSvc := service.NewBillingService(subRepo, planRepo, tenantRepo, usageRepo, publisher, logger)
+	onboardingSvc := service.NewOnboardingService(txRunner, draftRepo, tenantRepo, planRepo, subRepo, usageRepo, publisher, cfg.TrialDays, logger)
 
 	// HTTP
-	r := newRouter(cfg, logger, tenantSvc, subSvc, usageSvc, billingSvc, planRepo)
+	r := newRouter(cfg, logger, tenantSvc, subSvc, usageSvc, billingSvc, onboardingSvc, planRepo, sqlDB)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -116,7 +119,9 @@ func newRouter(
 	subSvc *service.SubscriptionService,
 	usageSvc *service.UsageService,
 	billingSvc *service.BillingService,
+	onboardingSvc *service.OnboardingService,
 	planRepo repository.PlanRepository,
+	sqlDB *sqlx.DB,
 ) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
@@ -140,6 +145,8 @@ func newRouter(
 	subH := handler.NewSubscriptionHandler(subSvc, dep)
 	usageH := handler.NewUsageHandler(usageSvc, dep)
 	billingH := handler.NewBillingHandler(billingSvc, cfg.StripeWebhookSecret, cfg.IyzicoWebhookSecret, dep)
+	modulesH := handler.NewModulesHandler(subSvc)
+	onboardingH := handler.NewOnboardingHandler(onboardingSvc, dep)
 
 	// Public
 	r.Get("/health", healthHandler)
@@ -148,10 +155,23 @@ func newRouter(
 	r.Get("/plans/{id}", planH.Get)
 	r.Post("/webhooks/billing", billingH.HandleWebhook)
 
+	// Onboarding wizard (pre-tenant): authenticated by Clerk user id header,
+	// since no tenant exists yet.
+	r.Get("/onboarding/progress", onboardingH.Get)
+	r.Post("/onboarding/progress/{step}", onboardingH.SaveStep)
+	r.Post("/onboarding/commit", onboardingH.Commit)
+	r.Post("/onboarding/abandon", onboardingH.Abandon)
+
+	// Admin endpoints (webhooks + api-keys + feature-flags + export + impersonation).
+	adminH := handler.NewAdminHandler(sqlDB)
+	adminTenantsH := handler.NewAdminTenantsHandler(tenantSvc, dep)
+
 	// Authenticated
 	r.Group(func(r chi.Router) {
 		r.Use(middleware.RequireAuth)
+		adminH.Register(r)
 		r.Get("/tenants/me", tenantH.GetCurrent)
+		r.Get("/tenants/me/modules", modulesH.GetForCurrent)
 		r.Get("/tenants/{id}", tenantH.Get)
 		r.Patch("/tenants/{id}", tenantH.Patch)
 		r.Delete("/tenants/{id}", tenantH.Delete)
@@ -161,6 +181,13 @@ func newRouter(
 		r.Post("/subscriptions/resume", subH.Resume)
 		r.Patch("/subscriptions/seats", subH.UpdateSeats)
 		r.Get("/usage", usageH.GetCurrent)
+
+		// Platform-admin only: tenant management across the whole platform.
+		r.Route("/admin", func(r chi.Router) {
+			r.Use(middleware.RequirePlatformAdmin)
+			adminTenantsH.Register(r)
+			r.Get("/onboarding/funnel", onboardingH.Funnel)
+		})
 	})
 
 	return r

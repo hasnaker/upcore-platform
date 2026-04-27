@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import Link from 'next/link';
 import {
   ArrowLeft,
   Download,
@@ -14,8 +13,6 @@ import {
   Brain,
   BookOpen,
   Frown,
-  TrendingUp,
-  TrendingDown,
   ArrowRight,
 } from 'lucide-react';
 import {
@@ -97,21 +94,6 @@ const SUBSCALE_RECOMMENDATIONS: Record<SubscaleKey, string[]> = {
     'Nefes egzersizleri ve gevselik teknikleri',
     'Gerekirse profesyonel psikolojik destek alin',
   ],
-};
-
-const RISK_INTERPRETATION: Record<string, { title: string; body: string }> = {
-  green: {
-    title: 'Tukenmislik riskiniz dusuk',
-    body: 'Mevcut durumunuzu korumak icin saglikli aliskanliklariniza devam edin.',
-  },
-  amber: {
-    title: 'Orta duzey belirtiler mevcut',
-    body: 'Dikkat edilmesi gereken alanlar bulunmaktadir. Stres yonetimi stratejileri uygulamaniz onerilir.',
-  },
-  red: {
-    title: 'Yuksek tukenmislik belirtileri',
-    body: 'Profesyonel destek onerilir. Is yukunu gozden gecirmeniz ve gerekirse danismanlik almaniz tavsiye edilir.',
-  },
 };
 
 export default function AnketSonuclarPage() {

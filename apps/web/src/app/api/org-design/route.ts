@@ -7,30 +7,6 @@ import { DB_URL, TENANT_ID } from '@/lib/service-urls';
  * GET: Returns departments with headcount/cost, level distribution, metrics, history.
  */
 
-interface DeptRow {
-  id: string;
-  name_tr: string;
-  headcount: string;
-  manager_name: string | null;
-  avg_salary: string | null;
-  total_cost: string | null;
-}
-
-interface LevelRow {
-  job_level: string;
-  count: string;
-}
-
-interface HistoryRow {
-  snapshot_date: string;
-  headcount: string;
-}
-
-interface EmployeeRow {
-  hire_date: string | null;
-  direct_reports: string;
-}
-
 export async function GET() {
   try {
     const { Pool } = await import('pg');

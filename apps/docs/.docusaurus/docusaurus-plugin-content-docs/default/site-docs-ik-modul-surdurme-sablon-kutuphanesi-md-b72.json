@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/sablon-kutuphanesi",
+  "title": "Şablon kütüphanesi",
+  "description": "UpCore'da hazır gelen 24 anket şablonu. Her şablon, bir amaca göre önceden ayarlanmış sorular, cadence, kitle kurallarından oluşur.",
+  "source": "@site/docs/ik/modul/surdurme/sablon-kutuphanesi.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/sablon-kutuphanesi",
+  "permalink": "/en/docs/ik/modul/surdurme/sablon-kutuphanesi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/sablon-kutuphanesi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "sablon-kutuphanesi",
+    "title": "Şablon kütüphanesi",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "BAT-TR skorlama ve yorumlama",
+    "permalink": "/en/docs/ik/modul/surdurme/bat-tr-skorlama"
+  },
+  "next": {
+    "title": "Sürdürme — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/surdurme/sikca-sorulanlar"
+  }
+}

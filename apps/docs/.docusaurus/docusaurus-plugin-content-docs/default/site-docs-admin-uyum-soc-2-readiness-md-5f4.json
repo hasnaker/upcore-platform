@@ -1,0 +1,29 @@
+{
+  "id": "admin/uyum/soc2-readiness",
+  "title": "SOC 2 Type II readiness",
+  "description": "Müşteri due diligence için önemli.",
+  "source": "@site/docs/admin/uyum/soc2-readiness.md",
+  "sourceDirName": "admin/uyum",
+  "slug": "/admin/uyum/soc2-readiness",
+  "permalink": "/en/docs/admin/uyum/soc2-readiness",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/uyum/soc2-readiness.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "soc2-readiness",
+    "title": "SOC 2 Type II readiness",
+    "sidebar_position": 1
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Audit log izleme",
+    "permalink": "/en/docs/admin/operasyon/audit-log-izleme"
+  },
+  "next": {
+    "title": "DPA (Data Processing Agreement) şablonu",
+    "permalink": "/en/docs/admin/uyum/dpa-sablon"
+  }
+}

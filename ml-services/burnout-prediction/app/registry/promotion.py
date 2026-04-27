@@ -10,7 +10,6 @@ import structlog
 
 from app.config import settings
 from app.schemas.internal import PromotionDecision
-from app.utils.errors import CalibrationGateFailedError, FairnessGateFailedError
 
 logger = structlog.get_logger()
 

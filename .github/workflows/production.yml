@@ -98,12 +98,60 @@ jobs:
           fi
 
   # --------------------------------------------------------------------------
+  # DB migrations (dispatch to db-migrate.yml before retag/deploy)
+  # --------------------------------------------------------------------------
+  migrate-db:
+    name: Run DB Migrations (prod)
+    runs-on: ubuntu-latest
+    needs: preflight
+    if: inputs.dry_run != true
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+
+      - name: Install golang-migrate
+        run: go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS_PROD }}
+
+      - name: Resolve DB FQDN
+        id: db
+        run: |
+          FQDN=$(az postgres flexible-server show \
+            --name upc-prod-pg-flex \
+            --resource-group ${{ env.AZURE_RESOURCE_GROUP }} \
+            --query "fullyQualifiedDomainName" -o tsv)
+          echo "fqdn=$FQDN" >> "$GITHUB_OUTPUT"
+
+      - name: Apply migrations (all services)
+        env:
+          DATABASE_URL: "postgres://upcoreadmin:${{ secrets.POSTGRES_ADMIN_PASSWORD }}@${{ steps.db.outputs.fqdn }}:6432/upcore_prod?sslmode=require"
+        run: |
+          echo "Applying migrations for all services..."
+          for dir in services/*/migrations; do
+            if [[ -d "$dir" ]]; then
+              SERVICE=$(echo "$dir" | cut -d'/' -f2)
+              echo "=== $SERVICE ==="
+              migrate -database "$DATABASE_URL" -path "$dir" up || {
+                echo "::error::Migration failed for $SERVICE"
+                exit 1
+              }
+            fi
+          done
+
+  # --------------------------------------------------------------------------
   # Retag: staging -> prod
   # --------------------------------------------------------------------------
   retag:
     name: Retag Images for Production
     runs-on: ubuntu-latest
-    needs: preflight
+    needs: [preflight, migrate-db]
     steps:
       - name: Login to GHCR
         uses: docker/login-action@v3

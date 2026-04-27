@@ -1,82 +1,104 @@
-import { NextResponse } from 'next/server';
-import { SERVICES, DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { NextRequest, NextResponse } from 'next/server';
+import { SERVICES } from '@/lib/service-urls';
+import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 
-export async function GET() {
+const mapActionRole = (role: string): 'hr_director' | 'people_partner' | 'line_manager' | 'employee' | 'executive' => {
+  switch (role) {
+    case 'hr_director':
+      return 'hr_director';
+    case 'manager':
+      return 'line_manager';
+    case 'employee':
+      return 'employee';
+    case 'super_admin':
+    case 'admin':
+      return 'executive';
+    default:
+      return 'people_partner';
+  }
+};
+
+export async function GET(request: NextRequest) {
   try {
-    // Get actions from ML action-center service
-    const actionsRes = await fetch(`${SERVICES.actionCenter}/v1/actions/next`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ tenant_id: TENANT_ID, user_id: '00000000-0000-0000-0000-000000000001', role: 'hr_director', limit: 5 }),
-    }).catch(() => null);
+    const ctx = getRequestContext(request);
+    const headers = buildServiceHeaders(ctx);
 
-    let mlActions = [];
-    if (actionsRes?.ok) {
-      const data = await actionsRes.json();
-      mlActions = data.actions || [];
-    }
-
-    // Also get burnout stats for context
-    const { Pool } = await import('pg');
-    const pool = new Pool({ connectionString: DB_URL });
-
-    const criticalRes = await pool.query(`
-      SELECT e.id, e.ad, e.soyad, COALESCE(d.name_tr, 'Genel') as dept,
-             bs.feature_value as score
-      FROM app.burnout_signals bs
-      JOIN app.employees e ON e.id = bs.employee_id
-      LEFT JOIN app.departments d ON d.id = e.department_id
-      WHERE bs.tenant_id = $1 AND bs.feature_name = 'bat_total'
-        AND bs.ts = (SELECT MAX(ts) FROM app.burnout_signals WHERE employee_id = bs.employee_id AND feature_name = 'bat_total')
-      ORDER BY bs.feature_value DESC LIMIT 5
-    `, [TENANT_ID]);
-
-    // Get recommendations for top critical employee
-    let recommendations: unknown[] = [];
-    if (criticalRes.rows[0]) {
-      const topEmployee = criticalRes.rows[0];
-      const recRes = await fetch(`${SERVICES.recommend}/v1/recommend/individual`, {
+    const [actionsRes, criticalRes] = await Promise.all([
+      fetch(`${SERVICES.actionCenter}/api/v1/actions/next`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
-          tenant_id: TENANT_ID,
-          employee_id: topEmployee.id,
-          burnout_prediction: { '30d': topEmployee.score / 5 },
-          top_k: 3,
+          tenant_id: ctx.tenantId,
+          user_id: ctx.userId,
+          role: mapActionRole(ctx.userRole),
+          language: 'tr-TR',
         }),
-      }).catch(() => null);
-      if (recRes?.ok) {
+        cache: 'no-store',
+      }),
+      fetch(`${SERVICES.burnout}/api/v1/burnout/critical?limit=5`, {
+        headers,
+        cache: 'no-store',
+      }),
+    ]);
+
+    const actionsData = actionsRes.ok ? await actionsRes.json() : { actions: [] };
+    const criticalData = criticalRes.ok ? await criticalRes.json() : { items: [] };
+
+    const topEmployee = criticalData?.items?.[0];
+    let recommendations: unknown[] = [];
+    let prediction: unknown = null;
+
+    if (topEmployee?.employee_id) {
+      const [recRes, predRes] = await Promise.all([
+        fetch(`${SERVICES.recommend}/api/v1/recommend/individual`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            tenant_id: ctx.tenantId,
+            employee_id: topEmployee.employee_id,
+            burnout_prediction: { '30d': Number(topEmployee.score || 0) / 5 },
+            max_recommendations: 3,
+            context: { language: 'tr-TR' },
+          }),
+          cache: 'no-store',
+        }),
+        fetch(`${SERVICES.burnout}/api/v1/burnout/predict/burnout`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            tenant_id: ctx.tenantId,
+            employee_id: topEmployee.employee_id,
+            horizon_days: [30, 60, 90],
+          }),
+          cache: 'no-store',
+        }),
+      ]);
+
+      if (recRes.ok) {
         const recData = await recRes.json();
         recommendations = recData.recommendations || [];
       }
-    }
-
-    // Get burnout prediction for top employee
-    let prediction = null;
-    if (criticalRes.rows[0]) {
-      const predRes = await fetch(`${SERVICES.burnout}/v1/predict/burnout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tenant_id: TENANT_ID,
-          employee_id: criticalRes.rows[0].id,
-          features: { bat_total: criticalRes.rows[0].score, jdr_demands_z: 1.2, jdr_resources_z: -0.5, tenure_months: 74 },
-        }),
-      }).catch(() => null);
-      if (predRes?.ok) {
+      if (predRes.ok) {
         prediction = await predRes.json();
       }
     }
 
-    await pool.end();
-
     return NextResponse.json({
-      ml_actions: mlActions,
-      critical_employees: criticalRes.rows,
+      ml_actions: actionsData.actions || [],
+      critical_employees: criticalData.items || [],
       recommendations,
       prediction,
     });
-  } catch (error) {
-    return NextResponse.json({ error: 'Action verileri alınamadı', ml_actions: [], critical_employees: [], recommendations: [], prediction: null }, { status: 500 });
+  } catch {
+    return NextResponse.json(
+      {
+        error: 'Action verileri alınamadı',
+        ml_actions: [],
+        critical_employees: [],
+        recommendations: [],
+        prediction: null,
+      },
+      { status: 500 },
+    );
   }
 }

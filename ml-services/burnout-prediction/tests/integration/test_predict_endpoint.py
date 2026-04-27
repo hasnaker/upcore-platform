@@ -19,7 +19,7 @@ class TestPredictEndpoint:
     def test_predict_returns_200(self, client: TestClient) -> None:
         """Valid prediction request should return 200."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -31,7 +31,7 @@ class TestPredictEndpoint:
     def test_response_schema(self, client: TestClient) -> None:
         """Response should match BurnoutPredictionResponse schema."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -48,7 +48,7 @@ class TestPredictEndpoint:
     def test_all_three_horizons_present(self, client: TestClient) -> None:
         """Response should contain predictions for all requested horizons."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -63,7 +63,7 @@ class TestPredictEndpoint:
     def test_horizon_prediction_fields(self, client: TestClient) -> None:
         """Each horizon prediction should have probability, CI, and classification."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -81,7 +81,7 @@ class TestPredictEndpoint:
     def test_ci_ordering(self, client: TestClient) -> None:
         """CI lower should be <= probability <= CI upper."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -97,7 +97,7 @@ class TestPredictEndpoint:
     def test_probabilities_bounded(self, client: TestClient) -> None:
         """All probabilities should be in [0, 1]."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -114,7 +114,7 @@ class TestPredictEndpoint:
     def test_top_drivers_present(self, client: TestClient) -> None:
         """Response should include top drivers."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -130,7 +130,7 @@ class TestPredictEndpoint:
     def test_model_type_is_heuristic(self, client: TestClient) -> None:
         """V1 should report heuristic model type."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -143,7 +143,7 @@ class TestPredictEndpoint:
     def test_invalid_horizon_rejected(self, client: TestClient) -> None:
         """Invalid horizon values should be rejected with 422."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -155,7 +155,7 @@ class TestPredictEndpoint:
     def test_with_signal_window(self, client: TestClient) -> None:
         """Prediction with signal window should work."""
         response = client.post(
-            "/v1/predict/burnout",
+            "/api/v1/burnout/predict/burnout",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",

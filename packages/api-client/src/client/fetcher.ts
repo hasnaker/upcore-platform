@@ -54,11 +54,16 @@ export const createFetcher = (config: FetcherConfig): KyInstance => {
 };
 
 /**
- * Helper to build query string from params object, filtering out undefined values.
+ * Primitive query value accepted by buildSearchParams.
  */
-export const buildSearchParams = (
-  params: Record<string, string | number | boolean | undefined | null>,
-): string => {
+export type QueryValue = string | number | boolean | undefined | null;
+
+/**
+ * Helper to build query string from params object, filtering out undefined
+ * values. Accepts any interface or plain object; non-primitive values are
+ * serialised via String() which matches the URLSearchParams contract.
+ */
+export const buildSearchParams = (params: object): string => {
   const searchParams = new URLSearchParams();
 
   for (const [key, value] of Object.entries(params)) {

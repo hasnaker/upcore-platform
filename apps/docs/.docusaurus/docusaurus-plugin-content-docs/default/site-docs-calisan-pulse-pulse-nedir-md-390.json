@@ -1,0 +1,29 @@
+{
+  "id": "calisan/pulse/pulse-nedir",
+  "title": "Pulse anketi nedir?",
+  "description": "UpCore'un pulse anketleri, yıllık değerlendirme yerine 2 haftada bir 3–8 soru ile çalışan bağlılık",
+  "source": "@site/docs/calisan/pulse/pulse-nedir.md",
+  "sourceDirName": "calisan/pulse",
+  "slug": "/calisan/pulse/pulse-nedir",
+  "permalink": "/en/docs/calisan/pulse/pulse-nedir",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/pulse/pulse-nedir.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "pulse-nedir",
+    "title": "Pulse anketi nedir?",
+    "sidebar_position": 1
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Bildirim tercihleri",
+    "permalink": "/en/docs/calisan/hesap/bildirim-tercihleri"
+  },
+  "next": {
+    "title": "Pulse anketini cevaplama",
+    "permalink": "/en/docs/calisan/pulse/pulse-cevaplama"
+  }
+}

@@ -14,8 +14,11 @@ param tags object = {}
 @description('Azure AD tenant ID')
 param tenantId string
 
-@description('Principal IDs that get full secret access')
+@description('Principal IDs that get full secret access (Key Vault Secrets Officer)')
 param adminPrincipalIds array = []
+
+@description('Container app system-assigned managed identity principal IDs that need read-only secret access (Key Vault Secrets User). Each container-app.bicep modülü `principalId` output\'unu buraya feed eder.')
+param containerAppPrincipalIds array = []
 
 @description('Subnet ID for private endpoint')
 param privateEndpointSubnetId string
@@ -67,7 +70,15 @@ resource keyVault 'Microsoft.KeyVault/vaults@2023-07-01' = {
 // ---------------------------------------------------------------------------
 // RBAC — Key Vault Secrets Officer for admin principals
 // ---------------------------------------------------------------------------
+//
+// İki ayrı role kullanılıyor:
+//   - Secrets Officer (b86a...): admin/CI principal — secret create/update.
+//   - Secrets User    (4633...): container app system MI — sadece read.
+//
+// Az privilege prensibi: hiçbir runtime servis yazma yetkisi almamalı;
+// secret rotasyonu ayrı bir CI rotation job'una verilir.
 var secretsOfficerRoleId = 'b86a8fe4-44ce-4948-aee5-eccb2c155cd7'
+var secretsUserRoleId = '4633458b-17de-408a-b874-0445c86b69e6'
 
 resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
   for (principalId, i) in adminPrincipalIds: {
@@ -75,6 +86,21 @@ resource roleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
     scope: keyVault
     properties: {
       roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', secretsOfficerRoleId)
+      principalId: principalId
+      principalType: 'ServicePrincipal'
+    }
+  }
+]
+
+// Container apps system-assigned MI'lerine read-only access ver.
+// principalType: 'ServicePrincipal' system MI için doğru atama (Microsoft
+// dokümanına göre system MI bir "service principal" olarak temsil edilir).
+resource containerAppRoleAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = [
+  for (principalId, i) in containerAppPrincipalIds: {
+    name: guid(keyVault.id, principalId, secretsUserRoleId)
+    scope: keyVault
+    properties: {
+      roleDefinitionId: subscriptionResourceId('Microsoft.Authorization/roleDefinitions', secretsUserRoleId)
       principalId: principalId
       principalType: 'ServicePrincipal'
     }

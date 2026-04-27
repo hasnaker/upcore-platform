@@ -2,37 +2,80 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuthMe } from '@/hooks/useAuthMe';
+import { useT } from '@/hooks/useLocale';
 
-const NAV_ITEMS = [
-  { href: '/panel', label: 'Aksiyon Merkezi', icon: 'zap' },
-  { href: '/executive', label: 'Yönetici Paneli', icon: 'bar-chart' },
-  { href: '/calisanlar', label: 'Çalışanlar', icon: 'users' },
-  { href: '/departmanlar', label: 'Departmanlar', icon: 'building' },
-  { href: '/izinler', label: 'İzinler', icon: 'calendar' },
-  { href: '/belgeler', label: 'Belgeler', icon: 'file' },
-  { href: '/tukenmislik', label: 'Tükenmişlik', icon: 'activity' },
-  { href: '/anketler', label: 'Anketler', icon: 'clipboard' },
-  { href: '/degerlendirmeler', label: 'Değerlendirmeler', icon: 'target' },
-  { href: '/guclu-yonler', label: 'Güçlü Yönler', icon: 'star' },
-  { href: '/performans', label: 'Performans', icon: 'award' },
-  { href: '/kariyer', label: 'Kariyer', icon: 'compass' },
-  { href: '/ucretlendirme', label: 'Ücretlendirme', icon: 'dollar' },
-  { href: '/egitim', label: 'Eğitim & Gelişim', icon: 'book' },
-  { href: '/baglilik', label: 'Bağlılık', icon: 'heart' },
-  { href: '/is-akislari', label: 'İş Akışları', icon: 'workflow' },
-  { href: '/risk-sentez', label: 'Risk Sentez', icon: 'shield' },
-  { href: '/tahminler', label: 'AI Tahminler', icon: 'brain' },
-  { href: '/onboarding-yonetimi', label: 'Onboarding', icon: 'rocket' },
-  { href: '/organizasyon', label: 'Organizasyon', icon: 'org' },
-  { href: '/raporlar', label: 'Raporlar', icon: 'report' },
-  { href: '/mesai', label: 'Vardiya & Mesai', icon: 'clock' },
-  { href: '/bordro', label: 'Bordro', icon: 'wallet' },
-  { href: '/cikis-yonetimi', label: 'Çıkış Yönetimi', icon: 'door' },
-  { href: '/entegrasyonlar', label: 'Entegrasyonlar', icon: 'plug' },
-  { href: '/analytics', label: 'Analitik', icon: 'trending-up' },
-  { href: '/aksiyonlar', label: 'Aksiyonlar', icon: 'list' },
-  { href: '/ayarlar', label: 'Ayarlar', icon: 'settings' },
+// Canlı endpoints: gateway üzerinden gerçek Go+ML servislerine bağlı
+// yeni nesil sayfalar. Eski mock sayfalar /performans, /bordro vb. altlarda
+// halen erişilebilir — sidebar default olarak canlı versiyona yönlendirir.
+//
+// Rol bazlı görünürlük:
+//   - admin/hr_admin/cxo/hr_director: hepsi
+//   - manager/team_lead: çalışan & operasyonel modüller (yönetim panelleri yok)
+//   - employee (self-service): yalnız /portal altı
+type NavRole = 'all' | 'management' | 'manager' | 'employee_portal';
+
+const NAV_ITEMS: { href: string; labelKey: string; icon: string; visibleIn?: NavRole[] }[] = [
+  { href: '/panel', labelKey: 'nav.action_center', icon: 'zap' },
+  { href: '/executive/canli', labelKey: 'nav.executive', icon: 'bar-chart', visibleIn: ['all'] },
+  { href: '/calisanlar', labelKey: 'nav.employees', icon: 'users' },
+  { href: '/departmanlar', labelKey: 'nav.departments', icon: 'building', visibleIn: ['all'] },
+  { href: '/izinler', labelKey: 'nav.leave', icon: 'calendar' },
+  { href: '/belgeler', labelKey: 'nav.documents', icon: 'file' },
+  { href: '/tukenmislik', labelKey: 'nav.burnout', icon: 'activity' },
+  { href: '/anketler', labelKey: 'nav.surveys', icon: 'clipboard' },
+  { href: '/degerlendirmeler/canli', labelKey: 'nav.assessments', icon: 'target' },
+  { href: '/guclu-yonler', labelKey: 'nav.strengths', icon: 'star' },
+  { href: '/performans/canli', labelKey: 'nav.performance', icon: 'award' },
+  { href: '/kariyer/canli', labelKey: 'nav.career', icon: 'compass' },
+  { href: '/ucretlendirme', labelKey: 'nav.compensation', icon: 'dollar', visibleIn: ['all'] },
+  { href: '/egitim', labelKey: 'nav.training', icon: 'book' },
+  { href: '/baglilik', labelKey: 'nav.engagement', icon: 'heart' },
+  { href: '/is-akislari', labelKey: 'nav.workflows', icon: 'workflow', visibleIn: ['all'] },
+  { href: '/risk-sentez', labelKey: 'nav.risk_synth', icon: 'shield', visibleIn: ['all'] },
+  { href: '/tahminler', labelKey: 'nav.predictions', icon: 'brain', visibleIn: ['all'] },
+  { href: '/onboarding-yonetimi', labelKey: 'nav.onboarding', icon: 'rocket', visibleIn: ['all'] },
+  { href: '/organizasyon', labelKey: 'nav.organization', icon: 'org' },
+  { href: '/raporlar', labelKey: 'nav.reports', icon: 'report', visibleIn: ['all'] },
+  { href: '/mesai', labelKey: 'nav.shifts', icon: 'clock' },
+  { href: '/bordro/canli', labelKey: 'nav.payroll', icon: 'wallet', visibleIn: ['all'] },
+  { href: '/cikis-yonetimi', labelKey: 'nav.offboarding', icon: 'door', visibleIn: ['all'] },
+  { href: '/entegrasyonlar', labelKey: 'nav.integrations', icon: 'plug', visibleIn: ['all'] },
+  { href: '/analytics', labelKey: 'nav.analytics', icon: 'trending-up', visibleIn: ['all'] },
+  { href: '/aksiyonlar/canli', labelKey: 'nav.actions', icon: 'list' },
+  { href: '/bildirimler', labelKey: 'nav.notifications', icon: 'bell' },
+  { href: '/denetim', labelKey: 'nav.audit', icon: 'shield', visibleIn: ['all'] },
+  { href: '/ayarlar/canli', labelKey: 'nav.settings', icon: 'settings', visibleIn: ['all'] },
 ];
+
+const PORTAL_NAV_ITEMS: { href: string; labelKey: string; icon: string }[] = [
+  { href: '/portal', labelKey: 'nav.portal_profile', icon: 'users' },
+  { href: '/portal/bordrolar', labelKey: 'nav.portal_slips', icon: 'wallet' },
+  { href: '/portal/izin', labelKey: 'nav.portal_leave', icon: 'calendar' },
+  { href: '/portal/degerlendirme', labelKey: 'nav.portal_assessments', icon: 'target' },
+  { href: '/portal/belgeler', labelKey: 'nav.portal_documents', icon: 'file' },
+  { href: '/portal/kvkk-consent-manager', labelKey: 'nav.portal_consents', icon: 'shield' },
+  { href: '/bildirimler', labelKey: 'nav.notifications', icon: 'bell' },
+];
+
+function resolveRole(roles: string[]): NavRole {
+  const r = roles.map((x) => x.toLowerCase());
+  if (r.some((x) => ['admin', 'hr_admin', 'hr_director', 'cxo', 'payroll_admin'].includes(x))) {
+    return 'all';
+  }
+  if (r.some((x) => ['manager', 'team_lead'].includes(x))) return 'manager';
+  if (r.includes('employee')) return 'employee_portal';
+  return 'manager'; // safe default — not full admin
+}
+
+function filterItems(role: NavRole) {
+  if (role === 'employee_portal') return PORTAL_NAV_ITEMS.map((i) => ({ ...i, visibleIn: undefined }));
+  return NAV_ITEMS.filter((item) => {
+    if (!item.visibleIn) return true; // default visible everywhere non-portal
+    return item.visibleIn.includes(role) || item.visibleIn.includes('all') && role === 'all';
+  });
+}
+
 
 const ICONS: Record<string, React.ReactNode> = {
   zap: <path strokeLinecap="round" strokeLinejoin="round" d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />,
@@ -55,6 +98,7 @@ const ICONS: Record<string, React.ReactNode> = {
   heart: <path strokeLinecap="round" strokeLinejoin="round" d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z" />,
   workflow: <><path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18M3 12h18M3 18h18" /><circle cx="6" cy="6" r="2" fill="currentColor" /><circle cx="12" cy="12" r="2" fill="currentColor" /><circle cx="18" cy="18" r="2" fill="currentColor" /></>,
   shield: <><path strokeLinecap="round" strokeLinejoin="round" d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></>,
+  bell: <><path strokeLinecap="round" strokeLinejoin="round" d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" /><path strokeLinecap="round" strokeLinejoin="round" d="M13.73 21a2 2 0 0 1-3.46 0" /></>,
   brain: <><path strokeLinecap="round" strokeLinejoin="round" d="M12 2a7 7 0 017 7c0 2.38-1.19 4.47-3 5.74V17a1 1 0 01-1 1H9a1 1 0 01-1-1v-2.26C6.19 13.47 5 11.38 5 9a7 7 0 017-7z" /><path strokeLinecap="round" d="M9 21h6" /></>,
   rocket: <><path strokeLinecap="round" strokeLinejoin="round" d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 00-2.91-.09z" /><path strokeLinecap="round" strokeLinejoin="round" d="M12 15l-3-3a22 22 0 012-3.95A12.88 12.88 0 0122 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 01-4 2z" /></>,
   org: <><circle cx="12" cy="5" r="3" /><path strokeLinecap="round" d="M12 8v4M6 16a2 2 0 100-4 2 2 0 000 4zM18 16a2 2 0 100-4 2 2 0 000 4zM12 12l-6 2M12 12l6 2" /></>,
@@ -67,6 +111,10 @@ const ICONS: Record<string, React.ReactNode> = {
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const me = useAuthMe();
+  const t = useT();
+  const role = me.isLoading ? 'all' : resolveRole(me.roles ?? []);
+  const items = filterItems(role);
 
   return (
     <aside className="flex h-full w-[240px] shrink-0 flex-col border-r border-[#f0f0f0] bg-white">
@@ -80,7 +128,7 @@ export function AppSidebar() {
 
       {/* Nav */}
       <nav className="flex flex-1 flex-col gap-0.5 overflow-y-auto px-3 py-3">
-        {NAV_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
@@ -101,7 +149,7 @@ export function AppSidebar() {
               >
                 {ICONS[item.icon]}
               </svg>
-              {item.label}
+              {t(item.labelKey)}
             </Link>
           );
         })}

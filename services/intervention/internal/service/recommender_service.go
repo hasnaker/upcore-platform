@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/rs/zerolog"
@@ -11,12 +12,18 @@ import (
 	"github.com/upcore/intervention/internal/repository"
 )
 
+// banditBucketSeconds is the width of a reproducibility window.
+// A single (tenant, bucket) pair yields the same sample sequence,
+// so two recommend calls inside the same hour for the same tenant
+// are reproducible for audit/replay without freezing the arms forever.
+const banditBucketSeconds = 3600
+
 // RecommenderService provides ranked intervention recommendations using
-// Thompson sampling + evidence weighting.
+// Thompson sampling + evidence weighting. The RNG is built per-request from
+// (tenantID, hour bucket) so A/B assignments are reproducible for replay.
 type RecommenderService struct {
 	catalog       repository.CatalogRepository
 	effectiveness repository.EffectivenessRepository
-	rng           *bandit.RNG
 	defaultTopK   int
 	log           zerolog.Logger
 }
@@ -31,7 +38,6 @@ func NewRecommenderService(
 	return &RecommenderService{
 		catalog:       catalog,
 		effectiveness: effectiveness,
-		rng:           bandit.NewRNG(),
 		defaultTopK:   defaultTopK,
 		log:           log.With().Str("component", "recommender_service").Logger(),
 	}
@@ -103,8 +109,12 @@ func (s *RecommenderService) Recommend(ctx context.Context, req RecommendRequest
 		}
 	}
 
-	// Sample
-	samples := s.rng.ThompsonSampleValues(arms)
+	// Sample with a deterministic per-(tenant, time-bucket) RNG so that
+	// A/B assignments are reproducible for replay and audit. Outside the
+	// bucket window the seed rotates, preventing arm starvation.
+	bucket := time.Now().UTC().Unix() / banditBucketSeconds
+	rng := bandit.NewRNGForTenant(req.TenantID.String(), bucket)
+	samples := rng.ThompsonSampleValues(arms)
 	sampleMap := make(map[uuid.UUID]float64)
 	for i, interv := range catalog {
 		sampleMap[interv.ID] = samples[i]

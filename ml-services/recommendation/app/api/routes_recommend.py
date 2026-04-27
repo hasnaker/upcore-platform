@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime, timezone
 
 import structlog
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
 from app.fallbacks.rule_based import rule_based_recommend
 from app.fallbacks.safe_list import get_safe_list

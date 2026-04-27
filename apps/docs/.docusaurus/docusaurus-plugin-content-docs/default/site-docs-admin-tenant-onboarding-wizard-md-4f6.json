@@ -1,0 +1,29 @@
+{
+  "id": "admin/tenant/onboarding-wizard",
+  "title": "Onboarding wizard",
+  "description": "Yeni tenant için otomatik 6 adımlı sihirbaz.",
+  "source": "@site/docs/admin/tenant/onboarding-wizard.md",
+  "sourceDirName": "admin/tenant",
+  "slug": "/admin/tenant/onboarding-wizard",
+  "permalink": "/en/docs/admin/tenant/onboarding-wizard",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/tenant/onboarding-wizard.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "onboarding-wizard",
+    "title": "Onboarding wizard",
+    "sidebar_position": 2
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Yeni tenant oluşturma",
+    "permalink": "/en/docs/admin/tenant/yeni-tenant-olusturma"
+  },
+  "next": {
+    "title": "CSV ile çalışan import",
+    "permalink": "/en/docs/admin/tenant/csv-import"
+  }
+}

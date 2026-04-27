@@ -1,0 +1,29 @@
+{
+  "id": "admin/billing/fatura-yonetimi",
+  "title": "Fatura yönetimi",
+  "description": "Aylık fatura döngüsü",
+  "source": "@site/docs/admin/billing/fatura-yonetimi.md",
+  "sourceDirName": "admin/billing",
+  "slug": "/admin/billing/fatura-yonetimi",
+  "permalink": "/en/docs/admin/billing/fatura-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/billing/fatura-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "fatura-yonetimi",
+    "title": "Fatura yönetimi",
+    "sidebar_position": 2
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Plan seçimi",
+    "permalink": "/en/docs/admin/billing/plan-secimi"
+  },
+  "next": {
+    "title": "Kullanım metrikleri",
+    "permalink": "/en/docs/admin/billing/kullanim-metrikleri"
+  }
+}

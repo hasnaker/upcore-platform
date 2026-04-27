@@ -1,0 +1,29 @@
+{
+  "id": "ik/hizli-baslangic/ilk-pulse-anketi",
+  "title": "İlk pulse anketi — oluştur, gönder, yorumla",
+  "description": "15 dakikalık kurulum sonrası ilk pulse anketinizi özelleştirelim.",
+  "source": "@site/docs/ik/hizli-baslangic/ilk-pulse-anketi.md",
+  "sourceDirName": "ik/hizli-baslangic",
+  "slug": "/ik/hizli-baslangic/ilk-pulse-anketi",
+  "permalink": "/en/docs/ik/hizli-baslangic/ilk-pulse-anketi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/hizli-baslangic/ilk-pulse-anketi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "ilk-pulse-anketi",
+    "title": "İlk pulse anketi — oluştur, gönder, yorumla",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İlk 15 dakika — yeni İK için hızlı başlangıç",
+    "permalink": "/en/docs/ik/hizli-baslangic/ilk-15-dakika"
+  },
+  "next": {
+    "title": "İlk müdahale — kırmızı band → Thompson → consent → plan",
+    "permalink": "/en/docs/ik/hizli-baslangic/ilk-mudahale"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/yetkinlik-modeli",
+  "title": "Yetkinlik modeli",
+  "description": "Yetkinlik tanımı",
+  "source": "@site/docs/ik/modul/gelistirme/yetkinlik-modeli.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/yetkinlik-modeli",
+  "permalink": "/en/docs/ik/modul/gelistirme/yetkinlik-modeli",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/yetkinlik-modeli.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "yetkinlik-modeli",
+    "title": "Yetkinlik modeli",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Geliştirme modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/gelistirme/genel-bakis"
+  },
+  "next": {
+    "title": "Öğrenme yolu (learning path)",
+    "permalink": "/en/docs/ik/modul/gelistirme/ogrenme-yolu"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/roi-hesabi",
+  "title": "ROI hesabı",
+  "description": "İK yatırımlarının iş sonuçlarına getirisini hesaplama.",
+  "source": "@site/docs/ik/modul/analitik/roi-hesabi.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/roi-hesabi",
+  "permalink": "/en/docs/ik/modul/analitik/roi-hesabi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/roi-hesabi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "roi-hesabi",
+    "title": "ROI hesabı",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Bias denetimi",
+    "permalink": "/en/docs/ik/modul/analitik/bias-denetimi"
+  },
+  "next": {
+    "title": "Yıllık rapor",
+    "permalink": "/en/docs/ik/modul/analitik/yillik-rapor"
+  }
+}

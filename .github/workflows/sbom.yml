@@ -1,0 +1,172 @@
+# ============================================================================
+# UpCore — Software Bill of Materials (SBOM)
+# ISO 27001 A.5.21 (ICT supply chain) + SOC 2 CC9.1 kontrolleri için kanıt.
+# - PR'da: değişen servis(ler) için CycloneDX JSON üret
+# - main'e merge sonrası: tüm servisler için SBOM üret, release artifact'e ekle
+# Araç: anchore/syft (v1.x) — Go binary + Docker image ikisi için çalışır.
+# ============================================================================
+
+name: SBOM
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  pull_request:
+    paths:
+      - 'services/**/go.mod'
+      - 'services/**/go.sum'
+      - 'packages/go/**/go.mod'
+      - 'apps/**/package.json'
+      - 'apps/**/pnpm-lock.yaml'
+  schedule:
+    # Haftalık tam SBOM — Pazar 04:00 UTC
+    - cron: '0 4 * * 0'
+  workflow_dispatch:
+
+concurrency:
+  group: sbom-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go-sbom:
+    name: Go SBOM
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - services/api-gateway
+          - services/auth
+          - services/tenant
+          - services/organization
+          - services/employee
+          - services/leave
+          - services/survey
+          - services/assessment
+          - services/document
+          - services/notification
+          - services/audit
+          - services/intervention
+          - services/mobility
+          - services/ats
+          - services/billing
+          - services/bordro
+          - services/performance
+          - packages/go/bordro
+          - packages/go/saga
+          - packages/go/webhooks
+          - packages/go/featureflags
+          - packages/go/piiredact
+          - packages/go/tenantprovision
+          - packages/go/tenantexport
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
+            | sh -s -- -b /usr/local/bin
+
+      - name: Generate SBOM (CycloneDX JSON)
+        working-directory: ${{ matrix.target }}
+        run: |
+          safe_name=$(echo "${{ matrix.target }}" | tr '/' '-')
+          syft . \
+            -o cyclonedx-json=sbom-${safe_name}.cdx.json \
+            -o spdx-json=sbom-${safe_name}.spdx.json
+          echo "SBOM_FILE=${{ matrix.target }}/sbom-${safe_name}.cdx.json" >> "$GITHUB_ENV"
+
+      - name: Upload SBOM artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ strategy.job-index }}
+          path: |
+            ${{ matrix.target }}/sbom-*.cdx.json
+            ${{ matrix.target }}/sbom-*.spdx.json
+          retention-days: 365
+
+  ts-sbom:
+    name: TypeScript SBOM
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: '9'
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh \
+            | sh -s -- -b /usr/local/bin
+
+      - name: Generate web SBOM
+        run: |
+          syft dir:apps/web \
+            -o cyclonedx-json=sbom-web.cdx.json \
+            -o spdx-json=sbom-web.spdx.json
+
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-web
+          path: |
+            sbom-web.cdx.json
+            sbom-web.spdx.json
+          retention-days: 365
+
+  vulnerability-scan:
+    name: Grype Scan
+    runs-on: ubuntu-latest
+    needs: [go-sbom, ts-sbom]
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: sbom-*
+          merge-multiple: true
+          path: ./sboms
+
+      - name: Install grype
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh \
+            | sh -s -- -b /usr/local/bin
+
+      - name: Scan each SBOM
+        run: |
+          mkdir -p reports
+          for sbom in sboms/*.cdx.json; do
+            name=$(basename "$sbom" .cdx.json)
+            grype sbom:"$sbom" -o json > "reports/${name}-vulns.json" || true
+            grype sbom:"$sbom" -o table --fail-on high > "reports/${name}-summary.txt" || true
+          done
+
+      - name: Upload vuln reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vuln-reports
+          path: reports/
+          retention-days: 90
+
+      - name: Fail on critical
+        run: |
+          crit=0
+          for r in reports/*-vulns.json; do
+            c=$(jq '[.matches[] | select(.vulnerability.severity=="Critical")] | length' "$r")
+            crit=$((crit + c))
+          done
+          if [ "$crit" -gt 0 ]; then
+            echo "::error::$crit critical vulnerabilities detected"
+            exit 1
+          fi
+          echo "No critical vulnerabilities found."

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/soru-bankasi",
+  "title": "Soru bankası",
+  "description": "UpCore'un soru bankası 250+ maddelik bilimsel temelli bir koleksiyondur.",
+  "source": "@site/docs/ik/modul/surdurme/soru-bankasi.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/soru-bankasi",
+  "permalink": "/en/docs/ik/modul/surdurme/soru-bankasi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/soru-bankasi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "soru-bankasi",
+    "title": "Soru bankası",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Kırmızı band triage — İK protokolü",
+    "permalink": "/en/docs/ik/modul/surdurme/kirmizi-band-triage"
+  },
+  "next": {
+    "title": "JD-R boyut yorumu",
+    "permalink": "/en/docs/ik/modul/surdurme/jd-r-yorumu"
+  }
+}

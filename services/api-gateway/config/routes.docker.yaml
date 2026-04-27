@@ -1,0 +1,312 @@
+# ============================================================================
+# api-gateway routes — DOCKER COMPOSE variant
+# ----------------------------------------------------------------------------
+# Bu dosya docker compose içinde kullanılır. Target URL'leri service DNS
+# isimlerini (auth, employee, ...) kullanır. Lokal `go run` için
+# routes.yaml kullan.
+# ============================================================================
+
+routes:
+  - path_prefix: "/api/v1/auth"
+    upstream: "auth"
+    target: "http://auth:8001"
+    auth_required: false
+    timeout: 30s
+    rate_limit: { per_user: 10, per_tenant: 100 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/webhooks/clerk"
+    upstream: "auth"
+    target: "http://auth:8001"
+    auth_required: false
+    timeout: 30s
+    rate_limit: { per_user: 0, per_tenant: 0 }
+    methods: ["POST"]
+
+  - path_prefix: "/api/v1/tenants"
+    upstream: "tenant"
+    target: "http://tenant:8002"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/employees"
+    upstream: "employee"
+    target: "http://employee:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/offers"
+    upstream: "employee"
+    target: "http://employee:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/onboarding"
+    upstream: "employee"
+    target: "http://employee:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/related-contacts"
+    upstream: "employee"
+    target: "http://employee:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/employee-positions"
+    upstream: "employee"
+    target: "http://employee:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/offboarding"
+    upstream: "employee"
+    target: "http://employee:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/performance"
+    upstream: "performance"
+    target: "http://performance:8014"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/bordro"
+    upstream: "bordro"
+    target: "http://bordro:8015"
+    auth_required: true
+    timeout: 60s
+    rate_limit: { per_user: 50, per_tenant: 500 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Billing (plans, subscriptions, invoices, admin analytics)
+  - path_prefix: "/api/v1/plans"
+    upstream: "billing"
+    target: "http://billing:8026"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET"]
+
+  - path_prefix: "/api/v1/subscriptions"
+    upstream: "billing"
+    target: "http://billing:8026"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/invoices"
+    upstream: "billing"
+    target: "http://billing:8026"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST"]
+
+  # Billing admin analytics (platform-admin only)
+  - path_prefix: "/api/v1/admin/billing"
+    upstream: "billing"
+    target: "http://billing:8026"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 30, per_tenant: 200 }
+    methods: ["GET", "POST"]
+
+  # Status admin endpoints (incidents, components, maintenance)
+  - path_prefix: "/api/v1/admin/status"
+    upstream: "status"
+    target: "http://status:8030"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 30, per_tenant: 200 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Public status page (no auth)
+  - path_prefix: "/api/v1/status"
+    upstream: "status"
+    target: "http://status:8030"
+    auth_required: false
+    timeout: 30s
+    rate_limit: { per_user: 60, per_tenant: 1000 }
+    methods: ["GET"]
+
+  # Admin (feature flags, export jobs, impersonation)
+  - path_prefix: "/api/v1/admin"
+    upstream: "tenant"
+    target: "http://tenant:8002"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 30, per_tenant: 200 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/api-keys"
+    upstream: "tenant"
+    target: "http://tenant:8002"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/webhooks"
+    upstream: "tenant"
+    target: "http://tenant:8002"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/departments"
+    upstream: "organization"
+    target: "http://organization:8004"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/positions"
+    upstream: "organization"
+    target: "http://organization:8004"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/leaves"
+    upstream: "leave"
+    target: "http://leave:8005"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/documents"
+    upstream: "document"
+    target: "http://document:8006"
+    auth_required: true
+    timeout: 60s
+    rate_limit: { per_user: 5, per_tenant: 100 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/public/surveys"
+    upstream: "survey"
+    target: "http://survey:8007"
+    auth_required: false
+    timeout: 30s
+    rate_limit: { per_user: 10, per_tenant: 500 }
+    methods: ["GET", "POST"]
+
+  - path_prefix: "/api/v1/surveys"
+    upstream: "survey"
+    target: "http://survey:8007"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/interventions"
+    upstream: "intervention"
+    target: "http://intervention:8008"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/audit"
+    upstream: "audit"
+    target: "http://audit:8009"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET"]
+
+  - path_prefix: "/api/v1/kvkk/consents"
+    upstream: "audit"
+    target: "http://audit:8009"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 30, per_tenant: 500 }
+    methods: ["GET", "POST"]
+
+  - path_prefix: "/api/v1/notifications"
+    upstream: "notification"
+    target: "http://notification:8010"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/ats"
+    upstream: "ats"
+    target: "http://ats:8011"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/assessments/candidate"
+    upstream: "assessment"
+    target: "http://assessment:8012"
+    auth_required: false
+    timeout: 60s
+    rate_limit: { per_user: 10, per_tenant: 500 }
+    methods: ["GET", "POST"]
+
+  - path_prefix: "/api/v1/assessments"
+    upstream: "assessment"
+    target: "http://assessment:8012"
+    auth_required: true
+    timeout: 60s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/mobility"
+    upstream: "mobility"
+    target: "http://mobility:8013"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/score"
+    upstream: "psychometric-scoring"
+    target: "http://psychometric-scoring:8021"
+    auth_required: true
+    timeout: 60s
+    rate_limit: { per_user: 50, per_tenant: 500 }
+    methods: ["GET", "POST"]
+
+  - path_prefix: "/api/v1/burnout"
+    upstream: "burnout-prediction"
+    target: "http://burnout-prediction:8022"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 50, per_tenant: 500 }
+    methods: ["GET", "POST"]
+
+  - path_prefix: "/api/v1/recommend"
+    upstream: "recommendation"
+    target: "http://recommendation:8023"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 50, per_tenant: 500 }
+    methods: ["GET", "POST"]
+
+  - path_prefix: "/api/v1/actions"
+    upstream: "action-center"
+    target: "http://action-center:8024"
+    auth_required: true
+    timeout: 30s
+    rate_limit: { per_user: 100, per_tenant: 1000 }
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]

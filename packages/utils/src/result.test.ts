@@ -1,6 +1,5 @@
 import { describe, it, expect } from 'vitest';
 import { ok, err, unwrap, unwrapOr } from './result';
-import type { Result } from './result';
 
 describe('Result', () => {
   it('creates ok result', () => {

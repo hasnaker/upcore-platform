@@ -19,6 +19,7 @@ const (
 	TopicConsentDeclined      = "intervention.consent.declined.v1"
 	TopicStarted              = "intervention.started.v1"
 	TopicCompleted            = "intervention.completed.v1"
+	TopicCancelled            = "intervention.cancelled.v1"
 	TopicOutcomeRecorded      = "intervention.outcome.recorded.v1"
 	TopicEffectivenessUpdated = "intervention.effectiveness.updated.v1"
 )

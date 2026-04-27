@@ -1,0 +1,26 @@
+{
+  "id": "ik/giris",
+  "title": "İK rehberine hoş geldiniz",
+  "description": "UpCore İK rehberi 8 modül üzerine kuruludur. Her modül, günlük operasyonunuzdan stratejik planlamaya kadar ayrı bir yetenek sunar.",
+  "source": "@site/docs/ik/giris.md",
+  "sourceDirName": "ik",
+  "slug": "/ik/giris",
+  "permalink": "/en/docs/ik/giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "giris",
+    "title": "İK rehberine hoş geldiniz",
+    "slug": "/ik/giris",
+    "sidebar_position": 1
+  },
+  "sidebar": "hrSidebar",
+  "next": {
+    "title": "İlk 15 dakika — yeni İK için hızlı başlangıç",
+    "permalink": "/en/docs/ik/hizli-baslangic/ilk-15-dakika"
+  }
+}

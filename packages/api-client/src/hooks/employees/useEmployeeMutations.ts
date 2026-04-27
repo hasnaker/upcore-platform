@@ -70,7 +70,8 @@ export const useUpdateEmployee = () => {
   return useMutation<
     Employee,
     UpcoreApiError,
-    { id: string; data: UpdateEmployeeRequest }
+    { id: string; data: UpdateEmployeeRequest },
+    { previousEmployee: Employee | undefined }
   >({
     mutationFn: async ({ id, data }) => {
       return api.patch(`employees/${id}`, { json: data }).json<Employee>();

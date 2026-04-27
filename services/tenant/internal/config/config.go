@@ -55,7 +55,11 @@ func Load() (*Config, error) {
 	v.SetDefault("LOG_LEVEL", "info")
 	v.SetDefault("SHUTDOWN_TIMEOUT", 10*time.Second)
 	v.SetDefault("REQUEST_TIMEOUT", 30*time.Second)
-	v.SetDefault("DATABASE_URL", "postgres://upcore:upcore@localhost:5432/upcore_dev?sslmode=disable")
+	// Port 6432 → PgBouncer (transaction pooling). Local dev docker-compose
+	// PgBouncer'ı container olarak expose eder. Production'da Azure Postgres
+	// Flex built-in PgBouncer 6432'de. 5432 doğrudan-postgres fallback için
+	// ayrı DATABASE_URL_DIRECT env (migration'lar için) kullanılır.
+	v.SetDefault("DATABASE_URL", "postgres://upcore:upcore@localhost:6432/upcore_dev?sslmode=disable")
 	v.SetDefault("DATABASE_MAX_OPEN", 25)
 	v.SetDefault("DATABASE_MAX_IDLE", 5)
 	v.SetDefault("TRIAL_DAYS", 14)

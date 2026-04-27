@@ -286,11 +286,149 @@ func (s *TenantService) Suspend(ctx context.Context, id uuid.UUID, reason string
 		return err
 	}
 	_ = s.publisher.Publish(ctx, event.TopicTenantSuspended, map[string]any{
-		"tenant_id":     t.ID,
-		"reason":        reason,
-		"suspended_at":  time.Now().UTC(),
+		"tenant_id":    t.ID,
+		"reason":       reason,
+		"suspended_at": time.Now().UTC(),
 	})
 	return nil
+}
+
+// ChangeStatus transitions a tenant between active/trial/suspended under
+// admin control. Rejects no-op transitions with 422 and any attempt to
+// force status=deleted (use Delete instead). Reason is required for
+// suspend transitions and persisted via the emitted event for audit.
+func (s *TenantService) ChangeStatus(ctx context.Context, id uuid.UUID, next domain.TenantStatus, reason string) (*domain.Tenant, error) {
+	reason = strings.TrimSpace(reason)
+	switch next {
+	case domain.TenantStatusActive, domain.TenantStatusSuspended, domain.TenantStatusTrial:
+		// allowed
+	default:
+		return nil, domain.NewValidationError(map[string]string{"status": "unsupported transition"})
+	}
+	if next == domain.TenantStatusSuspended && reason == "" {
+		return nil, domain.NewValidationError(map[string]string{"reason": "required for suspend"})
+	}
+
+	t, err := s.tenants.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	if t.Status == domain.TenantStatusDeleted {
+		return nil, domain.ErrTenantDeleted
+	}
+	if t.Status == next {
+		return nil, domain.NewValidationError(map[string]string{"status": "already in requested state"})
+	}
+
+	prev := t.Status
+	t.Status = next
+	if err := s.tenants.Update(ctx, t); err != nil {
+		return nil, err
+	}
+	now := time.Now().UTC()
+	switch next {
+	case domain.TenantStatusSuspended:
+		_ = s.publisher.Publish(ctx, event.TopicTenantSuspended, map[string]any{
+			"tenant_id":    t.ID,
+			"reason":       reason,
+			"suspended_at": now,
+			"prev_status":  string(prev),
+		})
+	case domain.TenantStatusActive, domain.TenantStatusTrial:
+		_ = s.publisher.Publish(ctx, event.TopicTenantActivated, map[string]any{
+			"tenant_id":    t.ID,
+			"activated_at": now,
+			"new_status":   string(next),
+			"prev_status":  string(prev),
+			"reason":       reason,
+		})
+	}
+	return t, nil
+}
+
+// AdminListFilter is the public-facing input for TenantService.ListAdmin.
+type AdminListFilter struct {
+	Status   string `json:"status"`
+	PlanID   string `json:"plan_id"`
+	Search   string `json:"q"`
+	Page     int    `json:"page"`
+	PageSize int    `json:"page_size"`
+}
+
+// AdminListResult is the paginated response for ListAdmin.
+type AdminListResult struct {
+	Items    []*domain.TenantAdminRow `json:"items"`
+	Total    int                      `json:"total"`
+	Page     int                      `json:"page"`
+	PageSize int                      `json:"page_size"`
+	HasMore  bool                     `json:"has_more"`
+}
+
+// ListAdmin returns a paginated admin view across all tenants.
+func (s *TenantService) ListAdmin(ctx context.Context, in AdminListFilter) (*AdminListResult, error) {
+	if in.Page < 1 {
+		in.Page = 1
+	}
+	if in.PageSize <= 0 {
+		in.PageSize = 25
+	}
+	if in.PageSize > 100 {
+		in.PageSize = 100
+	}
+	rows, total, err := s.tenants.ListAdmin(ctx, repository.TenantListFilter{
+		Status:   in.Status,
+		PlanID:   in.PlanID,
+		Search:   in.Search,
+		Page:     in.Page,
+		PageSize: in.PageSize,
+	})
+	if err != nil {
+		return nil, err
+	}
+	hasMore := in.Page*in.PageSize < total
+	return &AdminListResult{
+		Items:    rows,
+		Total:    total,
+		Page:     in.Page,
+		PageSize: in.PageSize,
+		HasMore:  hasMore,
+	}, nil
+}
+
+// AdminDetail is the detail projection returned to admins.
+type AdminDetail struct {
+	Tenant       *domain.Tenant           `json:"tenant"`
+	Subscription *domain.Subscription     `json:"subscription,omitempty"`
+	Plan         *domain.Plan             `json:"plan,omitempty"`
+	Usage        []*domain.UsageCounter   `json:"usage"`
+}
+
+// GetAdminDetail returns the tenant, active subscription, and usage counters.
+func (s *TenantService) GetAdminDetail(ctx context.Context, id uuid.UUID) (*AdminDetail, error) {
+	t, err := s.tenants.GetByID(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	out := &AdminDetail{Tenant: t, Usage: []*domain.UsageCounter{}}
+	if s.subs != nil {
+		sub, err := s.subs.GetByTenantID(ctx, t.ID)
+		if err == nil {
+			out.Subscription = sub
+			if s.plans != nil {
+				if p, perr := s.plans.GetByID(ctx, sub.PlanID); perr == nil {
+					out.Plan = p
+				}
+			}
+		} else if !errors.Is(err, domain.ErrSubscriptionNotFound) {
+			return nil, err
+		}
+	}
+	if s.usage != nil {
+		if us, uerr := s.usage.ListByTenant(ctx, t.ID, time.Now().UTC()); uerr == nil {
+			out.Usage = us
+		}
+	}
+	return out, nil
 }
 
 // Activate moves a trial/suspended tenant to active state.

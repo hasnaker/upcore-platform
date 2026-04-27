@@ -8,7 +8,6 @@ Strategy (heuristic v0.1):
 
 from __future__ import annotations
 
-import numpy as np
 import structlog
 
 from app.features.feature_spec import FEATURE_SPEC

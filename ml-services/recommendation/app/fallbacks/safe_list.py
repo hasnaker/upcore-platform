@@ -9,7 +9,7 @@ regardless of burnout band or driver profile.
 
 from __future__ import annotations
 
-from uuid import UUID, uuid5, NAMESPACE_DNS
+from uuid import uuid5, NAMESPACE_DNS
 
 import structlog
 

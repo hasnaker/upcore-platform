@@ -5,12 +5,15 @@ import (
 	"errors"
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/rs/zerolog"
 
 	"github.com/upcore/tenant/internal/domain"
 	"github.com/upcore/tenant/internal/event"
 	"github.com/upcore/tenant/internal/testsupport"
 )
+
+func uuidNew() uuid.UUID { return uuid.New() }
 
 func newTestService(t *testing.T) (*TenantService, *event.InMemoryPublisher, *testsupport.FakeTenantRepo, *testsupport.FakeSubscriptionRepo) {
 	t.Helper()
@@ -180,6 +183,103 @@ func TestDelete_SoftDeletes(t *testing.T) {
 	}
 	if pub.Count(event.TopicTenantDeleted) != 1 {
 		t.Fatalf("expected deleted event, got %d", pub.Count(event.TopicTenantDeleted))
+	}
+}
+
+func TestChangeStatus_SuspendAndActivate(t *testing.T) {
+	svc, pub, _, _ := newTestService(t)
+	ctx := context.Background()
+	res, _ := svc.Signup(ctx, validSignupReq())
+
+	// trial → suspended (requires reason).
+	if _, err := svc.ChangeStatus(ctx, res.TenantID, domain.TenantStatusSuspended, ""); !IsValidationError(err) {
+		t.Fatalf("expected validation (missing reason), got %v", err)
+	}
+	if _, err := svc.ChangeStatus(ctx, res.TenantID, domain.TenantStatusSuspended, "non-payment"); err != nil {
+		t.Fatalf("suspend: %v", err)
+	}
+	if pub.Count(event.TopicTenantSuspended) != 1 {
+		t.Fatalf("expected suspended event")
+	}
+	// suspended → active
+	if _, err := svc.ChangeStatus(ctx, res.TenantID, domain.TenantStatusActive, "paid"); err != nil {
+		t.Fatalf("activate: %v", err)
+	}
+	if pub.Count(event.TopicTenantActivated) != 1 {
+		t.Fatalf("expected activated event")
+	}
+	// active → active = no-op ⇒ 422
+	if _, err := svc.ChangeStatus(ctx, res.TenantID, domain.TenantStatusActive, ""); !IsValidationError(err) {
+		t.Fatalf("expected noop validation, got %v", err)
+	}
+	// invalid next status
+	if _, err := svc.ChangeStatus(ctx, res.TenantID, domain.TenantStatusDeleted, ""); !IsValidationError(err) {
+		t.Fatalf("expected validation for deleted transition, got %v", err)
+	}
+}
+
+func TestListAdmin_FiltersAndPagination(t *testing.T) {
+	svc, _, _, _ := newTestService(t)
+	ctx := context.Background()
+
+	for i := 0; i < 3; i++ {
+		req := validSignupReq()
+		req.CompanySlug = "tenant-" + string(rune('a'+i))
+		req.AdminEmail = "a" + string(rune('a'+i)) + "@acme.com"
+		if _, err := svc.Signup(ctx, req); err != nil {
+			t.Fatalf("seed: %v", err)
+		}
+	}
+
+	res, err := svc.ListAdmin(ctx, AdminListFilter{Page: 1, PageSize: 2})
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	if res.Total != 3 {
+		t.Fatalf("total=%d want 3", res.Total)
+	}
+	if len(res.Items) != 2 {
+		t.Fatalf("items=%d want 2", len(res.Items))
+	}
+	if !res.HasMore {
+		t.Fatalf("expected has_more")
+	}
+
+	// search
+	res2, err := svc.ListAdmin(ctx, AdminListFilter{Search: "tenant-a"})
+	if err != nil {
+		t.Fatalf("search: %v", err)
+	}
+	if res2.Total != 1 {
+		t.Fatalf("expected 1 match, got %d", res2.Total)
+	}
+}
+
+func TestGetAdminDetail_ReturnsSubscriptionAndPlan(t *testing.T) {
+	svc, _, _, _ := newTestService(t)
+	ctx := context.Background()
+	res, _ := svc.Signup(ctx, validSignupReq())
+
+	d, err := svc.GetAdminDetail(ctx, res.TenantID)
+	if err != nil {
+		t.Fatalf("detail: %v", err)
+	}
+	if d.Tenant == nil || d.Tenant.ID != res.TenantID {
+		t.Fatalf("tenant missing")
+	}
+	if d.Subscription == nil || d.Subscription.PlanID != "free" {
+		t.Fatalf("subscription missing")
+	}
+	if d.Plan == nil || d.Plan.ID != "free" {
+		t.Fatalf("plan missing")
+	}
+}
+
+func TestGetAdminDetail_NotFound(t *testing.T) {
+	svc, _, _, _ := newTestService(t)
+	ctx := context.Background()
+	if _, err := svc.GetAdminDetail(ctx, uuidNew()); !errors.Is(err, domain.ErrTenantNotFound) {
+		t.Fatalf("expected not found, got %v", err)
 	}
 }
 

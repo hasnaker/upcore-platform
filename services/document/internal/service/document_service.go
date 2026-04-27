@@ -270,6 +270,34 @@ func (s *DocumentService) Download(ctx context.Context, tenantID, id, viewerID u
 	return url, nil
 }
 
+// GetWithContent returns the document metadata + current-version bytes. Used
+// by the BulkZipHandler to bundle multiple documents into a single archive.
+// Returns (doc, bytes, error). Falls back to empty bytes when the blob
+// backend is not configured (dev).
+func (s *DocumentService) GetWithContent(ctx context.Context, tenantID, id uuid.UUID) (*struct {
+	FileName string
+}, []byte, error) {
+	d, err := s.docs.GetByID(ctx, tenantID, id)
+	if err != nil {
+		return nil, nil, err
+	}
+	ver, err := s.versions.GetByVersion(ctx, tenantID, d.ID, d.CurrentVersion)
+	if err != nil {
+		return nil, nil, err
+	}
+	filename := fmt.Sprintf("%s-v%d%s", safeTitle(d.Title), ver.Version, ExtensionForMime(ver.MimeType))
+	rc, err := s.blob.Download(ctx, ver.StorageContainer, ver.StorageKey)
+	if err != nil || rc == nil {
+		return &struct{ FileName string }{FileName: filename}, nil, nil
+	}
+	defer rc.Close()
+	body, err := io.ReadAll(rc)
+	if err != nil {
+		return &struct{ FileName string }{FileName: filename}, nil, nil
+	}
+	return &struct{ FileName string }{FileName: filename}, body, nil
+}
+
 // Delete soft-deletes a document.
 func (s *DocumentService) Delete(ctx context.Context, tenantID, id, deletedBy uuid.UUID) error {
 	d, err := s.docs.GetByID(ctx, tenantID, id)

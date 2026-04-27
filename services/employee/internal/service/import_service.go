@@ -77,6 +77,54 @@ var parasutColumns = []string{
 	"departman", "pozisyon", "yonetici_email",
 }
 
+// ValidateCSV parses and validates a CSV stream *without* persisting rows.
+// Used by the onboarding wizard Step 4 preview. Returns the same shape as
+// ImportCSV.
+func (s *ImportService) ValidateCSV(ctx context.Context, tenantID uuid.UUID, r io.Reader) (*ImportResult, error) {
+	_ = ctx
+	start := time.Now()
+	res := &ImportResult{StartedAt: start}
+
+	reader := csv.NewReader(r)
+	reader.FieldsPerRecord = -1
+	reader.TrimLeadingSpace = true
+	reader.ReuseRecord = false
+
+	header, err := reader.Read()
+	if err != nil {
+		return nil, domain.ErrCSVInvalidSchema
+	}
+	colIdx := buildColumnIndex(header)
+	if colIdx["ad"] < 0 || colIdx["soyad"] < 0 || colIdx["ise_baslama_tarihi"] < 0 {
+		return nil, domain.ErrCSVInvalidSchema
+	}
+
+	rowNum := 1
+	for {
+		rowNum++
+		row, rerr := reader.Read()
+		if rerr == io.EOF {
+			break
+		}
+		if rerr != nil {
+			res.Errors = append(res.Errors, ImportRowError{Row: rowNum, Message: "csv parse error: " + rerr.Error()})
+			continue
+		}
+		if res.Total >= s.maxRows {
+			return nil, domain.ErrCSVTooManyRows
+		}
+		res.Total++
+		if _, verr := s.mapRow(tenantID, colIdx, row); verr != nil {
+			res.Errors = append(res.Errors, ImportRowError{Row: rowNum, Message: verr.Error()})
+			continue
+		}
+		res.Imported++ // reuse field as "would-import" for dry-run result
+	}
+	res.Skipped = res.Total - res.Imported
+	res.Duration = time.Since(start)
+	return res, nil
+}
+
 // ImportCSV parses a CSV stream and creates employees.
 // The first row is expected to be the header; unknown columns are preserved
 // but not written.

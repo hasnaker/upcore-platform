@@ -10,13 +10,8 @@ from __future__ import annotations
 import structlog
 from fastapi import APIRouter, HTTPException
 
-from app.schemas.bat import BATScoreRequest
-from app.schemas.copsoq import COPSOQScoreRequest
-from app.schemas.jdr import JDRScoreRequest
 from app.schemas.requests import BatchScoreRequest
 from app.schemas.responses import BatchResultItem, BatchScoreResponse
-from app.schemas.strengths import StrengthsScoreRequest
-from app.schemas.upcap import UpCapScoreRequest
 from app.scoring.bat_scoring import score_bat12
 from app.scoring.copsoq_scoring import score_copsoq
 from app.scoring.jdr_scoring import score_jdr
@@ -25,7 +20,7 @@ from app.scoring.upcap_scoring import score_upcap
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/v1/score", tags=["scoring"])
+router = APIRouter(prefix="/api/v1/score", tags=["scoring"])
 
 
 def _score_single(instrument: str, payload: dict[str, object]) -> dict[str, object]:

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/sgk-e-bildirge",
+  "title": "SGK e-Bildirge",
+  "description": "Sosyal Güvenlik Kurumu'na aylık bildirge üretimi.",
+  "source": "@site/docs/ik/modul/ik-ops/sgk-e-bildirge.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/sgk-e-bildirge",
+  "permalink": "/en/docs/ik/modul/ik-ops/sgk-e-bildirge",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/sgk-e-bildirge.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "sgk-e-bildirge",
+    "title": "SGK e-Bildirge",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Bordro hesaplama",
+    "permalink": "/en/docs/ik/modul/ik-ops/bordro-hesaplama"
+  },
+  "next": {
+    "title": "Mesai ve fazla çalışma",
+    "permalink": "/en/docs/ik/modul/ik-ops/kiyafet-mesai"
+  }
+}

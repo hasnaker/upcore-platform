@@ -13,11 +13,11 @@ export default function OnboardingLayout({
           <Link href="/" className="text-lg font-semibold text-ink">
             {siteConfig.name}
           </Link>
-          <span className="text-xs text-ink-60">Kurulum · 1/1</span>
+          <span className="text-xs text-ink-60">Kurulum sihirbazı</span>
         </div>
       </header>
-      <main className="flex flex-1 items-start justify-center px-6 py-12">
-        <div className="w-full max-w-2xl">{children}</div>
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-6 py-10">
+        {children}
       </main>
     </div>
   );

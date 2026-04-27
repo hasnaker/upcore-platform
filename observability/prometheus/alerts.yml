@@ -1,0 +1,148 @@
+# UpCore Prometheus Alert Rules
+# Uyumlu: Prometheus 2.x + Alertmanager 0.27+
+# SLO kaynağı: `compliance/soc2/trust-services-criteria.md` A1.1-3
+
+groups:
+  - name: upcore-api-latency
+    interval: 30s
+    rules:
+      - alert: UpCoreP95LatencyHigh
+        expr: |
+          histogram_quantile(0.95,
+            sum by (service, le) (rate(http_request_duration_seconds_bucket{job=~"upcore-.*"}[5m]))
+          ) > 0.8
+        for: 10m
+        labels:
+          severity: warning
+          team: sre
+        annotations:
+          summary: "{{ $labels.service }} p95 > 800ms"
+          description: "10 dakikadır servisin p95 latency 800ms üstünde. SLO: smoke budget 800ms."
+          runbook: "ops/runbooks/high-latency.md"
+
+      - alert: UpCoreP99LatencySevere
+        expr: |
+          histogram_quantile(0.99,
+            sum by (service, le) (rate(http_request_duration_seconds_bucket{job=~"upcore-.*"}[5m]))
+          ) > 3.0
+        for: 5m
+        labels:
+          severity: critical
+          team: sre
+        annotations:
+          summary: "{{ $labels.service }} p99 > 3s"
+
+  - name: upcore-error-rate
+    interval: 30s
+    rules:
+      - alert: UpCoreHighErrorRate
+        expr: |
+          sum by (service) (rate(http_requests_total{status=~"5..",job=~"upcore-.*"}[5m]))
+          /
+          sum by (service) (rate(http_requests_total{job=~"upcore-.*"}[5m]))
+          > 0.02
+        for: 5m
+        labels:
+          severity: critical
+          team: sre
+          slo: error-budget
+        annotations:
+          summary: "{{ $labels.service }} error rate > 2%"
+          description: "5 dakikadır 5xx oranı %2'yi aştı. Error budget yakılıyor."
+
+      - alert: UpCoreErrorBudgetBurn
+        # fast burn: 1 saatte ayın %5'lik bütçesini tüketme
+        expr: |
+          (
+            sum(rate(http_requests_total{status=~"5..",job=~"upcore-.*"}[1h]))
+            /
+            sum(rate(http_requests_total{job=~"upcore-.*"}[1h]))
+          ) > (14.4 * 0.001)
+        for: 2m
+        labels:
+          severity: critical
+          team: sre
+          slo: error-budget-burn
+        annotations:
+          summary: "Error budget fast-burn (1h penceresi)"
+          description: "Mevcut hızla devam ederse aylık 99.9% SLO 2 gün içinde kırılır."
+
+  - name: upcore-infra
+    interval: 60s
+    rules:
+      - alert: UpCorePostgresConnectionsNearCap
+        expr: pg_stat_activity_count > 140
+        for: 5m
+        labels: { severity: warning, team: sre }
+        annotations:
+          summary: "PG aktif bağlantı > 140 (cap 200)"
+
+      - alert: UpCoreOutboxBacklog
+        expr: sum(outbox_pending_events) > 2000
+        for: 10m
+        labels: { severity: warning, team: sre }
+        annotations:
+          summary: "Outbox pending event sayısı 2000 üstünde"
+          description: "Dispatcher yetişemiyor; broker veya network sorunu olabilir."
+
+      - alert: UpCoreOutboxDLQNonEmpty
+        expr: sum(outbox_dlq_size) > 0
+        for: 15m
+        labels: { severity: warning, team: sre, slo: reliability }
+        annotations:
+          summary: "DLQ'da {{ $value }} event var"
+          description: "Manuel replay gerekli. /ayarlar/dlq üzerinden incele."
+
+      - alert: UpCoreServiceBusMessageAging
+        expr: servicebus_active_message_age_seconds > 600
+        for: 5m
+        labels: { severity: warning, team: sre }
+        annotations:
+          summary: "Service Bus mesaj yaşı > 10 dk"
+
+      - alert: UpCoreSagaStuck
+        expr: sum(saga_instances_in_flight) > 50
+        for: 15m
+        labels: { severity: warning, team: sre }
+        annotations:
+          summary: "50+ saga 15 dakikadır running"
+          description: "Compensate edilmesi gereken saga olabilir."
+
+  - name: upcore-security
+    interval: 60s
+    rules:
+      - alert: UpCoreWebhookSignatureFailures
+        expr: sum(rate(webhook_signature_invalid_total[10m])) > 5
+        for: 5m
+        labels: { severity: warning, team: security }
+        annotations:
+          summary: "Dakikada 5+ webhook imza doğrulama hatası"
+          description: "Müşteri yanlış secret kullanıyor VEYA saldırı denemesi. incident kanalına düş."
+
+      - alert: UpCoreAuthBruteForce
+        expr: sum by (ip) (rate(http_requests_total{path="/api/v1/auth/login",status="401"}[5m])) > 1
+        for: 5m
+        labels: { severity: critical, team: security }
+        annotations:
+          summary: "IP {{ $labels.ip }} dakikada 60+ başarısız login"
+
+  - name: upcore-business
+    interval: 5m
+    rules:
+      - alert: UpCoreBordroCalculationFailureRate
+        expr: |
+          (sum(rate(bordro_calculation_failed_total[1h]))
+           / sum(rate(bordro_calculation_total[1h]))) > 0.01
+        for: 15m
+        labels: { severity: critical, team: sre, slo: processing-integrity }
+        annotations:
+          summary: "Bordro hesaplama hata oranı > %1"
+          description: "Finansal hesap hatası müşteri için kritik."
+
+      - alert: UpCoreKVKKExportSLAMiss
+        expr: increase(kvkk_export_sla_breached_total[24h]) > 0
+        for: 0m
+        labels: { severity: warning, team: dpo }
+        annotations:
+          summary: "KVKK export 30 gün SLA ihlal edildi"
+          description: "DPO derhal incelemeli."

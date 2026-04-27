@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"regexp"
 	"strings"
 	"syscall"
 	"time"
@@ -59,9 +60,27 @@ func main() {
 	jwksCache := gatewayjwt.NewJWKSCache(cfg.ClerkJWKSURL, cfg.JWKSCacheTTL)
 	jwtValidator := gatewayjwt.NewValidator(jwksCache, cfg.ClerkIssuer, cfg.JWTAudience)
 
-	// Rate limiter
+	// Rate limiter — fail-closed by default. Local in-memory token-bucket
+	// fallback kicks in after N consecutive Redis failures when
+	// RATE_LIMIT_MODE=fail_open_local is set.
 	redisStore := ratelimit.NewRedisStore(redisClient)
-	limiter := ratelimit.NewLimiter(redisStore, cfg.RateLimitWindowSec)
+	rlMode := ratelimit.ModeFailClosed
+	if strings.EqualFold(cfg.RateLimitMode, "fail_open_local") {
+		rlMode = ratelimit.ModeFailOpenLocal
+	}
+	breakerFails := cfg.RateLimitBreakerConsecutiveFails
+	if breakerFails <= 0 {
+		breakerFails = 5
+	}
+	breakerOpen := cfg.RateLimitBreakerOpenDuration
+	if breakerOpen <= 0 {
+		breakerOpen = 30 * time.Second
+	}
+	limiter := ratelimit.NewLimiterWithMode(redisStore, cfg.RateLimitWindowSec, ratelimit.LimiterOptions{
+		Mode:                rlMode,
+		BreakerFailsToOpen:  breakerFails,
+		BreakerOpenDuration: breakerOpen,
+	})
 
 	// Rate limit policy store
 	policyStore := ratelimit.NewPolicyStore(ratelimit.Policy{
@@ -116,8 +135,20 @@ func main() {
 	// Build auth skip paths from route config
 	skipPaths := buildSkipPaths(routes)
 
+	// CORS config — env-based strict whitelist. Panics on "*"+credentials.
+	corsCSV := strings.Join(cfg.CORSAllowedOrigins, ",")
+	corsCfg, corsWildcards, err := middleware.LoadCORSConfigFromEnv(corsCSV, cfg.Env)
+	if err != nil {
+		log.Fatal().Err(err).Msg("load cors config")
+	}
+	log.Info().
+		Strs("origins", corsCfg.AllowedOrigins).
+		Int("wildcard_patterns", len(corsWildcards)).
+		Str("env", cfg.Env).
+		Msg("cors configured")
+
 	// Setup router
-	router := setupRouter(cfg, gateway, jwtValidator, limiter, policyStore, redisClient, publisher, skipPaths)
+	router := setupRouter(cfg, gateway, jwtValidator, limiter, policyStore, redisClient, publisher, skipPaths, corsCfg, corsWildcards)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -163,15 +194,19 @@ func setupRouter(
 	redisClient *redis.Client,
 	publisher *event.Publisher,
 	skipPaths []string,
+	corsCfg middleware.CORSConfig,
+	corsWildcards []*regexp.Regexp,
 ) http.Handler {
 	r := chi.NewRouter()
 
 	// Middleware chain (outermost first):
-	// Recovery → CORS → Correlation → Logger → Gzip → Auth → Tenant → RateLimit → Proxy
+	// Recovery → SecurityHeaders → CORS → Correlation → Logger → Gzip → Auth → Tenant → RateLimit → Proxy
 	logger := log.Logger
 	r.Use(middleware.RecoveryMiddleware(logger))
-	r.Use(middleware.CORSMiddleware(cfg.CORSAllowedOrigins))
+	r.Use(middleware.SecurityHeadersMiddleware())
+	r.Use(middleware.CORSMiddlewareWithConfig(corsCfg, corsWildcards))
 	r.Use(middleware.CorrelationMiddleware())
+	r.Use(middleware.APIVersioningMiddleware())
 	r.Use(middleware.LoggingMiddleware(logger))
 	r.Use(middleware.GzipMiddleware())
 	r.Use(middleware.AuthMiddleware(jwtValidator, skipPaths))

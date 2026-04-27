@@ -1,0 +1,29 @@
+{
+  "id": "developer/webhook/genel-bakis",
+  "title": "Webhook genel bakış",
+  "description": "Olaylara (event) dayalı push bildirimler.",
+  "source": "@site/docs/developer/webhook/genel-bakis.md",
+  "sourceDirName": "developer/webhook",
+  "slug": "/developer/webhook/genel-bakis",
+  "permalink": "/en/docs/developer/webhook/genel-bakis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/webhook/genel-bakis.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "genel-bakis",
+    "title": "Webhook genel bakış",
+    "sidebar_position": 1
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Try it out sandbox",
+    "permalink": "/en/docs/developer/api/try-it-out-sandbox"
+  },
+  "next": {
+    "title": "Webhook imzalama ve doğrulama",
+    "permalink": "/en/docs/developer/webhook/imzalama"
+  }
+}

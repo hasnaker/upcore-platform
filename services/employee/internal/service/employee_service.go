@@ -395,6 +395,97 @@ func (s *EmployeeService) List(ctx context.Context, filter repository.ListFilter
 	return s.employees.List(ctx, filter)
 }
 
+// UpdateAvatar writes the avatar URL on the employee record. Pass empty
+// string to clear (the handler's DELETE endpoint does this).
+func (s *EmployeeService) UpdateAvatar(ctx context.Context, tenantID, id uuid.UUID, url string) error {
+	e, err := s.employees.GetByID(ctx, tenantID, id)
+	if err != nil {
+		return err
+	}
+	// Uses the domain field — migration 037 adds it; the DB mapper gracefully
+	// ignores the column if absent (to allow staggered rollout).
+	e.AvatarURL = &url
+	now := time.Now().UTC()
+	e.AvatarUpdatedAt = &now
+	return s.employees.Update(ctx, e)
+}
+
+// UpdateStatus is the one-shot helper used by the bulk endpoint.
+func (s *EmployeeService) UpdateStatus(ctx context.Context, tenantID, id uuid.UUID, status string) error {
+	e, err := s.employees.GetByID(ctx, tenantID, id)
+	if err != nil {
+		return err
+	}
+	e.EmploymentStatus = domain.EmploymentStatus(status)
+	if err := s.employees.Update(ctx, e); err != nil {
+		return err
+	}
+	s.publish(ctx, "employee.status_changed.v1", map[string]any{
+		"employee_id": id, "tenant_id": tenantID, "new_status": status,
+	})
+	return nil
+}
+
+// MassEmailParams is the server-side payload.
+type MassEmailParams struct {
+	Status       string
+	DepartmentID *uuid.UUID
+	EmployeeIDs  []uuid.UUID
+	TemplateKey  string
+	Variables    map[string]string
+}
+
+// MassEmail resolves the audience and emits a single fan-out event; the
+// notification service consumes it and sends one email per recipient so the
+// employee service doesn't re-implement SendGrid.
+func (s *EmployeeService) MassEmail(ctx context.Context, tenantID uuid.UUID, p MassEmailParams) (int, error) {
+	f := repository.ListFilter{TenantID: tenantID, Status: p.Status, DepartmentID: p.DepartmentID, Page: 1, Limit: 5000}
+	var recipients []map[string]any
+	if len(p.EmployeeIDs) > 0 {
+		for _, id := range p.EmployeeIDs {
+			e, err := s.employees.GetByID(ctx, tenantID, id)
+			if err != nil {
+				continue
+			}
+			recipients = appendRecipient(recipients, e)
+		}
+	} else {
+		items, _, err := s.employees.List(ctx, f)
+		if err != nil {
+			return 0, err
+		}
+		for _, e := range items {
+			recipients = appendRecipient(recipients, e)
+		}
+	}
+	s.publish(ctx, "email.mass.dispatch.v1", map[string]any{
+		"tenant_id":    tenantID,
+		"template_key": p.TemplateKey,
+		"variables":    p.Variables,
+		"recipients":   recipients,
+	})
+	return len(recipients), nil
+}
+
+func appendRecipient(out []map[string]any, e *domain.Employee) []map[string]any {
+	email := ""
+	if e.EmailIs != nil {
+		email = *e.EmailIs
+	} else if e.EmailKisisel != nil {
+		email = *e.EmailKisisel
+	}
+	if email == "" {
+		return out
+	}
+	return append(out, map[string]any{
+		"user_id":     e.UserID,
+		"employee_id": e.ID,
+		"email":       email,
+		"first_name":  e.Ad,
+		"last_name":   e.Soyad,
+	})
+}
+
 // ----- helpers ---------------------------------------------------------------
 
 func (s *EmployeeService) validateManagerAssignment(ctx context.Context, tenantID, employeeID, managerID uuid.UUID) error {

@@ -1,0 +1,20 @@
+{
+  "name": "@upcore/screenshots",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UpCore marketing screenshot capture + visual regression (Playwright)",
+  "type": "module",
+  "scripts": {
+    "capture": "playwright test --project=capture-desktop --project=capture-mobile",
+    "capture:desktop": "playwright test --project=capture-desktop",
+    "capture:mobile": "playwright test --project=capture-mobile",
+    "regression": "playwright test --project=regression",
+    "regression:update": "playwright test --project=regression --update-snapshots",
+    "verify": "playwright test --project=verify",
+    "install:browsers": "playwright install --with-deps chromium"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.0",
+    "typescript": "^5.5.3"
+  }
+}

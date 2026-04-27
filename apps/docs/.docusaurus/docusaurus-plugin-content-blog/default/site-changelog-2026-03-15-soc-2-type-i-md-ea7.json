@@ -1,0 +1,54 @@
+{
+  "permalink": "/en/changelog/soc2-type-i-tamamlandi",
+  "source": "@site/changelog/2026-03-15-soc2-type-i.md",
+  "title": "SOC 2 Type I denetim tamamlandı",
+  "description": "UpCore Teknoloji A.Ş., SOC 2 Type I denetimini Ernst & Young (EY) tarafından başarıyla tamamladı.",
+  "date": "2026-03-15T00:00:00.000Z",
+  "tags": [
+    {
+      "inline": true,
+      "label": "compliance",
+      "permalink": "/en/changelog/tags/compliance"
+    },
+    {
+      "inline": true,
+      "label": "soc2",
+      "permalink": "/en/changelog/tags/soc-2"
+    },
+    {
+      "inline": true,
+      "label": "security",
+      "permalink": "/en/changelog/tags/security"
+    }
+  ],
+  "readingTime": 0.55,
+  "hasTruncateMarker": true,
+  "authors": [
+    {
+      "name": "UpCore Compliance Team",
+      "title": "Uyum Ekibi",
+      "url": "https://upcore.io/about",
+      "imageURL": "/en/img/authors/compliance-team.svg",
+      "key": "compliance-team",
+      "page": null
+    }
+  ],
+  "frontMatter": {
+    "slug": "soc2-type-i-tamamlandi",
+    "title": "SOC 2 Type I denetim tamamlandı",
+    "authors": [
+      "compliance-team"
+    ],
+    "tags": [
+      "compliance",
+      "soc2",
+      "security"
+    ],
+    "date": "2026-03-15T00:00:00.000Z"
+  },
+  "unlisted": false,
+  "prevItem": {
+    "title": "Q2 2026 ML modelleri retrain tamamlandı",
+    "permalink": "/en/changelog/q2-ml-retrain"
+  }
+}

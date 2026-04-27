@@ -1,0 +1,29 @@
+{
+  "id": "admin/operasyon/feature-flag",
+  "title": "Feature flag yönetimi",
+  "description": "Risk almadan yeni özellikleri açma sistemi.",
+  "source": "@site/docs/admin/operasyon/feature-flag.md",
+  "sourceDirName": "admin/operasyon",
+  "slug": "/admin/operasyon/feature-flag",
+  "permalink": "/en/docs/admin/operasyon/feature-flag",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/operasyon/feature-flag.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "feature-flag",
+    "title": "Feature flag yönetimi",
+    "sidebar_position": 1
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Seat yönetimi",
+    "permalink": "/en/docs/admin/billing/seat-yonetimi"
+  },
+  "next": {
+    "title": "Webhook konfigürasyonu",
+    "permalink": "/en/docs/admin/operasyon/webhook-konfigurasyon"
+  }
+}

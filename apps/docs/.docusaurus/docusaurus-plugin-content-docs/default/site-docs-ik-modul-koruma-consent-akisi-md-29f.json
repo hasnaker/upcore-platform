@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/consent-akisi",
+  "title": "Consent (açık rıza) akışı",
+  "description": "Müdahale öncesi KVKK uyumlu açık rıza alma süreci.",
+  "source": "@site/docs/ik/modul/koruma/consent-akisi.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/consent-akisi",
+  "permalink": "/en/docs/ik/modul/koruma/consent-akisi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/consent-akisi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "consent-akisi",
+    "title": "Consent (açık rıza) akışı",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Thompson sampling öneri motoru",
+    "permalink": "/en/docs/ik/modul/koruma/thompson-sampling"
+  },
+  "next": {
+    "title": "Plan takibi",
+    "permalink": "/en/docs/ik/modul/koruma/plan-takibi"
+  }
+}

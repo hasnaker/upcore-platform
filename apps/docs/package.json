@@ -1,0 +1,65 @@
+{
+  "name": "@upcore/docs",
+  "version": "1.0.0",
+  "private": true,
+  "description": "UpCore documentation site — docs.upcore.io (Docusaurus 3)",
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "node scripts/build-api-pages.mjs && docusaurus start --port 3100 --host 0.0.0.0",
+    "dev": "node scripts/build-api-pages.mjs && docusaurus start --port 3100 --host 0.0.0.0",
+    "build": "node scripts/build-api-pages.mjs && node scripts/generate-openapi-index.mjs && docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve --port 3100 --host 0.0.0.0",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint src --ext .ts,.tsx --max-warnings 0",
+    "clean": "rm -rf .docusaurus build node_modules .turbo",
+    "gen:openapi": "node scripts/generate-openapi-index.mjs",
+    "gen:api-pages": "node scripts/build-api-pages.mjs",
+    "gen:changelog": "node scripts/generate-changelog-rss.mjs",
+    "lighthouse": "node scripts/lighthouse-check.mjs"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.7.0",
+    "@docusaurus/preset-classic": "3.7.0",
+    "@docusaurus/plugin-content-docs": "3.7.0",
+    "@docusaurus/plugin-content-blog": "3.7.0",
+    "@docusaurus/plugin-sitemap": "3.7.0",
+    "@docusaurus/theme-common": "3.7.0",
+    "@docusaurus/theme-mermaid": "3.7.0",
+    "@docusaurus/theme-search-algolia": "3.7.0",
+    "@docusaurus/theme-classic": "3.7.0",
+    "@mdx-js/react": "^3.0.0",
+    "clsx": "^2.1.1",
+    "prism-react-renderer": "^2.4.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "rss": "^1.2.2"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "3.7.0",
+    "@docusaurus/tsconfig": "3.7.0",
+    "@docusaurus/types": "3.7.0",
+    "@types/node": "^20.11.30",
+    "@types/react": "^18.3.3",
+    "@types/rss": "^0.0.32",
+    "@typescript-eslint/eslint-plugin": "^7.18.0",
+    "@typescript-eslint/parser": "^7.18.0",
+    "eslint": "^8.57.0",
+    "typescript": "^5.5.3"
+  },
+  "browserslist": {
+    "production": [">0.5%", "not dead", "not op_mini all"],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=20.11.0"
+  }
+}

@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from uuid import uuid4
 
-import pytest
 
 from app.rationale.prompt_templates import render_prompt, templated_fallback
 from app.schemas.actions import ActionCandidate, ActionType

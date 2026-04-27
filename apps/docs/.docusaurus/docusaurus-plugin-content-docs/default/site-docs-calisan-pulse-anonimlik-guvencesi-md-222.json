@@ -1,0 +1,29 @@
+{
+  "id": "calisan/pulse/anonimlik-guvencesi",
+  "title": "Anonimlik güvencesi",
+  "description": "UpCore'un pulse sistemi tasarım gereği (privacy by design) bireysel cevapları korur.",
+  "source": "@site/docs/calisan/pulse/anonimlik-guvencesi.md",
+  "sourceDirName": "calisan/pulse",
+  "slug": "/calisan/pulse/anonimlik-guvencesi",
+  "permalink": "/en/docs/calisan/pulse/anonimlik-guvencesi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/pulse/anonimlik-guvencesi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "anonimlik-guvencesi",
+    "title": "Anonimlik güvencesi",
+    "sidebar_position": 3
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Pulse anketini cevaplama",
+    "permalink": "/en/docs/calisan/pulse/pulse-cevaplama"
+  },
+  "next": {
+    "title": "KVKK Madde 11 hakları",
+    "permalink": "/en/docs/calisan/kvkk/madde-11-haklar"
+  }
+}

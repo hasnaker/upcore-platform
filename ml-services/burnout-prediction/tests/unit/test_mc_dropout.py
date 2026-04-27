@@ -19,21 +19,27 @@ class TestMCForwardNTimes:
     def test_returns_correct_shape(self) -> None:
         """Output should have n_samples entries."""
         inputs = np.array([[0.5, 0.3, 0.7]], dtype=np.float32)
-        predict_fn = lambda x: np.sum(x, axis=-1)
+        def predict_fn(x: np.ndarray) -> np.ndarray:
+            return np.sum(x, axis=-1)
+
         result = mc_forward_n_times(predict_fn, inputs, n_samples=20)
         assert result.shape[0] == 20
 
     def test_dropout_creates_variation(self) -> None:
         """MC samples should not be identical (dropout adds noise)."""
         inputs = np.ones((1, 10), dtype=np.float32) * 0.5
-        predict_fn = lambda x: np.sum(x, axis=-1)
+        def predict_fn(x: np.ndarray) -> np.ndarray:
+            return np.sum(x, axis=-1)
+
         result = mc_forward_n_times(predict_fn, inputs, n_samples=30, dropout_rate=0.2)
         assert np.std(result) > 0, "MC samples should have variation"
 
     def test_zero_dropout_rate(self) -> None:
         """With zero dropout, all samples should be identical."""
         inputs = np.ones((1, 5), dtype=np.float32) * 2.0
-        predict_fn = lambda x: np.sum(x, axis=-1)
+        def predict_fn(x: np.ndarray) -> np.ndarray:
+            return np.sum(x, axis=-1)
+
         result = mc_forward_n_times(predict_fn, inputs, n_samples=10, dropout_rate=0.0)
         assert np.std(result) == pytest.approx(0.0, abs=1e-6)
 

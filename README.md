@@ -39,7 +39,7 @@ upcore-platform/
 │   ├── types/               @upcore/types
 │   ├── api-client/          @upcore/api-client
 │   └── utils/               @upcore/utils
-├── services/                Go microservices (14 adet)
+├── services/                Go microservices (16 adet)
 │   ├── api-gateway/         GraphQL/REST gateway
 │   ├── auth/                Authentication + session
 │   ├── tenant/              Tenant management
@@ -53,7 +53,9 @@ upcore-platform/
 │   ├── intervention/        Intervention catalog
 │   ├── mobility/            İç rotasyon + career paths
 │   ├── notification/        Email/Slack/SMS
-│   └── audit/               Audit log
+│   ├── audit/               Audit log
+│   ├── performance/         OKR + review + calibration
+│   └── bordro/              Payroll + SGK domain
 ├── ml-services/             Python FastAPI ML services (4)
 │   ├── psychometric-scoring/  JD-R, BAT, UpCap, Strengths, JCS
 │   ├── burnout-prediction/    LSTM model
@@ -64,7 +66,18 @@ upcore-platform/
 │   ├── kubernetes/          K8s manifests (if needed)
 │   └── github-actions/      CI/CD workflows
 ├── database/                SQL migrations + seeds
+├── tests/                   Playwright E2E suites
 └── scripts/                 Build/deploy scripts
+```
+
+## ✅ Release Guard Komutları
+
+```bash
+# E2E smoke (Playwright)
+pnpm test:e2e
+
+# Web API direct-DB surface guard
+pnpm check:web-api-db
 ```
 
 ## 🛠 Tech Stack

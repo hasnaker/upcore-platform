@@ -1,0 +1,67 @@
+# ============================================================================
+# Web app prod build with Clerk live key inlined.
+# Manuel tetiklenir: gh workflow run build-web-prod.yml -f tag=v0.23.0
+# ============================================================================
+
+name: Build Web Prod (Clerk live key)
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Image tag (e.g., v0.23.0)"
+        required: true
+        default: "v0.23.0"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: ACR login
+        run: az acr login --name upcoreprodacr
+
+      - name: Read Clerk PK from Key Vault
+        id: kv
+        run: |
+          PK=$(az keyvault secret show --vault-name upcore-prod-kv --name clerk-publishable-key --query value -o tsv)
+          echo "::add-mask::$PK"
+          echo "pk=$PK" >> "$GITHUB_OUTPUT"
+
+      - name: Build & push image with Clerk live key inlined
+        run: |
+          docker build \
+            --file apps/web/Dockerfile \
+            --build-arg NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY="${{ steps.kv.outputs.pk }}" \
+            --build-arg NEXT_PUBLIC_API_URL="https://api.upcore.io" \
+            -t upcoreprodacr.azurecr.io/upcore-web:${{ inputs.tag }} \
+            -t upcoreprodacr.azurecr.io/upcore-web:latest \
+            .
+          docker push upcoreprodacr.azurecr.io/upcore-web:${{ inputs.tag }}
+          docker push upcoreprodacr.azurecr.io/upcore-web:latest
+
+      - name: Update Container App revision
+        run: |
+          az containerapp update \
+            -g upcore-prod-neu \
+            -n upcore-web \
+            --image upcoreprodacr.azurecr.io/upcore-web:${{ inputs.tag }}
+
+      - name: Smoke test
+        run: |
+          sleep 30
+          STATUS=$(curl -s -o /dev/null -w '%{http_code}' https://app.upcore.io/giris)
+          echo "https://app.upcore.io/giris → $STATUS"
+          curl -s https://app.upcore.io/giris | grep -oE 'pk_(test|live)_[A-Za-z0-9_]+' | sort -u | head -3

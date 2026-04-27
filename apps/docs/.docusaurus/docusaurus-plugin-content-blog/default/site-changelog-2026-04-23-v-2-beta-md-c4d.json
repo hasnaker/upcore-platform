@@ -1,0 +1,54 @@
+{
+  "permalink": "/en/changelog/v2-beta-yayinda",
+  "source": "@site/changelog/2026-04-23-v2-beta.md",
+  "title": "UpCore v2 Beta yayında",
+  "description": "UpCore v2 beta sürümü bugün itibariyle tüm Enterprise müşterilere açıldı. v2 ile gelen en önemli değişiklikler:",
+  "date": "2026-04-23T00:00:00.000Z",
+  "tags": [
+    {
+      "inline": true,
+      "label": "release",
+      "permalink": "/en/changelog/tags/release"
+    },
+    {
+      "inline": true,
+      "label": "v2",
+      "permalink": "/en/changelog/tags/v-2"
+    },
+    {
+      "inline": true,
+      "label": "beta",
+      "permalink": "/en/changelog/tags/beta"
+    }
+  ],
+  "readingTime": 0.88,
+  "hasTruncateMarker": true,
+  "authors": [
+    {
+      "name": "UpCore Platform Team",
+      "title": "Kurum Ekibi",
+      "url": "https://upcore.io/about",
+      "imageURL": "/en/img/authors/platform-team.svg",
+      "key": "platform-team",
+      "page": null
+    }
+  ],
+  "frontMatter": {
+    "slug": "v2-beta-yayinda",
+    "title": "UpCore v2 Beta yayında",
+    "authors": [
+      "platform-team"
+    ],
+    "tags": [
+      "release",
+      "v2",
+      "beta"
+    ],
+    "date": "2026-04-23T00:00:00.000Z"
+  },
+  "unlisted": false,
+  "nextItem": {
+    "title": "Q2 2026 ML modelleri retrain tamamlandı",
+    "permalink": "/en/changelog/q2-ml-retrain"
+  }
+}

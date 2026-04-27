@@ -1,0 +1,29 @@
+{
+  "id": "developer/kavramlar/coklu-tenant",
+  "title": "Çoklu tenant (multi-tenant)",
+  "description": "UpCore shared database, shared schema multi-tenancy kullanır.",
+  "source": "@site/docs/developer/kavramlar/coklu-tenant.md",
+  "sourceDirName": "developer/kavramlar",
+  "slug": "/developer/kavramlar/coklu-tenant",
+  "permalink": "/en/docs/developer/kavramlar/coklu-tenant",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/kavramlar/coklu-tenant.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "coklu-tenant",
+    "title": "Çoklu tenant (multi-tenant)",
+    "sidebar_position": 3
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Kimlik doğrulama",
+    "permalink": "/en/docs/developer/kavramlar/kimlik-dogrulama"
+  },
+  "next": {
+    "title": "Hata kodları",
+    "permalink": "/en/docs/developer/kavramlar/hata-kodlari"
+  }
+}

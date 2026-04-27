@@ -9,13 +9,6 @@ from __future__ import annotations
 import pytest
 
 from app.scoring.jdr_scoring import (
-    BETA_DEMANDS,
-    BETA_INTERACTION,
-    BETA_RESOURCES,
-    W_DEMANDS_STRAIN,
-    W_PERSONAL_RESOURCES_ENGAGEMENT,
-    W_RESOURCES_ENGAGEMENT,
-    W_RESOURCES_STRAIN,
     compute_balance_ratio,
     compute_burnout_probability,
     compute_engagement,

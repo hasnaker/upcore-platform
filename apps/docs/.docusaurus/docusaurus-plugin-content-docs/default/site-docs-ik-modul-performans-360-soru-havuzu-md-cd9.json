@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/360-soru-havuzu",
+  "title": "360 soru havuzu",
+  "description": "UpCore'da 150+ 360-bazlı soru hazır. Yetkinlik modeline göre gruplanır.",
+  "source": "@site/docs/ik/modul/performans/360-soru-havuzu.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/360-soru-havuzu",
+  "permalink": "/en/docs/ik/modul/performans/360-soru-havuzu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/360-soru-havuzu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "360-soru-havuzu",
+    "title": "360 soru havuzu",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "360° anket süreci",
+    "permalink": "/en/docs/ik/modul/performans/360-anket"
+  },
+  "next": {
+    "title": "9-kutu kalibrasyon (toplantı modu)",
+    "permalink": "/en/docs/ik/modul/performans/9-kutu-kalibrasyon"
+  }
+}

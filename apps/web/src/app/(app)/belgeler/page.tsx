@@ -1,1104 +1,436 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useRef, useState, useMemo } from 'react';
 import {
-  Upload,
-  FileText,
-  File,
-  Image,
-  FileSpreadsheet,
-  Download,
-  Trash2,
-  X,
-  Check,
-  Search,
-  Eye,
-  AlertTriangle,
-  Shield,
+  AlertCircle,
   CheckCircle2,
-  XCircle,
-  Archive,
-  History,
-  Filter,
-  Users,
-  ChevronDown,
-  ChevronUp,
+  Download,
+  FileText,
+  Lock,
+  Search,
+  Shield,
+  Trash2,
+  Upload,
+  X,
 } from 'lucide-react';
+import { toast } from 'sonner';
+import { useAuth } from '@clerk/nextjs';
+import {
+  DOC_CATEGORY_LABEL,
+  getDownloadURL,
+  useDeleteDocument,
+  useDocuments,
+  useUploadDocument,
+  type DocCategory,
+  type UpcoreDocument,
+} from '@/hooks/useDocuments';
+import { useEmployees } from '@/hooks/useEmployees';
 
-type DocCategory = 'all' | 'sozlesme' | 'rapor' | 'kimlik' | 'sertifika' | 'diger';
-
-interface DocVersion {
-  version: number;
-  date: string;
-  current: boolean;
-}
-
-interface Document {
-  id: string;
-  name: string;
-  category: DocCategory;
-  employee: string;
-  uploadDate: string;
-  size: string;
-  type: 'pdf' | 'doc' | 'xlsx' | 'png';
-  versions: DocVersion[];
-  expiryDate: string | null;
-  retentionYears: number;
-  retentionLaw: string;
-  uploadYear: number;
-}
-
-const initialDocs: Document[] = [
-  {
-    id: '1', name: 'Is Sozlesmesi — Hasan Aker.pdf', category: 'sozlesme', employee: 'Hasan Aker',
-    uploadDate: '2026-01-15', size: '2.4 MB', type: 'pdf',
-    versions: [{ version: 3, date: '2026-01-15', current: true }, { version: 2, date: '2025-06-10', current: false }, { version: 1, date: '2024-03-01', current: false }],
-    expiryDate: null, retentionYears: 7, retentionLaw: 'Is Kanunu', uploadYear: 2024,
-  },
-  {
-    id: '2', name: 'NDA — Burak Arslan.pdf', category: 'sozlesme', employee: 'Burak Arslan',
-    uploadDate: '2026-02-20', size: '1.1 MB', type: 'pdf',
-    versions: [{ version: 1, date: '2026-02-20', current: true }],
-    expiryDate: '2027-02-20', retentionYears: 5, retentionLaw: 'Ticaret Kanunu', uploadYear: 2026,
-  },
-  {
-    id: '3', name: 'Yillik Performans Raporu 2025.xlsx', category: 'rapor', employee: 'IK',
-    uploadDate: '2026-01-05', size: '4.8 MB', type: 'xlsx',
-    versions: [{ version: 2, date: '2026-01-05', current: true }, { version: 1, date: '2025-12-20', current: false }],
-    expiryDate: null, retentionYears: 5, retentionLaw: 'Is Kanunu', uploadYear: 2025,
-  },
-  {
-    id: '4', name: 'BAT-12 Sonuclari — Q1 2026.pdf', category: 'rapor', employee: 'IK',
-    uploadDate: '2026-03-30', size: '890 KB', type: 'pdf',
-    versions: [{ version: 1, date: '2026-03-30', current: true }],
-    expiryDate: null, retentionYears: 5, retentionLaw: 'Is Kanunu', uploadYear: 2026,
-  },
-  {
-    id: '5', name: 'Kimlik Fotokopisi — Selin Ozturk.png', category: 'kimlik', employee: 'Selin Ozturk',
-    uploadDate: '2026-03-10', size: '3.2 MB', type: 'png',
-    versions: [{ version: 1, date: '2026-03-10', current: true }],
-    expiryDate: '2026-04-20', retentionYears: 10, retentionLaw: 'KVKK', uploadYear: 2026,
-  },
-  {
-    id: '6', name: 'Saglik Raporu — Elif Demir.pdf', category: 'diger', employee: 'Elif Demir',
-    uploadDate: '2026-04-01', size: '512 KB', type: 'pdf',
-    versions: [{ version: 1, date: '2026-04-01', current: true }],
-    expiryDate: '2026-04-15', retentionYears: 10, retentionLaw: 'Saglik Mevzuati', uploadYear: 2026,
-  },
-  {
-    id: '7', name: 'Izin Formu — Emre Sahin.doc', category: 'diger', employee: 'Emre Sahin',
-    uploadDate: '2026-03-25', size: '245 KB', type: 'doc',
-    versions: [{ version: 1, date: '2026-03-25', current: true }],
-    expiryDate: null, retentionYears: 5, retentionLaw: 'Is Kanunu', uploadYear: 2026,
-  },
-  {
-    id: '8', name: 'Maas Bordrosu — Mart 2026.xlsx', category: 'rapor', employee: 'Finans',
-    uploadDate: '2026-04-02', size: '1.8 MB', type: 'xlsx',
-    versions: [{ version: 1, date: '2026-04-02', current: true }],
-    expiryDate: null, retentionYears: 10, retentionLaw: 'Vergi Mevzuati', uploadYear: 2026,
-  },
-  {
-    id: '9', name: 'ISO 9001 Sertifikasi.pdf', category: 'sertifika', employee: 'IK',
-    uploadDate: '2025-06-15', size: '1.5 MB', type: 'pdf',
-    versions: [{ version: 2, date: '2025-06-15', current: true }, { version: 1, date: '2022-06-15', current: false }],
-    expiryDate: '2026-06-15', retentionYears: 3, retentionLaw: 'ISO', uploadYear: 2022,
-  },
-  {
-    id: '10', name: 'KVKK Riza Formu — Hasan Aker.pdf', category: 'sozlesme', employee: 'Hasan Aker',
-    uploadDate: '2024-03-01', size: '340 KB', type: 'pdf',
-    versions: [{ version: 1, date: '2024-03-01', current: true }],
-    expiryDate: null, retentionYears: 7, retentionLaw: 'KVKK', uploadYear: 2024,
-  },
-  {
-    id: '11', name: 'SGK Bildirimi — Hasan Aker.pdf', category: 'kimlik', employee: 'Hasan Aker',
-    uploadDate: '2024-03-05', size: '280 KB', type: 'pdf',
-    versions: [{ version: 1, date: '2024-03-05', current: true }],
-    expiryDate: null, retentionYears: 10, retentionLaw: 'SGK Mevzuati', uploadYear: 2024,
-  },
-  {
-    id: '12', name: 'AWS Solutions Architect Sertifikasi — Emre Sahin.pdf', category: 'sertifika', employee: 'Emre Sahin',
-    uploadDate: '2025-11-01', size: '650 KB', type: 'pdf',
-    versions: [{ version: 1, date: '2025-11-01', current: true }],
-    expiryDate: '2026-05-01', retentionYears: 3, retentionLaw: 'Kurum Ici', uploadYear: 2025,
-  },
+const CATEGORY_FILTER: Array<{ value: DocCategory | 'all'; label: string }> = [
+  { value: 'all', label: 'Tümü' },
+  { value: 'contract', label: 'Sözleşme' },
+  { value: 'id_card', label: 'Kimlik' },
+  { value: 'diploma', label: 'Diploma' },
+  { value: 'certificate', label: 'Sertifika' },
+  { value: 'performance_review', label: 'Performans' },
+  { value: 'payslip', label: 'Bordro' },
+  { value: 'medical', label: 'Sağlık' },
 ];
-
-/* ─── Required documents checklist per employee ─── */
-interface RequiredDoc {
-  name: string;
-  present: boolean;
-}
-
-const requiredDocsChecklist: Record<string, RequiredDoc[]> = {
-  'Hasan Aker': [
-    { name: 'Is Sozlesmesi', present: true },
-    { name: 'Kimlik Fotokopisi', present: false },
-    { name: 'SGK Belgesi', present: true },
-    { name: 'KVKK Riza Formu', present: true },
-  ],
-  'Burak Arslan': [
-    { name: 'Is Sozlesmesi', present: true },
-    { name: 'Kimlik Fotokopisi', present: false },
-    { name: 'SGK Belgesi', present: false },
-    { name: 'KVKK Riza Formu', present: false },
-  ],
-  'Selin Ozturk': [
-    { name: 'Is Sozlesmesi', present: false },
-    { name: 'Kimlik Fotokopisi', present: true },
-    { name: 'SGK Belgesi', present: false },
-    { name: 'KVKK Riza Formu', present: false },
-  ],
-  'Elif Demir': [
-    { name: 'Is Sozlesmesi', present: false },
-    { name: 'Kimlik Fotokopisi', present: false },
-    { name: 'SGK Belgesi', present: false },
-    { name: 'KVKK Riza Formu', present: false },
-  ],
-  'Emre Sahin': [
-    { name: 'Is Sozlesmesi', present: false },
-    { name: 'Kimlik Fotokopisi', present: false },
-    { name: 'SGK Belgesi', present: false },
-    { name: 'KVKK Riza Formu', present: false },
-  ],
-};
-
-const categories: { key: DocCategory; label: string }[] = [
-  { key: 'all', label: 'Tumu' },
-  { key: 'sozlesme', label: 'Sozlesmeler' },
-  { key: 'rapor', label: 'Raporlar' },
-  { key: 'kimlik', label: 'Kimlik' },
-  { key: 'sertifika', label: 'Sertifikalar' },
-  { key: 'diger', label: 'Diger' },
-];
-
-/* ─── Category Detail Cards ─── */
-interface CategoryDetail {
-  key: DocCategory;
-  label: string;
-  count: number;
-  lastUpdated: string;
-  complianceStatus: 'ok' | 'warning' | 'error';
-  complianceNote: string;
-  icon: string;
-  color: string;
-}
-
-const categoryDetails: CategoryDetail[] = [
-  { key: 'sozlesme', label: 'Sozlesmeler', count: 12, lastUpdated: '15 Mart', complianceStatus: 'ok', complianceNote: 'Tumu guncel.', icon: 'sozlesme', color: '#5E5CE6' },
-  { key: 'kimlik', label: 'Kimlik', count: 8, lastUpdated: '10 Ocak', complianceStatus: 'warning', complianceNote: '2 suresi dolmak uzere.', icon: 'kimlik', color: '#D97706' },
-  { key: 'rapor', label: 'SGK Belgeleri', count: 10, lastUpdated: '01 Nisan', complianceStatus: 'ok', complianceNote: 'Tumu guncel.', icon: 'sgk', color: '#059669' },
-  { key: 'sertifika', label: 'Egitim/Sertifika', count: 5, lastUpdated: '20 Subat', complianceStatus: 'error', complianceNote: '1 sertifika suresi dolmus.', icon: 'egitim', color: '#DC2626' },
-  { key: 'diger', label: 'Saglik', count: 3, lastUpdated: '05 Mart', complianceStatus: 'ok', complianceNote: 'Tumu guncel.', icon: 'saglik', color: '#2563EB' },
-];
-
-/* ─── KVKK Compliance Detail per Document ─── */
-interface KVKKDetail {
-  retentionPeriod: string;
-  retentionLaw: string;
-  retentionRemaining: string;
-  accessCount30d: number;
-  lastAccessedBy: string;
-  lastAccessedDate: string;
-}
-
-const getKVKKDetail = (doc: Document): KVKKDetail => {
-  const currentYear = 2026;
-  const endYear = doc.uploadYear + doc.retentionYears;
-  const remainingYears = endYear - currentYear;
-  const months = Math.floor(((doc.id.charCodeAt(0) ?? 0) % 12));
-  const retentionRemaining = remainingYears <= 0 ? 'Suresi doldu' : `${remainingYears} yil ${months} ay`;
-
-  const accessors = ['Ayse Kara', 'Hasan Aker', 'Selin Ozturk', 'Burak Arslan', 'Elif Demir'];
-  const accessCount = ((doc.id.charCodeAt(0) ?? 0) % 8) + 1;
-  const accessorIdx = (doc.id.charCodeAt(0) ?? 0) % accessors.length;
-
-  return {
-    retentionPeriod: `${doc.retentionYears} yil (${doc.retentionLaw})`,
-    retentionLaw: `4857 Is Kanunu Madde 75`,
-    retentionRemaining,
-    accessCount30d: accessCount,
-    lastAccessedBy: accessors[accessorIdx] ?? 'Hasan Aker',
-    lastAccessedDate: '02 Nisan 2026',
-  };
-};
-
-/* ─── Employee Document Completeness ─── */
-interface EmployeeCompleteness {
-  name: string;
-  sozlesme: boolean;
-  kimlik: boolean;
-  sgk: boolean;
-  kvkkRiza: boolean;
-  pct: number;
-}
-
-const employeeCompleteness: EmployeeCompleteness[] = [
-  { name: 'Ayse Yilmaz', sozlesme: true, kimlik: true, sgk: true, kvkkRiza: true, pct: 100 },
-  { name: 'Mehmet Kaya', sozlesme: true, kimlik: true, sgk: false, kvkkRiza: true, pct: 75 },
-  { name: 'Zeynep Arslan', sozlesme: true, kimlik: false, sgk: false, kvkkRiza: false, pct: 25 },
-  { name: 'Hasan Aker', sozlesme: true, kimlik: false, sgk: true, kvkkRiza: true, pct: 75 },
-  { name: 'Burak Arslan', sozlesme: true, kimlik: false, sgk: false, kvkkRiza: false, pct: 25 },
-];
-
-const typeIcons: Record<string, React.ReactNode> = {
-  pdf: <FileText className="h-5 w-5 text-[#DC2626]" />,
-  doc: <File className="h-5 w-5 text-[#2563EB]" />,
-  xlsx: <FileSpreadsheet className="h-5 w-5 text-[#059669]" />,
-  png: <Image className="h-5 w-5 text-[#D97706]" />,
-};
-
-const typeBgColors: Record<string, string> = {
-  pdf: '#DC262615',
-  doc: '#2563EB15',
-  xlsx: '#05966915',
-  png: '#D9770615',
-};
-
-const TODAY = '2026-04-04';
-
-/* ─── Expiry helpers ─── */
-const getDaysUntilExpiry = (expiryDate: string): number => {
-  const exp = new Date(expiryDate);
-  const today = new Date(TODAY);
-  return Math.ceil((exp.getTime() - today.getTime()) / 86400000);
-};
-
-const getRetentionRemaining = (uploadYear: number, retentionYears: number): string => {
-  const currentYear = 2026;
-  const endYear = uploadYear + retentionYears;
-  const remainingYears = endYear - currentYear;
-  if (remainingYears <= 0) return 'Suresi doldu';
-  // Deterministic months based on upload year (consistent across renders)
-  const months = (uploadYear * 7 + retentionYears * 3) % 12;
-  return `${remainingYears} yil ${months} ay`;
-};
-
-const formatDateTR = (dateStr: string): string => {
-  const months = ['Oca', 'Sub', 'Mar', 'Nis', 'May', 'Haz', 'Tem', 'Agu', 'Eyl', 'Eki', 'Kas', 'Ara'];
-  const d = new Date(dateStr);
-  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-};
 
 export default function BelgelerPage() {
-  const [docs, setDocs] = useState<Document[]>(initialDocs);
-  const [activeCategory, setActiveCategory] = useState<DocCategory>('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [category, setCategory] = useState<DocCategory | 'all'>('all');
+  const [search, setSearch] = useState('');
   const [uploadOpen, setUploadOpen] = useState(false);
-  const [toast, setToast] = useState<string | null>(null);
-  const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
-  const [selectedDocs, setSelectedDocs] = useState<Set<string>>(new Set());
-  const [versionDoc, setVersionDoc] = useState<Document | null>(null);
-  const [showChecklist, setShowChecklist] = useState(false);
-  const [checklistEmployee, setChecklistEmployee] = useState('Hasan Aker');
-  const [showCategoryCards, setShowCategoryCards] = useState(true);
-  const [showCompleteness, setShowCompleteness] = useState(false);
-  const [filterExpiring, setFilterExpiring] = useState(false);
-  const [kvkkDetailDoc, setKvkkDetailDoc] = useState<Document | null>(null);
 
-  // Upload form state
-  const [uploadName, setUploadName] = useState('');
-  const [uploadCategory, setUploadCategory] = useState<DocCategory>('diger');
+  const docs = useDocuments(category === 'all' ? { limit: 200 } : { category, limit: 200 });
 
-  const showToast = (msg: string) => {
-    setToast(msg);
-    setTimeout(() => setToast(null), 2500);
-  };
-
-  // Fetch documents from API, fall back to hardcoded initialDocs
-  useEffect(() => {
-    fetch('/api/documents')
-      .then((res) => res.json())
-      .then((data) => {
-        // Handle both { documents: [...] } and { items: [...] } response shapes
-        const apiDocs: Array<Record<string, unknown>> = data.documents ?? data.items ?? [];
-        if (!Array.isArray(apiDocs) || apiDocs.length === 0) return;
-
-        // Map API response to local Document format
-        const mapped: Document[] = apiDocs.map((d, idx) => ({
-          id: String(d['id'] ?? idx),
-          name: String(d['name'] ?? d['title'] ?? d['fileName'] ?? `Belge ${idx + 1}`),
-          category: (['sozlesme', 'rapor', 'kimlik', 'sertifika', 'diger'].includes(String(d['category'] ?? ''))
-            ? String(d['category']) as DocCategory
-            : 'diger'),
-          employee: String(d['employee'] ?? d['employeeName'] ?? d['owner'] ?? 'Bilinmiyor'),
-          uploadDate: String(d['uploadDate'] ?? d['createdAt'] ?? d['date'] ?? new Date().toISOString().slice(0, 10)),
-          size: String(d['size'] ?? d['fileSize'] ?? '0 KB'),
-          type: (['pdf', 'doc', 'xlsx', 'png'].includes(String(d['type'] ?? d['fileType'] ?? ''))
-            ? String(d['type'] ?? d['fileType']) as 'pdf' | 'doc' | 'xlsx' | 'png'
-            : 'pdf'),
-          versions: Array.isArray(d['versions']) ? (d['versions'] as DocVersion[]) : [{ version: 1, date: String(d['uploadDate'] ?? d['createdAt'] ?? new Date().toISOString().slice(0, 10)), current: true }],
-          expiryDate: d['expiryDate'] ? String(d['expiryDate']) : null,
-          retentionYears: typeof d['retentionYears'] === 'number' ? d['retentionYears'] : 5,
-          retentionLaw: String(d['retentionLaw'] ?? 'Is Kanunu'),
-          uploadYear: typeof d['uploadYear'] === 'number' ? d['uploadYear'] : new Date(String(d['uploadDate'] ?? d['createdAt'] ?? '2026')).getFullYear(),
-        }));
-
-        setDocs(mapped);
-      })
-      .catch(() => {
-        // Keep initialDocs as fallback — already set in useState
-      });
-  }, []);
-
-  const handleUpload = () => {
-    if (!uploadName) return;
-    const newDoc: Document = {
-      id: String(Date.now()),
-      name: uploadName,
-      category: uploadCategory,
-      employee: 'Hasan Aker',
-      uploadDate: TODAY,
-      size: '1.0 MB',
-      type: 'pdf',
-      versions: [{ version: 1, date: TODAY, current: true }],
-      expiryDate: null,
-      retentionYears: 7,
-      retentionLaw: 'Is Kanunu',
-      uploadYear: 2026,
-    };
-    setDocs((prev) => [newDoc, ...prev]);
-    setUploadOpen(false);
-    setUploadName('');
-    showToast('Belge yuklendi');
-  };
-
-  const handleDelete = (id: string) => {
-    const doc = docs.find((d) => d.id === id);
-    setDocs((prev) => prev.filter((d) => d.id !== id));
-    showToast(`"${doc?.name}" silindi`);
-  };
-
-  const toggleDocSelect = (id: string) => {
-    setSelectedDocs((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
-  };
-
-  const selectAll = () => {
-    if (selectedDocs.size === filteredDocs.length) {
-      setSelectedDocs(new Set());
-    } else {
-      setSelectedDocs(new Set(filteredDocs.map((d) => d.id)));
-    }
-  };
-
-  const handleBulkDownload = () => {
-    showToast(`${selectedDocs.size} belge ZIP olarak indiriliyor...`);
-    setSelectedDocs(new Set());
-  };
-
-  const filteredDocs = useMemo(() => {
-    return docs.filter((d) => {
-      const matchCategory = activeCategory === 'all' || d.category === activeCategory;
-      const matchSearch = d.name.toLowerCase().includes(searchQuery.toLowerCase()) || d.employee.toLowerCase().includes(searchQuery.toLowerCase());
-      if (filterExpiring) {
-        if (!d.expiryDate) return false;
-        const daysLeft = getDaysUntilExpiry(d.expiryDate);
-        return matchCategory && matchSearch && daysLeft <= 90;
-      }
-      return matchCategory && matchSearch;
-    });
-  }, [docs, activeCategory, searchQuery, filterExpiring]);
-
-  /* ─── Category counts ─── */
-  const categoryCounts = useMemo(() => {
-    const counts: Record<string, number> = {};
-    categories.forEach((c) => {
-      if (c.key === 'all') counts[c.key] = docs.length;
-      else counts[c.key] = docs.filter((d) => d.category === c.key).length;
-    });
-    return counts;
-  }, [docs]);
-
-  /* ─── Expiring soon docs ─── */
-  const expiringDocs = useMemo(() => {
-    return docs.filter((d) => d.expiryDate).map((d) => ({
-      ...d,
-      daysLeft: getDaysUntilExpiry(d.expiryDate as string),
-    })).filter((d) => d.daysLeft <= 30).sort((a, b) => a.daysLeft - b.daysLeft);
-  }, [docs]);
-
-  const employees = Object.keys(requiredDocsChecklist);
+  const filtered = useMemo(() => {
+    const items = docs.data?.items ?? [];
+    if (!search.trim()) return items;
+    const q = search.toLocaleLowerCase('tr-TR');
+    return items.filter(
+      (d) =>
+        d.title.toLocaleLowerCase('tr-TR').includes(q) ||
+        d.tags.some((t) => t.toLocaleLowerCase('tr-TR').includes(q)),
+    );
+  }, [docs.data, search]);
 
   return (
-    <div className="flex flex-col gap-8" style={{ fontFamily: 'Inter, sans-serif' }}>
-      {/* Toast */}
-      {toast && (
-        <div className="fixed right-6 top-6 z-50 flex items-center gap-2 rounded-lg bg-[#059669] px-4 py-3 text-sm font-medium text-white shadow-lg">
-          <Check className="h-4 w-4" />
-          {toast}
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-[#0A0A0A]">Belgeler</h1>
-          <p className="mt-1 text-sm text-[#525252]">
-            Calisan belgelerini guvenli bir sekilde saklayin ve yonetin.
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">Belgeler</h1>
+          <p className="mt-1 text-sm text-ink-60">
+            Sözleşme, kimlik, bordro ve diğer belgeler — Azure Blob + KVKK retention.
           </p>
         </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => setShowChecklist(!showChecklist)}
-            className="inline-flex items-center gap-2 rounded-lg border border-[#EDEDED] bg-white px-4 py-2.5 text-sm font-medium text-[#525252] transition-all hover:bg-[#FAFAFA]"
-          >
-            <CheckCircle2 className="h-4 w-4" />
-            Eksik Belgeler
-          </button>
-          <button
-            type="button"
-            onClick={() => setUploadOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2.5 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97]"
-          >
-            <Upload className="h-4 w-4" />
-            Belge Yukle
-          </button>
-        </div>
-      </div>
-
-      {/* ─── Document Category Summary Cards ─── */}
-      <div className="rounded-xl border border-[#EDEDED] bg-white">
         <button
           type="button"
-          onClick={() => setShowCategoryCards(!showCategoryCards)}
-          className="flex w-full items-center justify-between px-5 py-4"
+          onClick={() => setUploadOpen(true)}
+          className="inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-[13px] font-semibold text-white hover:bg-accent/90"
         >
-          <div className="flex items-center gap-2">
-            <Shield className="h-4 w-4 text-[#5E5CE6]" />
-            <p className="text-sm font-semibold text-[#0A0A0A]">Belge Kategorileri ve Uyumluluk</p>
-          </div>
-          {showCategoryCards ? <ChevronUp className="h-4 w-4 text-[#A3A3A3]" /> : <ChevronDown className="h-4 w-4 text-[#A3A3A3]" />}
+          <Upload className="h-4 w-4" />
+          Belge Yükle
         </button>
-
-        {showCategoryCards && (
-          <div className="border-t border-[#EDEDED] px-5 py-4">
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-              {categoryDetails.map((cat) => (
-                <div
-                  key={cat.key}
-                  className="rounded-lg border border-[#EDEDED] p-4 transition-all hover:shadow-sm cursor-pointer"
-                  onClick={() => setActiveCategory(cat.key)}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs font-semibold text-[#0A0A0A]">{cat.label}</span>
-                    <span className="inline-flex h-6 w-6 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ backgroundColor: cat.color }}>
-                      {cat.count}
-                    </span>
-                  </div>
-                  <p className="text-[10px] text-[#A3A3A3] mb-2">Son guncelleme: {cat.lastUpdated}</p>
-                  <div className={`flex items-center gap-1.5 rounded-full px-2 py-0.5 text-[10px] font-semibold ${
-                    cat.complianceStatus === 'ok' ? 'bg-[#D1FAE5] text-[#059669]'
-                    : cat.complianceStatus === 'warning' ? 'bg-[#FEF3C7] text-[#D97706]'
-                    : 'bg-[#FEE2E2] text-[#DC2626]'
-                  }`}>
-                    {cat.complianceStatus === 'ok' ? <CheckCircle2 className="h-3 w-3" /> : cat.complianceStatus === 'warning' ? <AlertTriangle className="h-3 w-3" /> : <XCircle className="h-3 w-3" />}
-                    {cat.complianceNote}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Expiry Warnings */}
-      {expiringDocs.length > 0 && (
-        <div className="rounded-xl border border-[#FED7AA] bg-[#FFF7ED] p-4">
-          <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="h-4 w-4 text-[#D97706]" />
-            <p className="text-sm font-semibold text-[#92400E]">Suresi yaklasan belgeler</p>
-          </div>
-          <div className="space-y-2">
-            {expiringDocs.map((d) => (
-              <div key={d.id} className="flex items-center justify-between">
-                <p className="text-xs text-[#525252]">{d.name}</p>
-                {d.daysLeft <= 0 ? (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[11px] font-semibold text-[#DC2626]">
-                    Suresi dolmus
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[11px] font-semibold text-[#D97706]">
-                    {d.daysLeft} gun kaldi
-                  </span>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* Required Documents Checklist */}
-      {showChecklist && (
-        <div className="rounded-xl border border-[#EDEDED] bg-white p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <p className="text-sm font-semibold text-[#0A0A0A]">Zorunlu Belge Kontrolu</p>
-            <select
-              value={checklistEmployee}
-              onChange={(e) => setChecklistEmployee(e.target.value)}
-              className="rounded-lg border border-[#EDEDED] bg-white px-3 py-1.5 text-xs text-[#0A0A0A] outline-none focus:border-[#5E5CE6]"
-            >
-              {employees.map((emp) => (
-                <option key={emp} value={emp}>{emp}</option>
-              ))}
-            </select>
-          </div>
-          <div className="space-y-2">
-            {(requiredDocsChecklist[checklistEmployee] || []).map((item) => (
-              <div key={item.name} className="flex items-center gap-3 rounded-lg border border-[#EDEDED] px-4 py-3">
-                {item.present ? (
-                  <CheckCircle2 className="h-5 w-5 text-[#059669]" />
-                ) : (
-                  <XCircle className="h-5 w-5 text-[#DC2626]" />
-                )}
-                <span className={`text-sm ${item.present ? 'text-[#525252]' : 'font-medium text-[#DC2626]'}`}>
-                  {item.name} {!item.present && '(eksik!)'}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-xs text-[#A3A3A3]">
-            <Shield className="h-3.5 w-3.5" />
-            <span>Eksik belgeler mevzuat uyumu icin tamamlanmalidir</span>
-          </div>
-        </div>
-      )}
-
-      {/* Search + Filters */}
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#A3A3A3]" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex-1 sm:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-40" />
           <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Belge veya calisan ara..."
-            className="w-full rounded-lg border border-[#EDEDED] bg-white py-2.5 pl-10 pr-3 text-sm text-[#0A0A0A] outline-none focus:border-[#5E5CE6] focus:ring-1 focus:ring-[#5E5CE6]"
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Başlık veya etiket ara…"
+            className="h-10 w-full rounded-md border border-line bg-bg pl-9 pr-3 text-sm text-ink placeholder:text-ink-40 focus:border-accent focus:outline-none"
           />
         </div>
-        <div className="flex flex-wrap gap-1.5">
-          {categories.map((cat) => (
+        <div className="flex flex-wrap items-center gap-1 rounded-md border border-line bg-bg p-1 text-[12px]">
+          {CATEGORY_FILTER.map((f) => (
             <button
-              key={cat.key}
+              key={f.value}
               type="button"
-              onClick={() => setActiveCategory(cat.key)}
-              className={`rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors ${
-                activeCategory === cat.key
-                  ? 'bg-[#0A0A0A] text-white'
-                  : 'border border-[#EDEDED] bg-white text-[#525252] hover:bg-[#FAFAFA]'
+              onClick={() => setCategory(f.value)}
+              className={`rounded px-3 py-1.5 font-medium transition-colors ${
+                category === f.value
+                  ? 'bg-accent-soft text-accent'
+                  : 'text-ink-60 hover:text-ink'
               }`}
             >
-              {cat.label} ({categoryCounts[cat.key]})
+              {f.label}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Batch Operations Bar */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => setFilterExpiring(!filterExpiring)}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-            filterExpiring ? 'bg-[#D97706] text-white' : 'border border-[#EDEDED] bg-white text-[#525252] hover:bg-[#FAFAFA]'
-          }`}
-        >
-          <Filter className="h-3.5 w-3.5" />
-          Suresi Dolan Belgeleri Filtrele
-        </button>
-        <button
-          type="button"
-          onClick={() => setShowCompleteness(!showCompleteness)}
-          className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-xs font-medium transition-all ${
-            showCompleteness ? 'bg-[#5E5CE6] text-white' : 'border border-[#EDEDED] bg-white text-[#525252] hover:bg-[#FAFAFA]'
-          }`}
-        >
-          <Users className="h-3.5 w-3.5" />
-          Eksik Belge Raporu
-        </button>
-      </div>
-
-      {/* Employee Document Completeness Table */}
-      {showCompleteness && (
-        <div className="rounded-xl border border-[#EDEDED] bg-white p-5">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-2">
-              <Users className="h-4 w-4 text-[#5E5CE6]" />
-              <p className="text-sm font-semibold text-[#0A0A0A]">Calisan Belge Tamamlanma Durumu</p>
-            </div>
-            <button type="button" onClick={() => setShowCompleteness(false)} className="text-[#A3A3A3] hover:text-[#525252]">
-              <X className="h-4 w-4" />
-            </button>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b border-[#EDEDED]">
-                  <th className="py-2.5 text-left font-semibold text-[#525252]">Calisan</th>
-                  <th className="py-2.5 text-center font-semibold text-[#525252]">Sozlesme</th>
-                  <th className="py-2.5 text-center font-semibold text-[#525252]">Kimlik</th>
-                  <th className="py-2.5 text-center font-semibold text-[#525252]">SGK</th>
-                  <th className="py-2.5 text-center font-semibold text-[#525252]">KVKK Riza</th>
-                  <th className="py-2.5 text-right font-semibold text-[#525252]">Tamamlanma</th>
-                </tr>
-              </thead>
-              <tbody>
-                {employeeCompleteness.map((emp) => (
-                  <tr key={emp.name} className="border-b border-[#F5F5F5] hover:bg-[#FAFAFA]">
-                    <td className="py-3 font-medium text-[#0A0A0A]">{emp.name}</td>
-                    <td className="py-3 text-center">
-                      {emp.sozlesme ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
-                    </td>
-                    <td className="py-3 text-center">
-                      {emp.kimlik ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
-                    </td>
-                    <td className="py-3 text-center">
-                      {emp.sgk ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
-                    </td>
-                    <td className="py-3 text-center">
-                      {emp.kvkkRiza ? <CheckCircle2 className="inline h-4 w-4 text-[#059669]" /> : <XCircle className="inline h-4 w-4 text-[#DC2626]" />}
-                    </td>
-                    <td className="py-3 text-right">
-                      <div className="flex items-center justify-end gap-2">
-                        <div className="h-2 w-16 overflow-hidden rounded-full bg-[#F5F5F5]">
-                          <div
-                            className="h-full rounded-full transition-all"
-                            style={{
-                              width: `${emp.pct}%`,
-                              backgroundColor: emp.pct === 100 ? '#059669' : emp.pct >= 75 ? '#D97706' : '#DC2626',
-                            }}
-                          />
-                        </div>
-                        <span className={`font-semibold tabular-nums ${
-                          emp.pct === 100 ? 'text-[#059669]' : emp.pct >= 75 ? 'text-[#D97706]' : 'text-[#DC2626]'
-                        }`}>
-                          %{emp.pct} {emp.pct <= 25 && <AlertTriangle className="inline h-3 w-3 ml-0.5" />}
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <div className="mt-3 flex items-center gap-2 text-[10px] text-[#A3A3A3]">
-            <Shield className="h-3 w-3" />
-            <span>Eksik belgeler 4857 Is Kanunu ve KVKK uyumu icin tamamlanmalidir</span>
-          </div>
+      {docs.isLoading && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="h-36 animate-pulse rounded-lg border border-line bg-bg" />
+          ))}
         </div>
       )}
 
-      {/* Bulk Actions */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
+      {docs.isError && (
+        <div className="rounded-lg border border-red/30 bg-red-soft p-4 text-sm text-red">
+          <p className="font-medium">Belgeler yüklenemedi</p>
+          <p className="mt-1 text-[12px]">{docs.error?.message}</p>
           <button
             type="button"
-            onClick={selectAll}
-            className="flex items-center gap-2 text-xs font-medium text-[#525252] hover:text-[#0A0A0A]"
+            onClick={() => docs.refetch()}
+            className="mt-3 rounded bg-red px-3 py-1.5 text-[12px] font-medium text-white"
           >
-            <div className={`flex h-4 w-4 items-center justify-center rounded border ${selectedDocs.size === filteredDocs.length && filteredDocs.length > 0 ? 'border-[#5E5CE6] bg-[#5E5CE6]' : 'border-[#D4D4D4]'}`}>
-              {selectedDocs.size === filteredDocs.length && filteredDocs.length > 0 && <Check className="h-3 w-3 text-white" />}
-            </div>
-            Tumunu Sec
+            Yeniden dene
           </button>
-          <span className="text-xs text-[#A3A3A3]">{filteredDocs.length} belge</span>
         </div>
-        {selectedDocs.size > 0 && (
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium text-[#5E5CE6]">{selectedDocs.size} secili</span>
-            <button
-              type="button"
-              onClick={handleBulkDownload}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#0A0A0A] px-3 py-1.5 text-xs font-medium text-white transition-all hover:bg-[#262626]"
-            >
-              <Archive className="h-3.5 w-3.5" />
-              Toplu Indir (ZIP)
-            </button>
+      )}
+
+      {!docs.isLoading && !docs.isError && filtered.length === 0 && (
+        <EmptyState onUpload={() => setUploadOpen(true)} />
+      )}
+
+      {!docs.isLoading && filtered.length > 0 && (
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {filtered.map((doc) => (
+            <DocCard key={doc.id} doc={doc} />
+          ))}
+        </div>
+      )}
+
+      {uploadOpen && <UploadModal onClose={() => setUploadOpen(false)} />}
+    </div>
+  );
+}
+
+const DocCard = ({ doc }: { doc: UpcoreDocument }) => {
+  const { getToken } = useAuth();
+  const del = useDeleteDocument();
+
+  const onDownload = async () => {
+    try {
+      const url = await getDownloadURL(doc.id, () => getToken({ template: 'upcore' }));
+      window.open(url, '_blank', 'noopener');
+    } catch (err: unknown) {
+      toast.error('İndirme başarısız', {
+        description: err instanceof Error ? err.message : 'Bilinmeyen hata',
+      });
+    }
+  };
+
+  const onDelete = async () => {
+    if (!confirm(`"${doc.title}" silinecek. Emin misiniz?`)) return;
+    try {
+      await del.mutateAsync(doc.id);
+      toast.success('Belge silindi');
+    } catch (err: unknown) {
+      toast.error('Silme başarısız', {
+        description: err instanceof Error ? err.message : 'Bilinmeyen hata',
+      });
+    }
+  };
+
+  return (
+    <article className="flex flex-col gap-3 rounded-xl border border-line bg-bg p-4">
+      <header className="flex items-start justify-between gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent-soft">
+          <FileText className="h-5 w-5 text-accent" />
+        </div>
+        <div className="flex items-center gap-2">
+          {doc.is_confidential && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-red-soft px-2 py-0.5 text-[10px] font-medium text-red">
+              <Lock className="h-3 w-3" />
+              Gizli
+            </span>
+          )}
+          <span className="text-[10px] text-ink-40">v{doc.current_version}</span>
+        </div>
+      </header>
+
+      <div>
+        <h3 className="truncate text-sm font-semibold text-ink">{doc.title}</h3>
+        <p className="mt-0.5 text-[11px] text-ink-40">
+          {DOC_CATEGORY_LABEL[doc.category] ?? doc.category}
+        </p>
+        {doc.tags.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-1">
+            {doc.tags.slice(0, 3).map((t) => (
+              <span
+                key={t}
+                className="inline-flex h-5 items-center rounded bg-bg-2 px-1.5 text-[10px] text-ink-60"
+              >
+                {t}
+              </span>
+            ))}
           </div>
         )}
       </div>
 
-      {/* Document Grid */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredDocs.length === 0 && (
-          <div className="col-span-full py-12 text-center text-sm text-[#A3A3A3]">
-            Belge bulunamadi.
+      <footer className="flex items-center justify-between border-t border-line pt-2 text-[11px]">
+        <span className="text-ink-40">
+          {new Date(doc.created_at).toLocaleDateString('tr-TR', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          })}
+        </span>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={onDownload}
+            className="inline-flex items-center gap-1 rounded border border-line bg-bg px-2 py-1 text-[11px] font-medium text-ink-60 hover:border-ink-20"
+          >
+            <Download className="h-3 w-3" />
+            İndir
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={del.isPending}
+            className="inline-flex items-center gap-1 rounded border border-line bg-bg px-2 py-1 text-[11px] font-medium text-red hover:border-red/30 disabled:opacity-50"
+          >
+            <Trash2 className="h-3 w-3" />
+          </button>
+        </div>
+      </footer>
+    </article>
+  );
+};
+
+const EmptyState = ({ onUpload }: { onUpload: () => void }) => (
+  <div className="flex flex-col items-center gap-3 rounded-xl border border-line bg-bg px-6 py-16 text-center">
+    <div className="flex h-14 w-14 items-center justify-center rounded-full bg-accent-soft">
+      <FileText className="h-7 w-7 text-accent" />
+    </div>
+    <p className="text-sm font-medium text-ink">Bu kriterde belge yok</p>
+    <p className="max-w-md text-xs text-ink-40">
+      Sözleşme, kimlik, bordro veya diğer belgeleri Azure Blob üzerinden güvenli şekilde
+      saklayabilir, KVKK retention sürelerine uygun otomatik silme ayarlayabilirsiniz.
+    </p>
+    <button
+      type="button"
+      onClick={onUpload}
+      className="mt-2 inline-flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-[13px] font-semibold text-white"
+    >
+      <Upload className="h-4 w-4" /> İlk belgeyi yükle
+    </button>
+  </div>
+);
+
+function UploadModal({ onClose }: { onClose: () => void }) {
+  const fileRef = useRef<HTMLInputElement>(null);
+  const [file, setFile] = useState<File | null>(null);
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState<DocCategory>('contract');
+  const [ownerEmployeeId, setOwnerEmployeeId] = useState('');
+  const [description, setDescription] = useState('');
+  const [confidential, setConfidential] = useState(false);
+
+  const employees = useEmployees({ limit: 200 });
+  const upload = useUploadDocument();
+
+  const onSubmit = async () => {
+    if (!file) return toast.error('Dosya seçin');
+    if (!title.trim()) return toast.error('Başlık zorunlu');
+
+    try {
+      await upload.mutateAsync({
+        file,
+        title: title.trim(),
+        category,
+        owner_employee_id: ownerEmployeeId || undefined,
+        description: description.trim() || undefined,
+        is_confidential: confidential,
+      });
+      toast.success('Belge yüklendi', { icon: <CheckCircle2 className="h-4 w-4" /> });
+      onClose();
+    } catch (err: unknown) {
+      toast.error('Yükleme başarısız', {
+        description: err instanceof Error ? err.message : 'Bilinmeyen hata',
+      });
+    }
+  };
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 p-4 backdrop-blur-sm"
+      onClick={onClose}
+      role="presentation"
+    >
+      <div
+        className="flex w-full max-w-lg flex-col gap-5 rounded-xl border border-line bg-bg p-6 shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between">
+          <h2 className="text-lg font-semibold text-ink">Belge Yükle</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded p-1 text-ink-40 hover:bg-bg-2 hover:text-ink"
+            aria-label="Kapat"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div
+          onClick={() => fileRef.current?.click()}
+          className="flex cursor-pointer flex-col items-center gap-2 rounded-md border-2 border-dashed border-line bg-bg-2 p-6 text-center hover:border-accent"
+        >
+          <Upload className="h-6 w-6 text-ink-40" />
+          {file ? (
+            <p className="text-sm font-medium text-ink">{file.name}</p>
+          ) : (
+            <>
+              <p className="text-sm text-ink-60">Dosya seçmek için tıkla</p>
+              <p className="text-[11px] text-ink-40">PDF, DOCX, JPG, PNG · Max 20 MB</p>
+            </>
+          )}
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".pdf,.docx,.doc,.jpg,.jpeg,.png"
+            onChange={(e) => e.target.files?.[0] && setFile(e.target.files[0])}
+            className="hidden"
+          />
+        </div>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-medium text-ink-80">Başlık *</span>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Örn: İş sözleşmesi - Ahmet Yılmaz"
+            className="h-10 rounded-md border border-line bg-bg px-3 text-sm"
+          />
+        </label>
+
+        <div className="grid grid-cols-2 gap-3">
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-ink-80">Kategori</span>
+            <select
+              value={category}
+              onChange={(e) => setCategory(e.target.value as DocCategory)}
+              className="h-10 rounded-md border border-line bg-bg px-3 text-sm"
+            >
+              {Object.entries(DOC_CATEGORY_LABEL).map(([v, l]) => (
+                <option key={v} value={v}>
+                  {l}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-1">
+            <span className="text-[11px] font-medium text-ink-80">Çalışan (opsiyonel)</span>
+            <select
+              value={ownerEmployeeId}
+              onChange={(e) => setOwnerEmployeeId(e.target.value)}
+              className="h-10 rounded-md border border-line bg-bg px-3 text-sm"
+            >
+              <option value="">— Şirkete ait —</option>
+              {(employees.data?.items ?? []).map((e) => (
+                <option key={e.id} value={e.id}>
+                  {e.tamAd}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-[11px] font-medium text-ink-80">Açıklama (opsiyonel)</span>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={2}
+            className="rounded-md border border-line bg-bg p-2 text-sm"
+          />
+        </label>
+
+        <label className="flex items-center gap-2 rounded-md bg-bg-2 p-3">
+          <input
+            type="checkbox"
+            checked={confidential}
+            onChange={(e) => setConfidential(e.target.checked)}
+            className="h-4 w-4 accent-[color:var(--color-accent)]"
+          />
+          <div className="flex-1">
+            <p className="flex items-center gap-1 text-[12px] font-medium text-ink">
+              <Shield className="h-3 w-3 text-red" />
+              Gizli belge
+            </p>
+            <p className="text-[11px] text-ink-40">
+              Yalnızca İK direktör ve yetkilendirilmiş kullanıcılar görebilir.
+            </p>
+          </div>
+        </label>
+
+        {upload.isError && (
+          <div className="flex items-start gap-2 rounded-md border border-red/30 bg-red-soft p-2 text-[12px] text-red">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            <span>{upload.error?.message}</span>
           </div>
         )}
-        {filteredDocs.map((doc) => {
-          const isSelected = selectedDocs.has(doc.id);
-          const expiryDays = doc.expiryDate ? getDaysUntilExpiry(doc.expiryDate) : null;
-          const retentionLeft = getRetentionRemaining(doc.uploadYear, doc.retentionYears);
-          return (
-            <div
-              key={doc.id}
-              className={`group rounded-xl border bg-white p-4 transition-all hover:shadow-sm ${isSelected ? 'border-[#5E5CE6] shadow-sm' : 'border-[#EDEDED] hover:border-[#D4D4D4]'}`}
-            >
-              {/* Selection checkbox + file info */}
-              <div className="flex items-start gap-3">
-                <button
-                  type="button"
-                  onClick={() => toggleDocSelect(doc.id)}
-                  className={`mt-1 flex h-4 w-4 shrink-0 items-center justify-center rounded border ${isSelected ? 'border-[#5E5CE6] bg-[#5E5CE6]' : 'border-[#D4D4D4]'}`}
-                >
-                  {isSelected && <Check className="h-3 w-3 text-white" />}
-                </button>
-                <div
-                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg"
-                  style={{ backgroundColor: typeBgColors[doc.type] }}
-                >
-                  {typeIcons[doc.type]}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-[#0A0A0A]">{doc.name}</p>
-                  <p className="mt-0.5 text-xs text-[#A3A3A3]">{doc.employee}</p>
-                </div>
-              </div>
 
-              {/* Metadata row */}
-              <div className="mt-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-[11px] text-[#A3A3A3]">
-                  <span>{formatDateTR(doc.uploadDate)}</span>
-                  <span>·</span>
-                  <span>{doc.size}</span>
-                </div>
-                {/* Version badge */}
-                {doc.versions.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setVersionDoc(doc)}
-                    className="inline-flex items-center gap-1 rounded-full bg-[#F5F5F5] px-2 py-0.5 text-[10px] font-medium text-[#525252] hover:bg-[#EDEDED]"
-                  >
-                    <History className="h-3 w-3" />
-                    v{doc.versions[0]?.version ?? 1}
-                  </button>
-                )}
-              </div>
-
-              {/* Expiry badge */}
-              {expiryDays !== null && (
-                <div className="mt-2">
-                  {expiryDays <= 0 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#FEE2E2] px-2 py-0.5 text-[10px] font-semibold text-[#DC2626]">
-                      Suresi dolmus
-                    </span>
-                  ) : expiryDays <= 30 ? (
-                    <span className="inline-flex items-center gap-1 rounded-full bg-[#FEF3C7] px-2 py-0.5 text-[10px] font-semibold text-[#D97706]">
-                      {expiryDays} gun sonra sona eriyor
-                    </span>
-                  ) : null}
-                </div>
-              )}
-
-              {/* KVKK Retention — Clickable for detail */}
-              <button
-                type="button"
-                onClick={(e) => { e.stopPropagation(); setKvkkDetailDoc(doc); }}
-                className="mt-2 flex w-full items-center gap-1.5 rounded-md bg-[#F5F5F5] px-2 py-1.5 text-left text-[10px] text-[#525252] transition-colors hover:bg-[#EDEDED]"
-              >
-                <Shield className="h-3 w-3 shrink-0 text-[#5E5CE6]" />
-                <span className="flex-1">Saklama: {doc.retentionYears} yil ({doc.retentionLaw}). Kalan: {retentionLeft}</span>
-                <Eye className="h-3 w-3 shrink-0 text-[#A3A3A3]" />
-              </button>
-
-              {/* Actions */}
-              <div className="mt-3 flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <button
-                  type="button"
-                  onClick={() => setPreviewDoc(doc)}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-[#EDEDED] text-[#525252] transition-colors hover:bg-[#FAFAFA]"
-                >
-                  <Eye className="h-3.5 w-3.5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={() => showToast(`"${doc.name}" indirildi`)}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-[#EDEDED] text-[#525252] transition-colors hover:bg-[#FAFAFA]"
-                >
-                  <Download className="h-3.5 w-3.5" />
-                </button>
-                {doc.versions.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setVersionDoc(doc)}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border border-[#EDEDED] text-[#525252] transition-colors hover:bg-[#FAFAFA]"
-                  >
-                    <History className="h-3.5 w-3.5" />
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => handleDelete(doc.id)}
-                  className="flex h-8 w-8 items-center justify-center rounded-md border border-[#EDEDED] text-[#DC2626] transition-colors hover:bg-[#FEE2E2]"
-                >
-                  <Trash2 className="h-3.5 w-3.5" />
-                </button>
-              </div>
-            </div>
-          );
-        })}
+        <div className="flex items-center justify-end gap-2 border-t border-line pt-4">
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-md border border-line bg-bg px-3 py-1.5 text-[12px] text-ink-60"
+          >
+            Vazgeç
+          </button>
+          <button
+            type="button"
+            onClick={onSubmit}
+            disabled={!file || !title.trim() || upload.isPending}
+            className="rounded-md bg-accent px-4 py-1.5 text-[12px] font-semibold text-white hover:bg-accent/90 disabled:opacity-50"
+          >
+            {upload.isPending ? 'Yükleniyor…' : 'Yükle'}
+          </button>
+        </div>
       </div>
-
-      {/* Version History Modal */}
-      {versionDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A]/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
-              <h3 className="text-base font-semibold text-[#0A0A0A]">Versiyon Gecmisi</h3>
-              <button type="button" onClick={() => setVersionDoc(null)} className="text-[#A3A3A3] hover:text-[#525252]">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="mb-4 truncate text-sm font-medium text-[#525252]">{versionDoc.name}</p>
-              <div className="space-y-3">
-                {versionDoc.versions.map((v) => (
-                  <div key={v.version} className={`flex items-center justify-between rounded-lg border p-3 ${v.current ? 'border-[#5E5CE6] bg-[#F5F3FF]' : 'border-[#EDEDED]'}`}>
-                    <div>
-                      <p className="text-sm font-medium text-[#0A0A0A]">
-                        v{v.version} {v.current && <span className="ml-1 text-xs text-[#5E5CE6]">(Guncel)</span>}
-                      </p>
-                      <p className="text-xs text-[#A3A3A3]">{formatDateTR(v.date)}</p>
-                    </div>
-                    {!v.current && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          showToast(`v${v.version} indiriliyor...`);
-                        }}
-                        className="inline-flex items-center gap-1 text-xs font-medium text-[#5E5CE6] hover:underline"
-                      >
-                        <Download className="h-3.5 w-3.5" />
-                        Indir
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
-              <button
-                type="button"
-                onClick={() => setVersionDoc(null)}
-                className="rounded-lg border border-[#EDEDED] px-4 py-2 text-sm font-medium text-[#525252] hover:bg-[#FAFAFA]"
-              >
-                Kapat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Preview Modal */}
-      {previewDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A]/50 p-4">
-          <div className="w-full max-w-lg rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
-              <h3 className="text-base font-semibold text-[#0A0A0A]">Belge Onizleme</h3>
-              <button type="button" onClick={() => setPreviewDoc(null)} className="text-[#A3A3A3] hover:text-[#525252]">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center gap-4 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-lg" style={{ backgroundColor: typeBgColors[previewDoc.type] }}>
-                  {typeIcons[previewDoc.type]}
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-[#0A0A0A]">{previewDoc.name}</p>
-                  <p className="mt-0.5 text-xs text-[#A3A3A3]">
-                    {previewDoc.employee} · {formatDateTR(previewDoc.uploadDate)} · {previewDoc.size}
-                  </p>
-                </div>
-              </div>
-
-              {/* Version + retention info */}
-              <div className="mt-4 space-y-2">
-                <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2 text-xs">
-                  <span className="text-[#A3A3A3]">Versiyon</span>
-                  <span className="font-medium text-[#0A0A0A]">v{previewDoc.versions[0]?.version ?? 1}</span>
-                </div>
-                <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2 text-xs">
-                  <span className="text-[#A3A3A3]">Saklama suresi</span>
-                  <span className="font-medium text-[#0A0A0A]">{previewDoc.retentionYears} yil ({previewDoc.retentionLaw})</span>
-                </div>
-                {previewDoc.expiryDate && (
-                  <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2 text-xs">
-                    <span className="text-[#A3A3A3]">Son gecerlilik</span>
-                    <span className="font-medium text-[#0A0A0A]">{formatDateTR(previewDoc.expiryDate)}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 flex h-48 items-center justify-center rounded-lg border border-dashed border-[#EDEDED] bg-[#FAFAFA]">
-                <p className="text-sm text-[#A3A3A3]">Belge onizlemesi burada gorunecek</p>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-[#EDEDED] px-6 py-4">
-              <button
-                type="button"
-                onClick={() => setPreviewDoc(null)}
-                className="rounded-lg border border-[#EDEDED] px-4 py-2 text-sm font-medium text-[#525252] hover:bg-[#FAFAFA]"
-              >
-                Kapat
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  showToast(`"${previewDoc.name}" indirildi`);
-                  setPreviewDoc(null);
-                }}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white hover:bg-[#262626]"
-              >
-                <Download className="h-4 w-4" />
-                Indir
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* KVKK Compliance Detail Modal */}
-      {kvkkDetailDoc && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A]/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-[#5E5CE6]" />
-                <h3 className="text-base font-semibold text-[#0A0A0A]">KVKK Uyumluluk Detayi</h3>
-              </div>
-              <button type="button" onClick={() => setKvkkDetailDoc(null)} className="text-[#A3A3A3] hover:text-[#525252]">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="p-6">
-              <p className="mb-4 truncate text-sm font-medium text-[#525252]">{kvkkDetailDoc.name}</p>
-              {(() => {
-                const detail = getKVKKDetail(kvkkDetailDoc);
-                return (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
-                      <span className="text-[#A3A3A3]">Saklama suresi</span>
-                      <span className="font-medium text-[#0A0A0A]">{detail.retentionPeriod}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
-                      <span className="text-[#A3A3A3]">Yasal dayanak</span>
-                      <span className="font-medium text-[#0A0A0A]">{detail.retentionLaw}</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
-                      <span className="text-[#A3A3A3]">Kalan sure</span>
-                      <span className={`font-semibold ${detail.retentionRemaining === 'Suresi doldu' ? 'text-[#DC2626]' : 'text-[#059669]'}`}>
-                        {detail.retentionRemaining}
-                      </span>
-                    </div>
-                    <div className="border-t border-[#EDEDED] my-2" />
-                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
-                      <span className="text-[#A3A3A3]">Son 30 gunde erisim</span>
-                      <span className="font-medium text-[#0A0A0A]">{detail.accessCount30d} kez erisildi</span>
-                    </div>
-                    <div className="flex items-center justify-between rounded-lg bg-[#F5F5F5] px-3 py-2.5 text-xs">
-                      <span className="text-[#A3A3A3]">Son erisen</span>
-                      <span className="font-medium text-[#0A0A0A]">{detail.lastAccessedBy}, {detail.lastAccessedDate}</span>
-                    </div>
-                    {kvkkDetailDoc.expiryDate && (
-                      <div className="flex items-center justify-between rounded-lg bg-[#FEF3C7] px-3 py-2.5 text-xs">
-                        <span className="text-[#92400E]">Son gecerlilik</span>
-                        <span className="font-semibold text-[#D97706]">{formatDateTR(kvkkDetailDoc.expiryDate)}</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-              <div className="mt-4 rounded-lg bg-[#F0F9FF] border border-[#BAE6FD] p-3">
-                <p className="text-[10px] text-[#1E40AF]">
-                  <span className="font-semibold">KVKK Notu:</span> Kisisel veriler, 6698 sayili KVKK kapsaminda islenme amaci sona erdikten sonra anonimlestirilmeli veya silinmelidir.
-                </p>
-              </div>
-            </div>
-            <div className="flex justify-end border-t border-[#EDEDED] px-6 py-4">
-              <button
-                type="button"
-                onClick={() => setKvkkDetailDoc(null)}
-                className="rounded-lg border border-[#EDEDED] px-4 py-2 text-sm font-medium text-[#525252] hover:bg-[#FAFAFA]"
-              >
-                Kapat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Upload Modal */}
-      {uploadOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0A0A0A]/50 p-4">
-          <div className="w-full max-w-md rounded-xl bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-[#EDEDED] px-6 py-4">
-              <h3 className="text-base font-semibold text-[#0A0A0A]">Belge Yukle</h3>
-              <button type="button" onClick={() => setUploadOpen(false)} className="text-[#A3A3A3] hover:text-[#525252]">
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-            <div className="flex flex-col gap-4 p-6">
-              <div className="flex flex-col items-center gap-3 rounded-lg border-2 border-dashed border-[#EDEDED] p-8">
-                <Upload className="h-8 w-8 text-[#A3A3A3]" />
-                <p className="text-sm text-[#525252]">Dosyayi surukleyip birakin veya secin</p>
-                <p className="text-xs text-[#A3A3A3]">PDF, DOC, XLSX, PNG — Maks. 10MB</p>
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-[#525252]">Belge Adi</label>
-                <input
-                  type="text"
-                  value={uploadName}
-                  onChange={(e) => setUploadName(e.target.value)}
-                  placeholder="Ornek: Is Sozlesmesi.pdf"
-                  className="w-full rounded-lg border border-[#EDEDED] px-3 py-2.5 text-sm text-[#0A0A0A] outline-none focus:border-[#5E5CE6] focus:ring-1 focus:ring-[#5E5CE6]"
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs font-medium text-[#525252]">Kategori</label>
-                <div className="flex flex-wrap gap-1.5">
-                  {categories.filter((c) => c.key !== 'all').map((cat) => (
-                    <button
-                      key={cat.key}
-                      type="button"
-                      onClick={() => setUploadCategory(cat.key)}
-                      className={`rounded-full px-3 py-1.5 text-xs font-medium transition-colors ${
-                        uploadCategory === cat.key
-                          ? 'bg-[#0A0A0A] text-white'
-                          : 'border border-[#EDEDED] text-[#525252] hover:bg-[#FAFAFA]'
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 border-t border-[#EDEDED] px-6 py-4">
-              <button
-                type="button"
-                onClick={() => setUploadOpen(false)}
-                className="rounded-lg border border-[#EDEDED] px-4 py-2 text-sm font-medium text-[#525252] hover:bg-[#FAFAFA]"
-              >
-                Iptal
-              </button>
-              <button
-                type="button"
-                onClick={handleUpload}
-                disabled={!uploadName}
-                className="inline-flex items-center gap-2 rounded-lg bg-[#0A0A0A] px-4 py-2 text-sm font-medium text-white transition-all hover:bg-[#262626] active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
-              >
-                <Upload className="h-4 w-4" />
-                Yukle
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

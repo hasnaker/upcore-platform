@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/ogrenme-yolu",
+  "title": "Öğrenme yolu (learning path)",
+  "description": "Kişiselleştirilmiş öğrenme programları.",
+  "source": "@site/docs/ik/modul/gelistirme/ogrenme-yolu.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/ogrenme-yolu",
+  "permalink": "/en/docs/ik/modul/gelistirme/ogrenme-yolu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/ogrenme-yolu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "ogrenme-yolu",
+    "title": "Öğrenme yolu (learning path)",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Yetkinlik modeli",
+    "permalink": "/en/docs/ik/modul/gelistirme/yetkinlik-modeli"
+  },
+  "next": {
+    "title": "Sertifika takibi",
+    "permalink": "/en/docs/ik/modul/gelistirme/sertifika-takibi"
+  }
+}

@@ -1,5 +1,8 @@
 import { defineConfig, devices } from "@playwright/test";
 
+const e2ePort = process.env.E2E_PORT ?? "3100";
+const e2eBaseUrl = process.env.BASE_URL ?? `http://localhost:${e2ePort}`;
+
 /**
  * Upcore V1 — Playwright E2E Test Configuration
  *
@@ -27,7 +30,7 @@ export default defineConfig({
     timeout: 10_000,
   },
   use: {
-    baseURL: process.env.BASE_URL ?? "http://localhost:3000",
+    baseURL: e2eBaseUrl,
     trace: "on-first-retry",
     screenshot: "only-on-failure",
     video: "on-first-retry",
@@ -37,6 +40,13 @@ export default defineConfig({
     navigationTimeout: 15_000,
   },
   projects: [
+    // --- Smoke checks that do not require auth bootstrap ---
+    {
+      name: "smoke-chromium",
+      use: {
+        ...devices["Desktop Chrome"],
+      },
+    },
     // --- Setup: authenticate once, share state across tests ---
     {
       name: "setup",
@@ -70,12 +80,13 @@ export default defineConfig({
       dependencies: ["setup"],
     },
   ],
-  webServer: process.env.CI
-    ? undefined
-    : {
-        command: "pnpm --filter web dev",
-        url: "http://localhost:3000",
-        reuseExistingServer: true,
-        timeout: 120_000,
-      },
+  webServer:
+    process.env.CI && process.env.E2E_WEB_SERVER !== "1"
+      ? undefined
+      : {
+          command: `pnpm --filter @upcore/web exec next dev --port ${e2ePort}`,
+          url: e2eBaseUrl,
+          reuseExistingServer: true,
+          timeout: 120_000,
+        },
 });

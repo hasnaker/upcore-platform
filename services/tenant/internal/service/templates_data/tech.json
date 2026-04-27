@@ -1,0 +1,54 @@
+{
+  "code": "tech",
+  "name": "Tech Scale-up",
+  "description": "Hızlı büyüyen teknoloji şirketleri için esnek ve modern şablon.",
+  "default_locale": "tr-TR",
+  "default_country": "TR",
+  "default_plan_id": "growth",
+  "modules": [
+    "core_hris",
+    "assessment",
+    "burnout",
+    "strengths",
+    "performance",
+    "mobility",
+    "kvkk",
+    "document",
+    "leave",
+    "learning"
+  ],
+  "departments": [
+    { "code": "EXEC", "name": "Yönetim" },
+    { "code": "ENG", "name": "Mühendislik", "parent": "EXEC" },
+    { "code": "ENG_FE", "name": "Frontend Takımı", "parent": "ENG" },
+    { "code": "ENG_BE", "name": "Backend Takımı", "parent": "ENG" },
+    { "code": "ENG_ML", "name": "Veri & ML Takımı", "parent": "ENG" },
+    { "code": "ENG_INFRA", "name": "Platform & SRE", "parent": "ENG" },
+    { "code": "PROD", "name": "Ürün", "parent": "EXEC" },
+    { "code": "DESIGN", "name": "Tasarım", "parent": "PROD" },
+    { "code": "GTM", "name": "Go-to-Market", "parent": "EXEC" },
+    { "code": "GTM_SALES", "name": "Satış", "parent": "GTM" },
+    { "code": "GTM_MKT", "name": "Pazarlama", "parent": "GTM" },
+    { "code": "PEOPLE", "name": "People & Operations", "parent": "EXEC" }
+  ],
+  "positions": [
+    { "code": "CEO", "name": "CEO", "department": "EXEC", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "CTO", "name": "CTO", "department": "ENG", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "VP_PROD", "name": "VP Product", "department": "PROD", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "ENG_MGR", "name": "Engineering Manager", "department": "ENG", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "SENIOR_ENG", "name": "Senior Software Engineer", "department": "ENG_BE", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "PRODUCT_MGR", "name": "Product Manager", "department": "PROD", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "DESIGNER", "name": "Product Designer", "department": "DESIGN", "personnel_type": "BEYAZ_YAKA" }
+  ],
+  "kvkk_notices": [
+    { "audience": "employee", "version": "2025.01", "title": "Çalışan Aydınlatma Metni" },
+    { "audience": "candidate", "version": "2025.01", "title": "Aday Aydınlatma Metni" },
+    { "audience": "visitor", "version": "2025.01", "title": "Ziyaretçi Aydınlatma Metni" }
+  ],
+  "feature_flags": {
+    "slack_integration": true,
+    "career_paths": true,
+    "strengths_module": true,
+    "matrix_manager": true
+  }
+}

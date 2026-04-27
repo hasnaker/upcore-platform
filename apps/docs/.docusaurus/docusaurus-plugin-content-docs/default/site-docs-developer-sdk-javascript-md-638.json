@@ -1,0 +1,29 @@
+{
+  "id": "developer/sdk/javascript",
+  "title": "JavaScript / TypeScript SDK",
+  "description": "Node.js + browser.",
+  "source": "@site/docs/developer/sdk/javascript.md",
+  "sourceDirName": "developer/sdk",
+  "slug": "/developer/sdk/javascript",
+  "permalink": "/en/docs/developer/sdk/javascript",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/sdk/javascript.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "javascript",
+    "title": "JavaScript / TypeScript SDK",
+    "sidebar_position": 1
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Webhook olayları",
+    "permalink": "/en/docs/developer/webhook/olaylar"
+  },
+  "next": {
+    "title": "Python SDK",
+    "permalink": "/en/docs/developer/sdk/python"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "admin/tenant/yeni-tenant-olusturma",
+  "title": "Yeni tenant oluşturma",
+  "description": "UpCore'da yeni bir müşteri şirket kaydı.",
+  "source": "@site/docs/admin/tenant/yeni-tenant-olusturma.md",
+  "sourceDirName": "admin/tenant",
+  "slug": "/admin/tenant/yeni-tenant-olusturma",
+  "permalink": "/en/docs/admin/tenant/yeni-tenant-olusturma",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/tenant/yeni-tenant-olusturma.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "yeni-tenant-olusturma",
+    "title": "Yeni tenant oluşturma",
+    "sidebar_position": 1
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Başlangıç",
+    "permalink": "/en/docs/admin/giris"
+  },
+  "next": {
+    "title": "Onboarding wizard",
+    "permalink": "/en/docs/admin/tenant/onboarding-wizard"
+  }
+}

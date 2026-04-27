@@ -1,0 +1,29 @@
+{
+  "id": "developer/ml/burnout-prediction-kart",
+  "title": "Model Card — Burnout Prediction v2.1",
+  "description": "Model detayları",
+  "source": "@site/docs/developer/ml/burnout-prediction-kart.md",
+  "sourceDirName": "developer/ml",
+  "slug": "/developer/ml/burnout-prediction-kart",
+  "permalink": "/en/docs/developer/ml/burnout-prediction-kart",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/ml/burnout-prediction-kart.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "burnout-prediction-kart",
+    "title": "Model Card — Burnout Prediction v2.1",
+    "sidebar_position": 2
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "ML model kartları (Google Model Cards formatı)",
+    "permalink": "/en/docs/developer/ml/model-kartlari"
+  },
+  "next": {
+    "title": "Model Card — JD-R Fit v1.3",
+    "permalink": "/en/docs/developer/ml/jd-r-fit-kart"
+  }
+}

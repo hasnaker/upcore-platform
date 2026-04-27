@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/ihracat-entegrasyon",
+  "title": "İhracat ve entegrasyon",
+  "description": "Analitik verilerinin dış sistemlere aktarımı.",
+  "source": "@site/docs/ik/modul/analitik/ihracat-entegrasyon.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/ihracat-entegrasyon",
+  "permalink": "/en/docs/ik/modul/analitik/ihracat-entegrasyon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/ihracat-entegrasyon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "ihracat-entegrasyon",
+    "title": "İhracat ve entegrasyon",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Tahmin modelleri",
+    "permalink": "/en/docs/ik/modul/analitik/tahmin-modelleri"
+  },
+  "next": {
+    "title": "Analitik — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/analitik/sikca-sorulanlar"
+  }
+}

@@ -1,0 +1,919 @@
+{
+  "/en/changelog-904": {
+    "__comp": "a6aa9e1f",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "1e04eb86"
+      },
+      {
+        "content": "1561d253"
+      },
+      {
+        "content": "160ddeca"
+      }
+    ],
+    "__props": "3f5ad289"
+  },
+  "/en/changelog/archive-101": {
+    "__comp": "9e4087bc",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "__props": "01d973e2"
+  },
+  "/en/changelog/authors-e96": {
+    "__comp": "621db11d",
+    "__context": {
+      "data": {
+        "blogMetadata": "acecf23e"
+      },
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "__props": "4ce843af"
+  },
+  "/en/changelog/q2-ml-retrain-e97": {
+    "__comp": "ccc49370",
+    "__context": {
+      "data": {
+        "blogMetadata": "acecf23e"
+      },
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "content": "fa7904e8"
+  },
+  "/en/changelog/soc2-type-i-tamamlandi-6e4": {
+    "__comp": "ccc49370",
+    "__context": {
+      "data": {
+        "blogMetadata": "acecf23e"
+      },
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "content": "ea766a0b"
+  },
+  "/en/changelog/tags-c15": {
+    "__comp": "01a85c17",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "__props": "68f27970"
+  },
+  "/en/changelog/tags/beta-61f": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "1e04eb86"
+      }
+    ],
+    "__props": "876ef5de"
+  },
+  "/en/changelog/tags/compliance-9d7": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "160ddeca"
+      }
+    ],
+    "__props": "e81548ed"
+  },
+  "/en/changelog/tags/ml-7a4": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "1561d253"
+      }
+    ],
+    "__props": "4e01345e"
+  },
+  "/en/changelog/tags/models-58c": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "1561d253"
+      }
+    ],
+    "__props": "9f1c2ca1"
+  },
+  "/en/changelog/tags/release-275": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "1e04eb86"
+      }
+    ],
+    "__props": "e49ce63a"
+  },
+  "/en/changelog/tags/security-9c6": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "160ddeca"
+      }
+    ],
+    "__props": "c510ea25"
+  },
+  "/en/changelog/tags/soc-2-5fe": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "160ddeca"
+      }
+    ],
+    "__props": "3cb73483"
+  },
+  "/en/changelog/tags/v-2-8f1": {
+    "__comp": "6875c492",
+    "__context": {
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "items": [
+      {
+        "content": "1e04eb86"
+      }
+    ],
+    "__props": "38ae213a"
+  },
+  "/en/changelog/v2-beta-yayinda-d50": {
+    "__comp": "ccc49370",
+    "__context": {
+      "data": {
+        "blogMetadata": "acecf23e"
+      },
+      "plugin": "36994c47"
+    },
+    "sidebar": "814f3328",
+    "content": "c4d9cf95"
+  },
+  "/en/hukuki/gizlilik-11d": {
+    "__comp": "1f391b9e",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "content": "6540cfa4"
+  },
+  "/en/hukuki/kullanim-sartlari-d04": {
+    "__comp": "1f391b9e",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "content": "d4bf0df6"
+  },
+  "/en/iletisim-acd": {
+    "__comp": "1f391b9e",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "content": "4aecdda1"
+  },
+  "/en/search-5d6": {
+    "__comp": "1a4e3797",
+    "__context": {
+      "plugin": "c141421f"
+    }
+  },
+  "/en/docs-494": {
+    "__comp": "5e95c892",
+    "__context": {
+      "plugin": "aba21aa0"
+    }
+  },
+  "/en/docs-223": {
+    "__comp": "a7bd4aaa",
+    "__props": "0abf49b1"
+  },
+  "/en/docs-dd4": {
+    "__comp": "a94703ab"
+  },
+  "/en/docs/admin/billing/fatura-yonetimi-e26": {
+    "__comp": "17896441",
+    "content": "3cd2014b"
+  },
+  "/en/docs/admin/billing/kullanim-metrikleri-8bd": {
+    "__comp": "17896441",
+    "content": "42e07017"
+  },
+  "/en/docs/admin/billing/plan-secimi-cd1": {
+    "__comp": "17896441",
+    "content": "2c350131"
+  },
+  "/en/docs/admin/billing/seat-yonetimi-15e": {
+    "__comp": "17896441",
+    "content": "af2bd830"
+  },
+  "/en/docs/admin/giris-f0d": {
+    "__comp": "17896441",
+    "content": "576d1e47"
+  },
+  "/en/docs/admin/iam/mfa-zorunlu-kilma-73c": {
+    "__comp": "17896441",
+    "content": "1efcacde"
+  },
+  "/en/docs/admin/iam/rbac-rol-yonetimi-426": {
+    "__comp": "17896441",
+    "content": "2d05b9f0"
+  },
+  "/en/docs/admin/iam/scim-kullanici-senkron-4b0": {
+    "__comp": "17896441",
+    "content": "40e282a0"
+  },
+  "/en/docs/admin/iam/sso-oidc-9b6": {
+    "__comp": "17896441",
+    "content": "99c9582d"
+  },
+  "/en/docs/admin/iam/sso-saml-96b": {
+    "__comp": "17896441",
+    "content": "dfdf42e2"
+  },
+  "/en/docs/admin/operasyon/api-key-olusturma-2b4": {
+    "__comp": "17896441",
+    "content": "f1248b76"
+  },
+  "/en/docs/admin/operasyon/audit-log-izleme-23e": {
+    "__comp": "17896441",
+    "content": "4ee7fc69"
+  },
+  "/en/docs/admin/operasyon/bulk-export-6af": {
+    "__comp": "17896441",
+    "content": "853eb36d"
+  },
+  "/en/docs/admin/operasyon/feature-flag-72d": {
+    "__comp": "17896441",
+    "content": "9271e14d"
+  },
+  "/en/docs/admin/operasyon/impersonation-ac1": {
+    "__comp": "17896441",
+    "content": "581c4b53"
+  },
+  "/en/docs/admin/operasyon/webhook-konfigurasyon-054": {
+    "__comp": "17896441",
+    "content": "4674f8b4"
+  },
+  "/en/docs/admin/tenant/csv-import-9bf": {
+    "__comp": "17896441",
+    "content": "25967084"
+  },
+  "/en/docs/admin/tenant/ilk-modul-secimi-756": {
+    "__comp": "17896441",
+    "content": "d24e5d68"
+  },
+  "/en/docs/admin/tenant/onboarding-wizard-b6c": {
+    "__comp": "17896441",
+    "content": "4f60b4e5"
+  },
+  "/en/docs/admin/tenant/yeni-tenant-olusturma-c9a": {
+    "__comp": "17896441",
+    "content": "7fda42e3"
+  },
+  "/en/docs/admin/uyum/dpa-sablon-418": {
+    "__comp": "17896441",
+    "content": "cbbb6e9f"
+  },
+  "/en/docs/admin/uyum/log-retansiyon-2e5": {
+    "__comp": "17896441",
+    "content": "7768d711"
+  },
+  "/en/docs/admin/uyum/soc2-readiness-2a9": {
+    "__comp": "17896441",
+    "content": "5f405594"
+  },
+  "/en/docs/admin/uyum/veri-ikametgahi-281": {
+    "__comp": "17896441",
+    "content": "ec1a4866"
+  },
+  "/en/docs/calisan/giris-4ec": {
+    "__comp": "17896441",
+    "content": "422ca139"
+  },
+  "/en/docs/calisan/hesap/bildirim-tercihleri-fed": {
+    "__comp": "17896441",
+    "content": "f2fd3fd7"
+  },
+  "/en/docs/calisan/hesap/ilk-giris-b89": {
+    "__comp": "17896441",
+    "content": "642f6c7a"
+  },
+  "/en/docs/calisan/hesap/profil-guncelleme-a46": {
+    "__comp": "17896441",
+    "content": "9f366537"
+  },
+  "/en/docs/calisan/hesap/sifre-mfa-c12": {
+    "__comp": "17896441",
+    "content": "7e1dbf35"
+  },
+  "/en/docs/calisan/kvkk/madde-11-haklar-93b": {
+    "__comp": "17896441",
+    "content": "c89847c0"
+  },
+  "/en/docs/calisan/kvkk/silme-talebi-99f": {
+    "__comp": "17896441",
+    "content": "9dad2db7"
+  },
+  "/en/docs/calisan/kvkk/veri-indirme-6b7": {
+    "__comp": "17896441",
+    "content": "149c325c"
+  },
+  "/en/docs/calisan/pulse/anonimlik-guvencesi-d3e": {
+    "__comp": "17896441",
+    "content": "2227e4aa"
+  },
+  "/en/docs/calisan/pulse/pulse-cevaplama-50b": {
+    "__comp": "17896441",
+    "content": "4b22f78a"
+  },
+  "/en/docs/calisan/pulse/pulse-nedir-8b6": {
+    "__comp": "17896441",
+    "content": "3903df01"
+  },
+  "/en/docs/calisan/sss-239": {
+    "__comp": "17896441",
+    "content": "77b04f29"
+  },
+  "/en/docs/developer/api/assessment-e71": {
+    "__comp": "17896441",
+    "content": "2d06a2fa"
+  },
+  "/en/docs/developer/api/ats-3a4": {
+    "__comp": "17896441",
+    "content": "373e6391"
+  },
+  "/en/docs/developer/api/audit-af4": {
+    "__comp": "17896441",
+    "content": "9e0d2288"
+  },
+  "/en/docs/developer/api/auth-965": {
+    "__comp": "17896441",
+    "content": "4fe9fabf"
+  },
+  "/en/docs/developer/api/billing-4dc": {
+    "__comp": "17896441",
+    "content": "6cc02043"
+  },
+  "/en/docs/developer/api/bordro-8e1": {
+    "__comp": "17896441",
+    "content": "8e8572f4"
+  },
+  "/en/docs/developer/api/document-5d2": {
+    "__comp": "17896441",
+    "content": "54ebdef2"
+  },
+  "/en/docs/developer/api/employee-865": {
+    "__comp": "17896441",
+    "content": "28206591"
+  },
+  "/en/docs/developer/api/gateway-9e7": {
+    "__comp": "17896441",
+    "content": "2062fed7"
+  },
+  "/en/docs/developer/api/genel-bakis-069": {
+    "__comp": "17896441",
+    "content": "16b4ba1f"
+  },
+  "/en/docs/developer/api/intervention-887": {
+    "__comp": "17896441",
+    "content": "5818295f"
+  },
+  "/en/docs/developer/api/leave-b06": {
+    "__comp": "17896441",
+    "content": "147e89fc"
+  },
+  "/en/docs/developer/api/mobility-811": {
+    "__comp": "17896441",
+    "content": "afff6fca"
+  },
+  "/en/docs/developer/api/notification-739": {
+    "__comp": "17896441",
+    "content": "f2688264"
+  },
+  "/en/docs/developer/api/organization-a49": {
+    "__comp": "17896441",
+    "content": "4d244ecc"
+  },
+  "/en/docs/developer/api/performance-39a": {
+    "__comp": "17896441",
+    "content": "d97d618c"
+  },
+  "/en/docs/developer/api/rate-limit-fa6": {
+    "__comp": "17896441",
+    "content": "47e533bc"
+  },
+  "/en/docs/developer/api/survey-174": {
+    "__comp": "17896441",
+    "content": "05fc881e"
+  },
+  "/en/docs/developer/api/tenant-37c": {
+    "__comp": "17896441",
+    "content": "155ae518"
+  },
+  "/en/docs/developer/api/try-it-out-sandbox-60c": {
+    "__comp": "17896441",
+    "content": "1f545210"
+  },
+  "/en/docs/developer/api/versiyonlama-fc6": {
+    "__comp": "17896441",
+    "content": "57795520"
+  },
+  "/en/docs/developer/giris-4e4": {
+    "__comp": "17896441",
+    "content": "115165ae"
+  },
+  "/en/docs/developer/kavramlar/coklu-tenant-71d": {
+    "__comp": "17896441",
+    "content": "90d78f15"
+  },
+  "/en/docs/developer/kavramlar/hata-kodlari-252": {
+    "__comp": "17896441",
+    "content": "be7a3401"
+  },
+  "/en/docs/developer/kavramlar/idempotency-fd1": {
+    "__comp": "17896441",
+    "content": "38d4939f"
+  },
+  "/en/docs/developer/kavramlar/kimlik-dogrulama-60d": {
+    "__comp": "17896441",
+    "content": "bb5a9089"
+  },
+  "/en/docs/developer/kavramlar/mimari-genel-bakis-ba6": {
+    "__comp": "17896441",
+    "content": "7638f1ec"
+  },
+  "/en/docs/developer/kavramlar/pagination-841": {
+    "__comp": "17896441",
+    "content": "5e8c8164"
+  },
+  "/en/docs/developer/ml/burnout-prediction-kart-a47": {
+    "__comp": "17896441",
+    "content": "85fc7866"
+  },
+  "/en/docs/developer/ml/intervention-recommendation-kart-982": {
+    "__comp": "17896441",
+    "content": "33d49233"
+  },
+  "/en/docs/developer/ml/jd-r-fit-kart-d7e": {
+    "__comp": "17896441",
+    "content": "e6e5cb23"
+  },
+  "/en/docs/developer/ml/model-kartlari-bc4": {
+    "__comp": "17896441",
+    "content": "aea8a462"
+  },
+  "/en/docs/developer/ml/yeniden-egitim-takvimi-3a5": {
+    "__comp": "17896441",
+    "content": "019d31b0"
+  },
+  "/en/docs/developer/sdk/go-465": {
+    "__comp": "17896441",
+    "content": "f4ca0e69"
+  },
+  "/en/docs/developer/sdk/javascript-4be": {
+    "__comp": "17896441",
+    "content": "63810ad9"
+  },
+  "/en/docs/developer/sdk/python-24d": {
+    "__comp": "17896441",
+    "content": "5053a367"
+  },
+  "/en/docs/developer/webhook/genel-bakis-908": {
+    "__comp": "17896441",
+    "content": "ba9b60f2"
+  },
+  "/en/docs/developer/webhook/imzalama-a11": {
+    "__comp": "17896441",
+    "content": "b135e6c8"
+  },
+  "/en/docs/developer/webhook/olaylar-461": {
+    "__comp": "17896441",
+    "content": "efe74f5e"
+  },
+  "/en/docs/developer/webhook/retry-politikasi-41e": {
+    "__comp": "17896441",
+    "content": "f34659ce"
+  },
+  "/en/docs/ik/giris-7a4": {
+    "__comp": "17896441",
+    "content": "b6934f29"
+  },
+  "/en/docs/ik/hizli-baslangic/ilk-15-dakika-643": {
+    "__comp": "17896441",
+    "content": "e7dd5058"
+  },
+  "/en/docs/ik/hizli-baslangic/ilk-mudahale-5b7": {
+    "__comp": "17896441",
+    "content": "12aca7c1"
+  },
+  "/en/docs/ik/hizli-baslangic/ilk-pulse-anketi-62c": {
+    "__comp": "17896441",
+    "content": "c42b0715"
+  },
+  "/en/docs/ik/hizli-baslangic/yil-sonu-degerlendirme-cb9": {
+    "__comp": "17896441",
+    "content": "99267b26"
+  },
+  "/en/docs/ik/kvkk/giris-f5d": {
+    "__comp": "17896441",
+    "content": "33be02ce"
+  },
+  "/en/docs/ik/modul/analitik/bias-denetimi-910": {
+    "__comp": "17896441",
+    "content": "a72304b6"
+  },
+  "/en/docs/ik/modul/analitik/departman-karsilastirma-66f": {
+    "__comp": "17896441",
+    "content": "f48d9df4"
+  },
+  "/en/docs/ik/modul/analitik/executive-dashboard-7b5": {
+    "__comp": "17896441",
+    "content": "47222348"
+  },
+  "/en/docs/ik/modul/analitik/genel-bakis-911": {
+    "__comp": "17896441",
+    "content": "e8ccbd80"
+  },
+  "/en/docs/ik/modul/analitik/ihracat-entegrasyon-db7": {
+    "__comp": "17896441",
+    "content": "b4940eaf"
+  },
+  "/en/docs/ik/modul/analitik/roi-hesabi-47e": {
+    "__comp": "17896441",
+    "content": "1e5988f3"
+  },
+  "/en/docs/ik/modul/analitik/sikca-sorulanlar-d5b": {
+    "__comp": "17896441",
+    "content": "19cfacbf"
+  },
+  "/en/docs/ik/modul/analitik/tahmin-modelleri-08c": {
+    "__comp": "17896441",
+    "content": "c08d6551"
+  },
+  "/en/docs/ik/modul/analitik/trend-analizi-4bd": {
+    "__comp": "17896441",
+    "content": "bb5130ba"
+  },
+  "/en/docs/ik/modul/analitik/yillik-rapor-767": {
+    "__comp": "17896441",
+    "content": "38bcf9ed"
+  },
+  "/en/docs/ik/modul/gelistirme/butce-yonetimi-a5e": {
+    "__comp": "17896441",
+    "content": "7cf2b4c0"
+  },
+  "/en/docs/ik/modul/gelistirme/etki-degerlendirme-40b": {
+    "__comp": "17896441",
+    "content": "63e34be5"
+  },
+  "/en/docs/ik/modul/gelistirme/genel-bakis-b28": {
+    "__comp": "17896441",
+    "content": "2ba67148"
+  },
+  "/en/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi-41c": {
+    "__comp": "17896441",
+    "content": "b6146859"
+  },
+  "/en/docs/ik/modul/gelistirme/koçluk-programi-8a1": {
+    "__comp": "17896441",
+    "content": "66c0ec71"
+  },
+  "/en/docs/ik/modul/gelistirme/mentorluk-6fa": {
+    "__comp": "17896441",
+    "content": "afda3f19"
+  },
+  "/en/docs/ik/modul/gelistirme/ogrenme-yolu-8bb": {
+    "__comp": "17896441",
+    "content": "7cab332d"
+  },
+  "/en/docs/ik/modul/gelistirme/sertifika-takibi-eaf": {
+    "__comp": "17896441",
+    "content": "584f3184"
+  },
+  "/en/docs/ik/modul/gelistirme/sikca-sorulanlar-027": {
+    "__comp": "17896441",
+    "content": "752ef063"
+  },
+  "/en/docs/ik/modul/gelistirme/yetkinlik-modeli-079": {
+    "__comp": "17896441",
+    "content": "3cdddef5"
+  },
+  "/en/docs/ik/modul/ik-ops/bordro-hesaplama-675": {
+    "__comp": "17896441",
+    "content": "e428d2f5"
+  },
+  "/en/docs/ik/modul/ik-ops/genel-bakis-677": {
+    "__comp": "17896441",
+    "content": "b8ede3a5"
+  },
+  "/en/docs/ik/modul/ik-ops/is-kazasi-bildirim-b5f": {
+    "__comp": "17896441",
+    "content": "d95d343c"
+  },
+  "/en/docs/ik/modul/ik-ops/izin-yonetimi-8b2": {
+    "__comp": "17896441",
+    "content": "e4f4c97e"
+  },
+  "/en/docs/ik/modul/ik-ops/kidem-tazminati-832": {
+    "__comp": "17896441",
+    "content": "b57384d2"
+  },
+  "/en/docs/ik/modul/ik-ops/kiyafet-mesai-697": {
+    "__comp": "17896441",
+    "content": "ee40b94d"
+  },
+  "/en/docs/ik/modul/ik-ops/ozluk-dosyasi-97b": {
+    "__comp": "17896441",
+    "content": "dcc3de34"
+  },
+  "/en/docs/ik/modul/ik-ops/sgk-e-bildirge-d5f": {
+    "__comp": "17896441",
+    "content": "e0e5866d"
+  },
+  "/en/docs/ik/modul/ik-ops/sikca-sorulanlar-d49": {
+    "__comp": "17896441",
+    "content": "52e2d0e0"
+  },
+  "/en/docs/ik/modul/ik-ops/sozlesme-yonetimi-5f2": {
+    "__comp": "17896441",
+    "content": "7fd8c385"
+  },
+  "/en/docs/ik/modul/koruma/cohens-d-yorumu-b81": {
+    "__comp": "17896441",
+    "content": "e42b09f6"
+  },
+  "/en/docs/ik/modul/koruma/consent-akisi-333": {
+    "__comp": "17896441",
+    "content": "29fa42ab"
+  },
+  "/en/docs/ik/modul/koruma/etki-olcumu-d19": {
+    "__comp": "17896441",
+    "content": "2b9b0d9f"
+  },
+  "/en/docs/ik/modul/koruma/genel-bakis-8e1": {
+    "__comp": "17896441",
+    "content": "266b9d6e"
+  },
+  "/en/docs/ik/modul/koruma/izleme-takvimi-180": {
+    "__comp": "17896441",
+    "content": "6498933e"
+  },
+  "/en/docs/ik/modul/koruma/mudahale-katalogu-df0": {
+    "__comp": "17896441",
+    "content": "db320306"
+  },
+  "/en/docs/ik/modul/koruma/plan-takibi-0a5": {
+    "__comp": "17896441",
+    "content": "861baa0c"
+  },
+  "/en/docs/ik/modul/koruma/referral-network-c2f": {
+    "__comp": "17896441",
+    "content": "0fc3fab8"
+  },
+  "/en/docs/ik/modul/koruma/sikca-sorulanlar-e6a": {
+    "__comp": "17896441",
+    "content": "f78e6182"
+  },
+  "/en/docs/ik/modul/koruma/thompson-sampling-2ca": {
+    "__comp": "17896441",
+    "content": "0393cf5e"
+  },
+  "/en/docs/ik/modul/kvkk/acik-riza-58c": {
+    "__comp": "17896441",
+    "content": "f845d520"
+  },
+  "/en/docs/ik/modul/kvkk/aydınlatma-metni-ce1": {
+    "__comp": "17896441",
+    "content": "82dcef65"
+  },
+  "/en/docs/ik/modul/kvkk/dpia-sablon-206": {
+    "__comp": "17896441",
+    "content": "60df2664"
+  },
+  "/en/docs/ik/modul/kvkk/genel-bakis-f06": {
+    "__comp": "17896441",
+    "content": "75d2a391"
+  },
+  "/en/docs/ik/modul/kvkk/ihlal-bildirim-72-saat-ea6": {
+    "__comp": "17896441",
+    "content": "bd36441c"
+  },
+  "/en/docs/ik/modul/kvkk/madde-11-talep-yonetimi-c19": {
+    "__comp": "17896441",
+    "content": "d82b39e3"
+  },
+  "/en/docs/ik/modul/kvkk/saklama-politikasi-59d": {
+    "__comp": "17896441",
+    "content": "d52b0d45"
+  },
+  "/en/docs/ik/modul/kvkk/sikca-sorulanlar-564": {
+    "__comp": "17896441",
+    "content": "11df593c"
+  },
+  "/en/docs/ik/modul/kvkk/verbis-kayit-sureci-9dc": {
+    "__comp": "17896441",
+    "content": "ba493e85"
+  },
+  "/en/docs/ik/modul/kvkk/yurtdisi-aktarim-943": {
+    "__comp": "17896441",
+    "content": "fd624c55"
+  },
+  "/en/docs/ik/modul/mobility/9-kutu-entegrasyon-b13": {
+    "__comp": "17896441",
+    "content": "7018297a"
+  },
+  "/en/docs/ik/modul/mobility/ayrilis-risk-tahmini-3ba": {
+    "__comp": "17896441",
+    "content": "ff0387e8"
+  },
+  "/en/docs/ik/modul/mobility/genel-bakis-b3c": {
+    "__comp": "17896441",
+    "content": "ad16fe6e"
+  },
+  "/en/docs/ik/modul/mobility/ic-ilan-marketplace-cec": {
+    "__comp": "17896441",
+    "content": "3e8374c6"
+  },
+  "/en/docs/ik/modul/mobility/kariyer-yolu-132": {
+    "__comp": "17896441",
+    "content": "7e05a18c"
+  },
+  "/en/docs/ik/modul/mobility/maliyet-analizi-abe": {
+    "__comp": "17896441",
+    "content": "00d360e9"
+  },
+  "/en/docs/ik/modul/mobility/ready-now-siniflandirma-8f2": {
+    "__comp": "17896441",
+    "content": "0d917222"
+  },
+  "/en/docs/ik/modul/mobility/rotasyon-is-akisi-d79": {
+    "__comp": "17896441",
+    "content": "a688f237"
+  },
+  "/en/docs/ik/modul/mobility/sikca-sorulanlar-24d": {
+    "__comp": "17896441",
+    "content": "af708953"
+  },
+  "/en/docs/ik/modul/mobility/succession-pool-b97": {
+    "__comp": "17896441",
+    "content": "69e4e755"
+  },
+  "/en/docs/ik/modul/performans/360-anket-e18": {
+    "__comp": "17896441",
+    "content": "b870f10a"
+  },
+  "/en/docs/ik/modul/performans/360-soru-havuzu-d6d": {
+    "__comp": "17896441",
+    "content": "cd993739"
+  },
+  "/en/docs/ik/modul/performans/9-kutu-kalibrasyon-93a": {
+    "__comp": "17896441",
+    "content": "2a56bac9"
+  },
+  "/en/docs/ik/modul/performans/bonus-hesabi-832": {
+    "__comp": "17896441",
+    "content": "46e06d43"
+  },
+  "/en/docs/ik/modul/performans/genel-bakis-082": {
+    "__comp": "17896441",
+    "content": "14d2e9a9"
+  },
+  "/en/docs/ik/modul/performans/key-result-takibi-494": {
+    "__comp": "17896441",
+    "content": "c640d904"
+  },
+  "/en/docs/ik/modul/performans/okr-kurulum-020": {
+    "__comp": "17896441",
+    "content": "f361cf77"
+  },
+  "/en/docs/ik/modul/performans/pip-is-akisi-203": {
+    "__comp": "17896441",
+    "content": "5863070d"
+  },
+  "/en/docs/ik/modul/performans/sikca-sorulanlar-5d5": {
+    "__comp": "17896441",
+    "content": "4aa1e906"
+  },
+  "/en/docs/ik/modul/performans/yil-sonu-degerlendirme-e24": {
+    "__comp": "17896441",
+    "content": "4b57ad14"
+  },
+  "/en/docs/ik/modul/surdurme/anket-guvenilirligi-cbf": {
+    "__comp": "17896441",
+    "content": "74edd58a"
+  },
+  "/en/docs/ik/modul/surdurme/bat-tr-skorlama-e52": {
+    "__comp": "17896441",
+    "content": "58460a1c"
+  },
+  "/en/docs/ik/modul/surdurme/genel-bakis-c37": {
+    "__comp": "17896441",
+    "content": "a5ce5379"
+  },
+  "/en/docs/ik/modul/surdurme/heatmap-okuma-6f1": {
+    "__comp": "17896441",
+    "content": "3c75c7e1"
+  },
+  "/en/docs/ik/modul/surdurme/jd-r-yorumu-ba7": {
+    "__comp": "17896441",
+    "content": "23e77921"
+  },
+  "/en/docs/ik/modul/surdurme/kirmizi-band-triage-eb9": {
+    "__comp": "17896441",
+    "content": "1bc18843"
+  },
+  "/en/docs/ik/modul/surdurme/pulse-kurulum-4bb": {
+    "__comp": "17896441",
+    "content": "7abff340"
+  },
+  "/en/docs/ik/modul/surdurme/sablon-kutuphanesi-2b8": {
+    "__comp": "17896441",
+    "content": "b7220d0b"
+  },
+  "/en/docs/ik/modul/surdurme/sikca-sorulanlar-412": {
+    "__comp": "17896441",
+    "content": "217ddce3"
+  },
+  "/en/docs/ik/modul/surdurme/soru-bankasi-30a": {
+    "__comp": "17896441",
+    "content": "6f59a175"
+  },
+  "/en/docs/yonetici/ekip/bire-bir-gorusmeler-258": {
+    "__comp": "17896441",
+    "content": "31b7d107"
+  },
+  "/en/docs/yonetici/ekip/ekip-dashboard-3c2": {
+    "__comp": "17896441",
+    "content": "d9090f23"
+  },
+  "/en/docs/yonetici/ekip/surekli-geri-bildirim-e5e": {
+    "__comp": "17896441",
+    "content": "92d3b699"
+  },
+  "/en/docs/yonetici/giris-bd9": {
+    "__comp": "17896441",
+    "content": "1d1c109c"
+  },
+  "/en/docs/yonetici/performans/360-feedback-verme-1ec": {
+    "__comp": "17896441",
+    "content": "dee5fb98"
+  },
+  "/en/docs/yonetici/performans/9-kutu-kalibrasyon-79a": {
+    "__comp": "17896441",
+    "content": "5ef2037c"
+  },
+  "/en/docs/yonetici/performans/okr-belirleme-8d5": {
+    "__comp": "17896441",
+    "content": "77ababfe"
+  },
+  "/en/docs/yonetici/pulse/ekip-pulse-yorumu-46a": {
+    "__comp": "17896441",
+    "content": "a1caa0a2"
+  },
+  "/en/docs/yonetici/pulse/kirmizi-band-triage-bc3": {
+    "__comp": "17896441",
+    "content": "0a1574fe"
+  },
+  "/en/docs/yonetici/pulse/mudahale-onayi-cc7": {
+    "__comp": "17896441",
+    "content": "b8febbeb"
+  },
+  "/en/-6c2": {
+    "__comp": "1df93b7f",
+    "__context": {
+      "plugin": "a7456010"
+    },
+    "config": "5e9f5e1a"
+  }
+}

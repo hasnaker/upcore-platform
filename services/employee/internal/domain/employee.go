@@ -103,6 +103,10 @@ type Employee struct {
 	PositionID   *uuid.UUID `db:"position_id" json:"position_id,omitempty"`
 	ManagerID    *uuid.UUID `db:"manager_id" json:"manager_id,omitempty"`
 
+	// Avatar (profil fotoğrafı) — Azure Blob public URL, migration 037.
+	AvatarURL       *string    `db:"avatar_url" json:"avatar_url,omitempty"`
+	AvatarUpdatedAt *time.Time `db:"avatar_updated_at" json:"avatar_updated_at,omitempty"`
+
 	// Employment
 	HireDate          time.Time          `db:"hire_date" json:"hire_date"`
 	TenureMonths      *int               `db:"tenure_months" json:"tenure_months,omitempty"`

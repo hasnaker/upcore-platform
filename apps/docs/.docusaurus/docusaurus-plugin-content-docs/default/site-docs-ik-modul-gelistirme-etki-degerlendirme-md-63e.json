@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/etki-degerlendirme",
+  "title": "Etki değerlendirme",
+  "description": "Öğrenme yatırımının iş sonuçlarına etkisini ölçme.",
+  "source": "@site/docs/ik/modul/gelistirme/etki-degerlendirme.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/etki-degerlendirme",
+  "permalink": "/en/docs/ik/modul/gelistirme/etki-degerlendirme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/etki-degerlendirme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "etki-degerlendirme",
+    "title": "Etki değerlendirme",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Bütçe yönetimi",
+    "permalink": "/en/docs/ik/modul/gelistirme/butce-yonetimi"
+  },
+  "next": {
+    "title": "Geliştirme — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/gelistirme/sikca-sorulanlar"
+  }
+}

@@ -12,7 +12,6 @@ import structlog
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from app.config import settings
-from app.rationale.prompt_templates import templated_fallback
 
 logger = structlog.get_logger()
 

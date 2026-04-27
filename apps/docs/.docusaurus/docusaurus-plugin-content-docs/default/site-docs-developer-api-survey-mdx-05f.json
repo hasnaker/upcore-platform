@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/survey",
+  "title": "Survey Servisi API Referansı",
+  "description": "UpCore Survey servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/survey.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/survey",
+  "permalink": "/en/docs/developer/api/survey",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/survey.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 17,
+  "frontMatter": {
+    "id": "survey",
+    "title": "Survey Servisi API Referansı",
+    "sidebar_position": 17,
+    "slug": "/developer/api/survey",
+    "description": "UpCore Survey servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

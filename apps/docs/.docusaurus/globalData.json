@@ -1,0 +1,895 @@
+{
+  "docusaurus-plugin-content-docs": {
+    "default": {
+      "path": "/en/docs",
+      "versions": [
+        {
+          "name": "current",
+          "label": "v2",
+          "isLast": true,
+          "path": "/en/docs",
+          "mainDocId": "calisan/giris",
+          "docs": [
+            {
+              "id": "admin/billing/fatura-yonetimi",
+              "path": "/en/docs/admin/billing/fatura-yonetimi",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/billing/kullanim-metrikleri",
+              "path": "/en/docs/admin/billing/kullanim-metrikleri",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/billing/plan-secimi",
+              "path": "/en/docs/admin/billing/plan-secimi",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/billing/seat-yonetimi",
+              "path": "/en/docs/admin/billing/seat-yonetimi",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/giris",
+              "path": "/en/docs/admin/giris",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/iam/mfa-zorunlu-kilma",
+              "path": "/en/docs/admin/iam/mfa-zorunlu-kilma",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/iam/rbac-rol-yonetimi",
+              "path": "/en/docs/admin/iam/rbac-rol-yonetimi",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/iam/scim-kullanici-senkron",
+              "path": "/en/docs/admin/iam/scim-kullanici-senkron",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/iam/sso-oidc",
+              "path": "/en/docs/admin/iam/sso-oidc",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/iam/sso-saml",
+              "path": "/en/docs/admin/iam/sso-saml",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/operasyon/api-key-olusturma",
+              "path": "/en/docs/admin/operasyon/api-key-olusturma",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/operasyon/audit-log-izleme",
+              "path": "/en/docs/admin/operasyon/audit-log-izleme",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/operasyon/bulk-export",
+              "path": "/en/docs/admin/operasyon/bulk-export",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/operasyon/feature-flag",
+              "path": "/en/docs/admin/operasyon/feature-flag",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/operasyon/impersonation",
+              "path": "/en/docs/admin/operasyon/impersonation",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/operasyon/webhook-konfigurasyon",
+              "path": "/en/docs/admin/operasyon/webhook-konfigurasyon",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/tenant/csv-import",
+              "path": "/en/docs/admin/tenant/csv-import",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/tenant/ilk-modul-secimi",
+              "path": "/en/docs/admin/tenant/ilk-modul-secimi",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/tenant/onboarding-wizard",
+              "path": "/en/docs/admin/tenant/onboarding-wizard",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/tenant/yeni-tenant-olusturma",
+              "path": "/en/docs/admin/tenant/yeni-tenant-olusturma",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/uyum/dpa-sablon",
+              "path": "/en/docs/admin/uyum/dpa-sablon",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/uyum/log-retansiyon",
+              "path": "/en/docs/admin/uyum/log-retansiyon",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/uyum/soc2-readiness",
+              "path": "/en/docs/admin/uyum/soc2-readiness",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "admin/uyum/veri-ikametgahi",
+              "path": "/en/docs/admin/uyum/veri-ikametgahi",
+              "sidebar": "adminSidebar"
+            },
+            {
+              "id": "calisan/giris",
+              "path": "/en/docs/calisan/giris",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/hesap/bildirim-tercihleri",
+              "path": "/en/docs/calisan/hesap/bildirim-tercihleri",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/hesap/ilk-giris",
+              "path": "/en/docs/calisan/hesap/ilk-giris",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/hesap/profil-guncelleme",
+              "path": "/en/docs/calisan/hesap/profil-guncelleme",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/hesap/sifre-mfa",
+              "path": "/en/docs/calisan/hesap/sifre-mfa",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/kvkk/madde-11-haklar",
+              "path": "/en/docs/calisan/kvkk/madde-11-haklar",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/kvkk/silme-talebi",
+              "path": "/en/docs/calisan/kvkk/silme-talebi",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/kvkk/veri-indirme",
+              "path": "/en/docs/calisan/kvkk/veri-indirme",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/pulse/anonimlik-guvencesi",
+              "path": "/en/docs/calisan/pulse/anonimlik-guvencesi",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/pulse/pulse-cevaplama",
+              "path": "/en/docs/calisan/pulse/pulse-cevaplama",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/pulse/pulse-nedir",
+              "path": "/en/docs/calisan/pulse/pulse-nedir",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "calisan/sss",
+              "path": "/en/docs/calisan/sss",
+              "sidebar": "employeeSidebar"
+            },
+            {
+              "id": "developer/api/assessment",
+              "path": "/en/docs/developer/api/assessment"
+            },
+            {
+              "id": "developer/api/ats",
+              "path": "/en/docs/developer/api/ats"
+            },
+            {
+              "id": "developer/api/audit",
+              "path": "/en/docs/developer/api/audit"
+            },
+            {
+              "id": "developer/api/auth",
+              "path": "/en/docs/developer/api/auth"
+            },
+            {
+              "id": "developer/api/billing",
+              "path": "/en/docs/developer/api/billing"
+            },
+            {
+              "id": "developer/api/bordro",
+              "path": "/en/docs/developer/api/bordro"
+            },
+            {
+              "id": "developer/api/document",
+              "path": "/en/docs/developer/api/document"
+            },
+            {
+              "id": "developer/api/employee",
+              "path": "/en/docs/developer/api/employee"
+            },
+            {
+              "id": "developer/api/gateway",
+              "path": "/en/docs/developer/api/gateway"
+            },
+            {
+              "id": "developer/api/genel-bakis",
+              "path": "/en/docs/developer/api/genel-bakis",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/api/intervention",
+              "path": "/en/docs/developer/api/intervention"
+            },
+            {
+              "id": "developer/api/leave",
+              "path": "/en/docs/developer/api/leave"
+            },
+            {
+              "id": "developer/api/mobility",
+              "path": "/en/docs/developer/api/mobility"
+            },
+            {
+              "id": "developer/api/notification",
+              "path": "/en/docs/developer/api/notification"
+            },
+            {
+              "id": "developer/api/organization",
+              "path": "/en/docs/developer/api/organization"
+            },
+            {
+              "id": "developer/api/performance",
+              "path": "/en/docs/developer/api/performance"
+            },
+            {
+              "id": "developer/api/rate-limit",
+              "path": "/en/docs/developer/api/rate-limit",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/api/survey",
+              "path": "/en/docs/developer/api/survey"
+            },
+            {
+              "id": "developer/api/tenant",
+              "path": "/en/docs/developer/api/tenant"
+            },
+            {
+              "id": "developer/api/try-it-out-sandbox",
+              "path": "/en/docs/developer/api/try-it-out-sandbox",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/api/versiyonlama",
+              "path": "/en/docs/developer/api/versiyonlama",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/giris",
+              "path": "/en/docs/developer/giris",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/kavramlar/coklu-tenant",
+              "path": "/en/docs/developer/kavramlar/coklu-tenant",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/kavramlar/hata-kodlari",
+              "path": "/en/docs/developer/kavramlar/hata-kodlari",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/kavramlar/idempotency",
+              "path": "/en/docs/developer/kavramlar/idempotency",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/kavramlar/kimlik-dogrulama",
+              "path": "/en/docs/developer/kavramlar/kimlik-dogrulama",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/kavramlar/mimari-genel-bakis",
+              "path": "/en/docs/developer/kavramlar/mimari-genel-bakis",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/kavramlar/pagination",
+              "path": "/en/docs/developer/kavramlar/pagination",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/ml/burnout-prediction-kart",
+              "path": "/en/docs/developer/ml/burnout-prediction-kart",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/ml/intervention-recommendation-kart",
+              "path": "/en/docs/developer/ml/intervention-recommendation-kart",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/ml/jd-r-fit-kart",
+              "path": "/en/docs/developer/ml/jd-r-fit-kart",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/ml/model-kartlari",
+              "path": "/en/docs/developer/ml/model-kartlari",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/ml/yeniden-egitim-takvimi",
+              "path": "/en/docs/developer/ml/yeniden-egitim-takvimi",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/sdk/go",
+              "path": "/en/docs/developer/sdk/go",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/sdk/javascript",
+              "path": "/en/docs/developer/sdk/javascript",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/sdk/python",
+              "path": "/en/docs/developer/sdk/python",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/webhook/genel-bakis",
+              "path": "/en/docs/developer/webhook/genel-bakis",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/webhook/imzalama",
+              "path": "/en/docs/developer/webhook/imzalama",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/webhook/olaylar",
+              "path": "/en/docs/developer/webhook/olaylar",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "developer/webhook/retry-politikasi",
+              "path": "/en/docs/developer/webhook/retry-politikasi",
+              "sidebar": "developerSidebar"
+            },
+            {
+              "id": "ik/giris",
+              "path": "/en/docs/ik/giris",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/hizli-baslangic/ilk-15-dakika",
+              "path": "/en/docs/ik/hizli-baslangic/ilk-15-dakika",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/hizli-baslangic/ilk-mudahale",
+              "path": "/en/docs/ik/hizli-baslangic/ilk-mudahale",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/hizli-baslangic/ilk-pulse-anketi",
+              "path": "/en/docs/ik/hizli-baslangic/ilk-pulse-anketi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/hizli-baslangic/yil-sonu-degerlendirme",
+              "path": "/en/docs/ik/hizli-baslangic/yil-sonu-degerlendirme",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/kvkk/giris",
+              "path": "/en/docs/ik/kvkk/giris",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/bias-denetimi",
+              "path": "/en/docs/ik/modul/analitik/bias-denetimi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/departman-karsilastirma",
+              "path": "/en/docs/ik/modul/analitik/departman-karsilastirma",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/executive-dashboard",
+              "path": "/en/docs/ik/modul/analitik/executive-dashboard",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/genel-bakis",
+              "path": "/en/docs/ik/modul/analitik/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/ihracat-entegrasyon",
+              "path": "/en/docs/ik/modul/analitik/ihracat-entegrasyon",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/roi-hesabi",
+              "path": "/en/docs/ik/modul/analitik/roi-hesabi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/analitik/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/tahmin-modelleri",
+              "path": "/en/docs/ik/modul/analitik/tahmin-modelleri",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/trend-analizi",
+              "path": "/en/docs/ik/modul/analitik/trend-analizi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/analitik/yillik-rapor",
+              "path": "/en/docs/ik/modul/analitik/yillik-rapor",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/butce-yonetimi",
+              "path": "/en/docs/ik/modul/gelistirme/butce-yonetimi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/etki-degerlendirme",
+              "path": "/en/docs/ik/modul/gelistirme/etki-degerlendirme",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/genel-bakis",
+              "path": "/en/docs/ik/modul/gelistirme/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/ilk-kaynak-kutuphanesi",
+              "path": "/en/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/koçluk-programi",
+              "path": "/en/docs/ik/modul/gelistirme/koçluk-programi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/mentorluk",
+              "path": "/en/docs/ik/modul/gelistirme/mentorluk",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/ogrenme-yolu",
+              "path": "/en/docs/ik/modul/gelistirme/ogrenme-yolu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/sertifika-takibi",
+              "path": "/en/docs/ik/modul/gelistirme/sertifika-takibi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/gelistirme/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/gelistirme/yetkinlik-modeli",
+              "path": "/en/docs/ik/modul/gelistirme/yetkinlik-modeli",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/bordro-hesaplama",
+              "path": "/en/docs/ik/modul/ik-ops/bordro-hesaplama",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/genel-bakis",
+              "path": "/en/docs/ik/modul/ik-ops/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/is-kazasi-bildirim",
+              "path": "/en/docs/ik/modul/ik-ops/is-kazasi-bildirim",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/izin-yonetimi",
+              "path": "/en/docs/ik/modul/ik-ops/izin-yonetimi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/kidem-tazminati",
+              "path": "/en/docs/ik/modul/ik-ops/kidem-tazminati",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/kiyafet-mesai",
+              "path": "/en/docs/ik/modul/ik-ops/kiyafet-mesai",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/ozluk-dosyasi",
+              "path": "/en/docs/ik/modul/ik-ops/ozluk-dosyasi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/sgk-e-bildirge",
+              "path": "/en/docs/ik/modul/ik-ops/sgk-e-bildirge",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/ik-ops/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/ik-ops/sozlesme-yonetimi",
+              "path": "/en/docs/ik/modul/ik-ops/sozlesme-yonetimi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/cohens-d-yorumu",
+              "path": "/en/docs/ik/modul/koruma/cohens-d-yorumu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/consent-akisi",
+              "path": "/en/docs/ik/modul/koruma/consent-akisi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/etki-olcumu",
+              "path": "/en/docs/ik/modul/koruma/etki-olcumu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/genel-bakis",
+              "path": "/en/docs/ik/modul/koruma/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/izleme-takvimi",
+              "path": "/en/docs/ik/modul/koruma/izleme-takvimi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/mudahale-katalogu",
+              "path": "/en/docs/ik/modul/koruma/mudahale-katalogu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/plan-takibi",
+              "path": "/en/docs/ik/modul/koruma/plan-takibi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/referral-network",
+              "path": "/en/docs/ik/modul/koruma/referral-network",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/koruma/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/koruma/thompson-sampling",
+              "path": "/en/docs/ik/modul/koruma/thompson-sampling",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/acik-riza",
+              "path": "/en/docs/ik/modul/kvkk/acik-riza",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/aydınlatma-metni",
+              "path": "/en/docs/ik/modul/kvkk/aydınlatma-metni",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/dpia-sablon",
+              "path": "/en/docs/ik/modul/kvkk/dpia-sablon",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/genel-bakis",
+              "path": "/en/docs/ik/modul/kvkk/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/ihlal-bildirim-72-saat",
+              "path": "/en/docs/ik/modul/kvkk/ihlal-bildirim-72-saat",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/madde-11-talep-yonetimi",
+              "path": "/en/docs/ik/modul/kvkk/madde-11-talep-yonetimi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/saklama-politikasi",
+              "path": "/en/docs/ik/modul/kvkk/saklama-politikasi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/kvkk/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/verbis-kayit-sureci",
+              "path": "/en/docs/ik/modul/kvkk/verbis-kayit-sureci",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/kvkk/yurtdisi-aktarim",
+              "path": "/en/docs/ik/modul/kvkk/yurtdisi-aktarim",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/9-kutu-entegrasyon",
+              "path": "/en/docs/ik/modul/mobility/9-kutu-entegrasyon",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/ayrilis-risk-tahmini",
+              "path": "/en/docs/ik/modul/mobility/ayrilis-risk-tahmini",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/genel-bakis",
+              "path": "/en/docs/ik/modul/mobility/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/ic-ilan-marketplace",
+              "path": "/en/docs/ik/modul/mobility/ic-ilan-marketplace",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/kariyer-yolu",
+              "path": "/en/docs/ik/modul/mobility/kariyer-yolu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/maliyet-analizi",
+              "path": "/en/docs/ik/modul/mobility/maliyet-analizi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/ready-now-siniflandirma",
+              "path": "/en/docs/ik/modul/mobility/ready-now-siniflandirma",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/rotasyon-is-akisi",
+              "path": "/en/docs/ik/modul/mobility/rotasyon-is-akisi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/mobility/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/mobility/succession-pool",
+              "path": "/en/docs/ik/modul/mobility/succession-pool",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/360-anket",
+              "path": "/en/docs/ik/modul/performans/360-anket",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/360-soru-havuzu",
+              "path": "/en/docs/ik/modul/performans/360-soru-havuzu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/9-kutu-kalibrasyon",
+              "path": "/en/docs/ik/modul/performans/9-kutu-kalibrasyon",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/bonus-hesabi",
+              "path": "/en/docs/ik/modul/performans/bonus-hesabi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/genel-bakis",
+              "path": "/en/docs/ik/modul/performans/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/key-result-takibi",
+              "path": "/en/docs/ik/modul/performans/key-result-takibi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/okr-kurulum",
+              "path": "/en/docs/ik/modul/performans/okr-kurulum",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/pip-is-akisi",
+              "path": "/en/docs/ik/modul/performans/pip-is-akisi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/performans/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/performans/yil-sonu-degerlendirme",
+              "path": "/en/docs/ik/modul/performans/yil-sonu-degerlendirme",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/anket-guvenilirligi",
+              "path": "/en/docs/ik/modul/surdurme/anket-guvenilirligi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/bat-tr-skorlama",
+              "path": "/en/docs/ik/modul/surdurme/bat-tr-skorlama",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/genel-bakis",
+              "path": "/en/docs/ik/modul/surdurme/genel-bakis",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/heatmap-okuma",
+              "path": "/en/docs/ik/modul/surdurme/heatmap-okuma",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/jd-r-yorumu",
+              "path": "/en/docs/ik/modul/surdurme/jd-r-yorumu",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/kirmizi-band-triage",
+              "path": "/en/docs/ik/modul/surdurme/kirmizi-band-triage",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/pulse-kurulum",
+              "path": "/en/docs/ik/modul/surdurme/pulse-kurulum",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/sablon-kutuphanesi",
+              "path": "/en/docs/ik/modul/surdurme/sablon-kutuphanesi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/sikca-sorulanlar",
+              "path": "/en/docs/ik/modul/surdurme/sikca-sorulanlar",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "ik/modul/surdurme/soru-bankasi",
+              "path": "/en/docs/ik/modul/surdurme/soru-bankasi",
+              "sidebar": "hrSidebar"
+            },
+            {
+              "id": "yonetici/ekip/bire-bir-gorusmeler",
+              "path": "/en/docs/yonetici/ekip/bire-bir-gorusmeler",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/ekip/ekip-dashboard",
+              "path": "/en/docs/yonetici/ekip/ekip-dashboard",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/ekip/surekli-geri-bildirim",
+              "path": "/en/docs/yonetici/ekip/surekli-geri-bildirim",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/giris",
+              "path": "/en/docs/yonetici/giris",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/performans/360-feedback-verme",
+              "path": "/en/docs/yonetici/performans/360-feedback-verme",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/performans/9-kutu-kalibrasyon",
+              "path": "/en/docs/yonetici/performans/9-kutu-kalibrasyon",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/performans/okr-belirleme",
+              "path": "/en/docs/yonetici/performans/okr-belirleme",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/pulse/ekip-pulse-yorumu",
+              "path": "/en/docs/yonetici/pulse/ekip-pulse-yorumu",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/pulse/kirmizi-band-triage",
+              "path": "/en/docs/yonetici/pulse/kirmizi-band-triage",
+              "sidebar": "managerSidebar"
+            },
+            {
+              "id": "yonetici/pulse/mudahale-onayi",
+              "path": "/en/docs/yonetici/pulse/mudahale-onayi",
+              "sidebar": "managerSidebar"
+            }
+          ],
+          "draftIds": [],
+          "sidebars": {
+            "employeeSidebar": {
+              "link": {
+                "path": "/en/docs/calisan/giris",
+                "label": "Başlangıç"
+              }
+            },
+            "managerSidebar": {
+              "link": {
+                "path": "/en/docs/yonetici/giris",
+                "label": "Başlangıç"
+              }
+            },
+            "hrSidebar": {
+              "link": {
+                "path": "/en/docs/ik/giris",
+                "label": "Başlangıç"
+              }
+            },
+            "adminSidebar": {
+              "link": {
+                "path": "/en/docs/admin/giris",
+                "label": "Başlangıç"
+              }
+            },
+            "developerSidebar": {
+              "link": {
+                "path": "/en/docs/developer/giris",
+                "label": "Başlangıç"
+              }
+            }
+          }
+        }
+      ],
+      "breadcrumbs": true
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/departman-karsilastirma",
+  "title": "Departman karşılaştırma",
+  "description": "Farklı departmanların kıyaslanması.",
+  "source": "@site/docs/ik/modul/analitik/departman-karsilastirma.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/departman-karsilastirma",
+  "permalink": "/en/docs/ik/modul/analitik/departman-karsilastirma",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/departman-karsilastirma.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "departman-karsilastirma",
+    "title": "Departman karşılaştırma",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Yıllık rapor",
+    "permalink": "/en/docs/ik/modul/analitik/yillik-rapor"
+  },
+  "next": {
+    "title": "Trend analizi",
+    "permalink": "/en/docs/ik/modul/analitik/trend-analizi"
+  }
+}

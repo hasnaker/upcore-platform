@@ -1,0 +1,104 @@
+# ============================================================================
+# UpCore pre-commit hooks
+# Install: ./scripts/install-pre-commit.sh  (or: pre-commit install)
+# Runs local SAST + secret scan before every commit.
+# ============================================================================
+minimum_pre_commit_version: "3.7.0"
+fail_fast: false
+
+default_language_version:
+  python: python3.12
+
+repos:
+  # --- Generic hygiene ------------------------------------------------------
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+        args: [--allow-multiple-documents]
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1000"]
+      - id: detect-private-key
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+
+  # --- Secret scanning (two engines, defense-in-depth) ----------------------
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.18.4
+    hooks:
+      - id: gitleaks
+        args: ["--config", ".gitleaks.toml", "--redact", "--verbose"]
+
+  - repo: https://github.com/trufflesecurity/trufflehog
+    rev: v3.82.6
+    hooks:
+      - id: trufflehog
+        name: TruffleHog (verified secrets)
+        entry: trufflehog git file://. --since-commit HEAD --only-verified --fail
+        language: system
+        pass_filenames: false
+
+  # --- Semgrep local (curated + custom) -------------------------------------
+  - repo: https://github.com/returntocorp/semgrep
+    rev: v1.82.0
+    hooks:
+      - id: semgrep
+        name: Semgrep (UpCore ruleset)
+        args:
+          - "--config=p/owasp-top-ten"
+          - "--config=p/secrets"
+          - "--config=.github/semgrep/upcore-rules.yml"
+          - "--error"
+          - "--severity=ERROR"
+          - "--skip-unknown-extensions"
+          - "--metrics=off"
+
+  # --- Go linters -----------------------------------------------------------
+  - repo: https://github.com/dnephin/pre-commit-golang
+    rev: v0.5.1
+    hooks:
+      - id: go-fmt
+      - id: go-vet
+      - id: go-mod-tidy
+      - id: golangci-lint
+
+  # --- Python (ruff for ml-services) ----------------------------------------
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.6.9
+    hooks:
+      - id: ruff
+        args: [--fix, --exit-non-zero-on-fix]
+        files: ^ml-services/.*\.py$
+      - id: ruff-format
+        files: ^ml-services/.*\.py$
+
+  # --- Bandit (Python SAST) -------------------------------------------------
+  - repo: https://github.com/PyCQA/bandit
+    rev: "1.7.9"
+    hooks:
+      - id: bandit
+        args: ["-c", ".github/bandit.yml", "-r", "ml-services/"]
+        pass_filenames: false
+        files: ^ml-services/.*\.py$
+
+  # --- UpCore custom local gates --------------------------------------------
+  - repo: local
+    hooks:
+      - id: block-web-direct-db
+        name: block web -> direct DB imports
+        entry: bash scripts/check-web-api-direct-db.sh
+        language: system
+        pass_filenames: false
+        files: ^apps/web/.*\.(ts|tsx)$
+      - id: pnpm-typecheck
+        name: pnpm typecheck (ts only, fast)
+        entry: bash -c 'pnpm exec tsc --noEmit || exit 1'
+        language: system
+        pass_filenames: false
+        files: \.(ts|tsx)$
+        stages: [pre-push]

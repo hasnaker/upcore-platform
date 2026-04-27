@@ -1,0 +1,83 @@
+openapi: 3.1.0
+info:
+  title: UpCore Notification Servisi
+  version: 1.0.0
+  description: |
+    Çok kanallı bildirim dağıtımı: e-posta (SendGrid), SMS (Iletimerkezi), Slack, Teams,
+    in-app. Kullanıcı tercihleri + KVKK onayı ile uyumludur.
+servers:
+  - url: https://api.upcore.io
+  - url: http://localhost:8013
+security:
+  - bearerAuth: []
+tags:
+  - name: messages
+  - name: preferences
+  - name: templates
+
+paths:
+  /api/v1/notifications/messages:
+    post:
+      tags: [messages]
+      summary: Tek bir bildirim gönder (immediate veya scheduled)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/MessageCreate" }
+      responses: { "202": { description: Gönderim kuyruğa alındı } }
+
+  /api/v1/notifications/preferences/{userId}:
+    get:
+      tags: [preferences]
+      summary: Kullanıcı bildirim tercihlerini getir
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses: { "200": { description: OK } }
+    put:
+      tags: [preferences]
+      summary: Kullanıcı bildirim tercihlerini güncelle
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/Preferences" }
+      responses: { "200": { description: Güncellendi } }
+
+  /api/v1/notifications/templates:
+    get:
+      tags: [templates]
+      summary: Aktif şablonları listele (TR + EN)
+      responses: { "200": { description: OK } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    MessageCreate:
+      type: object
+      required: [recipient_user_id, channel, template_code]
+      properties:
+        recipient_user_id: { type: string, format: uuid }
+        channel: { type: string, enum: [email, sms, slack, teams, in_app] }
+        template_code: { type: string }
+        locale: { type: string, enum: [tr, en], default: tr }
+        variables: { type: object, additionalProperties: true }
+        send_at: { type: string, format: date-time, nullable: true }
+    Preferences:
+      type: object
+      properties:
+        email_enabled: { type: boolean }
+        sms_enabled: { type: boolean }
+        push_enabled: { type: boolean }
+        slack_enabled: { type: boolean }
+        quiet_hours_start: { type: string, pattern: "^[0-2]\\d:[0-5]\\d$" }
+        quiet_hours_end: { type: string, pattern: "^[0-2]\\d:[0-5]\\d$" }

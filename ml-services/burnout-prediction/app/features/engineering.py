@@ -10,7 +10,7 @@ from __future__ import annotations
 import numpy as np
 import structlog
 
-from app.features.feature_spec import FEATURE_NAMES, FEATURE_SPEC
+from app.features.feature_spec import FEATURE_NAMES
 
 logger = structlog.get_logger()
 

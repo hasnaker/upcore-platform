@@ -63,6 +63,16 @@ async def get_pg() -> AsyncGenerator[asyncpg.Pool, None]:
     yield _pg_pool
 
 
+def get_pg_pool_or_none() -> asyncpg.Pool | None:
+    """Return the PostgreSQL pool if initialised, else ``None``.
+
+    Unlike ``get_pg`` this is a plain callable (not an async dependency) and is
+    safe to call from inference code paths that must tolerate a missing pool
+    (tests, smoke runs without Postgres).
+    """
+    return _pg_pool
+
+
 async def get_redis() -> AsyncGenerator[redis.Redis, None]:
     """Dependency: get Redis client."""
     if _redis_pool is None:

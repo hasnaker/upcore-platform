@@ -1,0 +1,99 @@
+openapi: 3.1.0
+info:
+  title: UpCore Mobility (İç Yerleştirme) Servisi
+  version: 1.0.0
+  description: |
+    İç ilan marketplace, succession pipeline, kariyer yolu editörü, rotasyon iş akışı,
+    emeklilik/ayrılış risk tahmini. İç mobiliteyi dış işe alıma kıyasla 6× ucuzlatmayı hedefler.
+servers:
+  - url: https://api.upcore.io
+  - url: http://localhost:8015
+security:
+  - bearerAuth: []
+tags:
+  - name: internal-postings
+  - name: succession
+  - name: career-paths
+  - name: rotations
+
+paths:
+  /api/v1/mobility/postings:
+    get:
+      tags: [internal-postings]
+      summary: İç ilanları listele
+      responses: { "200": { description: OK } }
+    post:
+      tags: [internal-postings]
+      summary: Yeni iç ilan aç
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/PostingCreate" }
+      responses: { "201": { description: Oluşturuldu } }
+
+  /api/v1/mobility/succession/{positionId}:
+    get:
+      tags: [succession]
+      summary: Kritik pozisyon için yedek havuzunu getir
+      parameters:
+        - name: positionId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/SuccessionPool" }
+
+  /api/v1/mobility/career-paths:
+    post:
+      tags: [career-paths]
+      summary: Yeni kariyer yolu şablonu oluştur
+      requestBody: { required: true, content: { application/json: { schema: { type: object } } } }
+      responses: { "201": { description: Oluşturuldu } }
+
+  /api/v1/mobility/rotations:
+    post:
+      tags: [rotations]
+      summary: Rotasyon talebi oluştur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, target_department_id, duration_months]
+              properties:
+                employee_id: { type: string, format: uuid }
+                target_department_id: { type: string, format: uuid }
+                duration_months: { type: integer, minimum: 1, maximum: 24 }
+      responses: { "201": { description: Oluşturuldu } }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+  schemas:
+    PostingCreate:
+      type: object
+      required: [title, department_id]
+      properties:
+        title: { type: string }
+        department_id: { type: string, format: uuid }
+        min_tenure_months: { type: integer }
+        closing_date: { type: string, format: date }
+    SuccessionPool:
+      type: object
+      properties:
+        position_id: { type: string, format: uuid }
+        ready_now:
+          type: array
+          items: { type: string, format: uuid }
+        ready_1y:
+          type: array
+          items: { type: string, format: uuid }
+        ready_2y:
+          type: array
+          items: { type: string, format: uuid }

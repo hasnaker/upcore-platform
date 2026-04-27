@@ -74,7 +74,19 @@ func main() {
 		cfg.PriorAlpha, cfg.PriorBeta, cfg.SuccessThreshold, logger,
 	)
 	recommenderSvc := service.NewRecommenderService(catalogRepo, effectivenessRepo, cfg.DefaultTopK, logger)
-	consentSvc := service.NewConsentService(consentRepo, assignmentRepo, publisher, logger)
+	consentSvc := service.NewConsentService(consentRepo, assignmentRepo, catalogRepo, publisher, logger)
+
+	// Feedback worker — outcome threshold crossed → auto-close + reward event.
+	feedbackWorker := service.NewFeedbackWorker(sqlDB, publisher, logger)
+	go feedbackWorker.Run(ctx)
+
+	// ml.prediction.retracted.v1 subscriber — KVKK Madde 22 reversal workflow:
+	// cancels every intervention assignment derived from the retracted
+	// prediction. The sink is wired to AssignmentService so the cancellation
+	// path reuses the same invariants as manual Cancel (status guard, event
+	// emission, notes append).
+	subscriber := event.NewSubscriber(logger).WithRetractionHandler(assignmentSvc)
+	_ = subscriber // reserved for future broker wire (Azure Service Bus).
 
 	// HTTP router
 	r := newRouter(cfg, logger, authChecker,
@@ -147,7 +159,7 @@ func newRouter(
 	assignmentH := handler.NewAssignmentHandler(assignmentSvc, logger)
 	outcomeH := handler.NewOutcomeHandler(outcomeSvc, logger)
 	effectivenessH := handler.NewEffectivenessHandler(effectivenessSvc, logger)
-	consentH := handler.NewConsentHandler(consentSvc, logger)
+	consentH := handler.NewConsentHandler(consentSvc, logger, 72*time.Hour)
 	recommenderH := handler.NewRecommenderHandler(recommenderSvc, logger)
 
 	// Health
@@ -182,6 +194,8 @@ func newRouter(
 				r.Post("/complete", assignmentH.Complete)
 				r.Post("/cancel", assignmentH.Cancel)
 				r.Post("/consent", consentH.HandleConsent)
+				r.Get("/consent/history", consentH.ListByAssignment)
+				r.Post("/remind", consentH.Remind)
 				r.Post("/outcomes", outcomeH.Create)
 				r.Get("/outcomes", outcomeH.Get)
 			})
@@ -190,7 +204,11 @@ func newRouter(
 		// Effectiveness
 		r.Route("/effectiveness", func(r chi.Router) {
 			r.Get("/", effectivenessH.List)
+			r.Get("/summary", effectivenessH.Summary)
+			r.Get("/trends", effectivenessH.Trends)
+			r.Get("/export.csv", effectivenessH.ExportCSV)
 			r.Get("/{interventionId}", effectivenessH.GetByIntervention)
+			r.Get("/{interventionId}/detail", effectivenessH.Detail)
 			r.Post("/recompute", effectivenessH.Recompute)
 		})
 

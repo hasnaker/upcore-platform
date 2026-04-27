@@ -4,8 +4,10 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
+import { useDownloadIGBForEmployee } from '@/hooks/useBordro';
 import { updateEmployee } from '@/lib/employee-mapper';
 import type { EmployeeView, CreateEmployeeRequest } from '@/lib/employee-mapper';
+import { OffboardModal } from './OffboardModal';
 
 interface EmployeeHeaderProps {
   employee: EmployeeView;
@@ -21,7 +23,10 @@ const STATUS_PILL_STYLES: Record<string, { bg: string; text: string }> = {
 export const EmployeeHeader = ({ employee }: EmployeeHeaderProps) => {
   const router = useRouter();
   const [isDeactivating, setIsDeactivating] = useState(false);
+  const igb = useDownloadIGBForEmployee();
+  const [showOffboard, setShowOffboard] = useState(false);
   const pill = STATUS_PILL_STYLES[employee.durumRenk] ?? STATUS_PILL_STYLES['gray']!;
+  const isActive = employee.durum === 'active';
 
   return (
     <div
@@ -99,6 +104,64 @@ export const EmployeeHeader = ({ employee }: EmployeeHeaderProps) => {
 
       {/* Right side: action buttons */}
       <div className="flex shrink-0 items-center gap-2 sm:mt-1">
+        <button
+          type="button"
+          title="SGK İşe Giriş Bildirgesi XML'ini indir"
+          onClick={() => {
+            igb.mutate(
+              { employeeId: employee.id },
+              {
+                onSuccess: () => toast.success('İGB XML indirildi'),
+                onError: (err) => toast.error(err.message),
+              },
+            );
+          }}
+          disabled={igb.isPending}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: 8,
+            fontSize: 13,
+            fontWeight: 600,
+            border: '1px solid #e5e5e5',
+            background: '#fff',
+            color: '#111',
+            opacity: igb.isPending ? 0.6 : 1,
+          }}
+          className="hover:bg-gray-50 transition-colors"
+        >
+          <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          {igb.isPending ? 'İGB Hazırlanıyor…' : 'SGK İGB'}
+        </button>
+        {isActive ? (
+          <button
+            type="button"
+            title="Saga: terminate → career termination event → offboarding checklist"
+            onClick={() => setShowOffboard(true)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '8px 14px',
+              borderRadius: 8,
+              fontSize: 13,
+              fontWeight: 600,
+              border: '1px solid #FCA5A5',
+              background: '#FEF2F2',
+              color: '#DC2626',
+            }}
+            className="transition-colors hover:bg-red-50"
+          >
+            <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L12 12m6.364 6.364L12 12m-6.364 6.364L12 12" />
+            </svg>
+            İşten Çıkar
+          </button>
+        ) : null}
         <Link
           href={`/calisanlar/${employee.id}/duzenle`}
           style={{
@@ -155,6 +218,13 @@ export const EmployeeHeader = ({ employee }: EmployeeHeaderProps) => {
           Devre Dışı Bırak
         </button>
       </div>
+      {showOffboard ? (
+        <OffboardModal
+          employeeId={employee.id}
+          employeeName={employee.tamAd}
+          onClose={() => setShowOffboard(false)}
+        />
+      ) : null}
     </div>
   );
 };

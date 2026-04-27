@@ -24,6 +24,7 @@ const (
 	TopicSeatLimitReached    = "tenant.seat.limit.reached.v1"
 	TopicInvoicePaid         = "tenant.invoice.paid.v1"
 	TopicInvoiceFailed       = "tenant.invoice.failed.v1"
+	TopicOnboardingCommitted = "tenant.onboarding.committed.v1"
 )
 
 // Envelope is the canonical event envelope used across Upcore services.

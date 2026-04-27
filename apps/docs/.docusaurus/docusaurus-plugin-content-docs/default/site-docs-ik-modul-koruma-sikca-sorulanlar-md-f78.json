@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/sikca-sorulanlar",
+  "title": "Koruma — sıkça sorulanlar",
+  "description": "Müdahale zorla yaptırılabilir mi?",
+  "source": "@site/docs/ik/modul/koruma/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/koruma/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "Koruma — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İzleme takvimi",
+    "permalink": "/en/docs/ik/modul/koruma/izleme-takvimi"
+  },
+  "next": {
+    "title": "Performans modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/performans/genel-bakis"
+  }
+}

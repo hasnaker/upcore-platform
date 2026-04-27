@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/mentorluk",
+  "title": "Mentorluk programı",
+  "description": "Deneyimli çalışan ↔ junior çalışan eşleştirme.",
+  "source": "@site/docs/ik/modul/gelistirme/mentorluk.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/mentorluk",
+  "permalink": "/en/docs/ik/modul/gelistirme/mentorluk",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/mentorluk.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "mentorluk",
+    "title": "Mentorluk programı",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Koçluk programı",
+    "permalink": "/en/docs/ik/modul/gelistirme/koçluk-programi"
+  },
+  "next": {
+    "title": "Kaynak kütüphanesi",
+    "permalink": "/en/docs/ik/modul/gelistirme/ilk-kaynak-kutuphanesi"
+  }
+}

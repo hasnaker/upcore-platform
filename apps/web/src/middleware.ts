@@ -1,5 +1,6 @@
 import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import * as Sentry from '@sentry/nextjs';
 
 /**
  * Routes requiring authentication. If an unauthenticated user hits these,
@@ -44,6 +45,13 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (tenantSlug) {
     res.headers.set('x-tenant-slug', tenantSlug);
+  }
+
+  // Sentry context — her request için tenant_slug + user_id scope'a yazılır.
+  // Edge runtime'da scope per-request izole, leak yok.
+  Sentry.getCurrentScope().setTag('tenant_slug', tenantSlug ?? 'unknown');
+  if (userId) {
+    Sentry.setUser({ id: userId });
   }
 
   return res;

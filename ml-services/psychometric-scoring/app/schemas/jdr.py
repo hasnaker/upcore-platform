@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import ConfigDict, Field
 
 from app.schemas.base import TenantScopedRequest, TenantScopedResponse
 from app.schemas.common import CalibrationStatus, ScoringMetadata

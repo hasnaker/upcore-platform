@@ -1,0 +1,86 @@
+# Integration test ortamı — testcontainers-go + docker-compose
+# Kullanım:
+#   docker compose -f docker-compose.test.yml up -d
+#   INTEGRATION=1 go test -tags=integration ./...
+#   docker compose -f docker-compose.test.yml down -v
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: upcore-test-pg
+    environment:
+      POSTGRES_DB: upcore_test
+      POSTGRES_USER: upcore
+      POSTGRES_PASSWORD: upcore_test_pw
+    ports: ['5433:5432']
+    volumes:
+      - ./database/migrations:/migrations:ro
+      - ./scripts/init-test-db.sh:/docker-entrypoint-initdb.d/01-init.sh:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U upcore -d upcore_test']
+      interval: 2s
+      timeout: 3s
+      retries: 15
+
+  redis:
+    image: redis:7-alpine
+    container_name: upcore-test-redis
+    ports: ['6380:6379']
+    healthcheck:
+      test: ['CMD', 'redis-cli', 'ping']
+      interval: 2s
+      timeout: 3s
+      retries: 10
+
+  # Azurite — Azure Blob + Queue + Table emülatörü
+  azurite:
+    image: mcr.microsoft.com/azure-storage/azurite:latest
+    container_name: upcore-test-azurite
+    command: azurite-blob --blobHost 0.0.0.0 --blobPort 10000 --loose
+    ports: ['10010:10000']
+    healthcheck:
+      test: ['CMD', 'nc', '-z', 'localhost', '10000']
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  # Service Bus emulator — Microsoft'un resmi emülatörü (preview)
+  # Alternatif: NATS/Redis streams ile lokal pub-sub
+  servicebus-mock:
+    image: mcr.microsoft.com/azure-messaging/servicebus-emulator:latest
+    container_name: upcore-test-sb
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'UpCoreTestPw!'
+      SQL_SERVER: sqledge
+    ports: ['5673:5672']
+    depends_on:
+      sqledge:
+        condition: service_healthy
+
+  sqledge:
+    image: mcr.microsoft.com/azure-sql-edge:latest
+    container_name: upcore-test-sqledge
+    environment:
+      ACCEPT_EULA: 'Y'
+      MSSQL_SA_PASSWORD: 'UpCoreTestPw!'
+    ports: ['14330:1433']
+    healthcheck:
+      test: ['CMD-SHELL', '/opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "UpCoreTestPw!" -Q "SELECT 1" || exit 1']
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # Clerk mock — JWT verify için self-signed token generator
+  clerk-mock:
+    image: mockserver/mockserver:latest
+    container_name: upcore-test-clerk
+    ports: ['1080:1080']
+    environment:
+      MOCKSERVER_INITIALIZATION_JSON_PATH: /config/clerk-mock.json
+    volumes:
+      - ./scripts/clerk-mock.json:/config/clerk-mock.json:ro
+
+networks:
+  default:
+    name: upcore-test-net

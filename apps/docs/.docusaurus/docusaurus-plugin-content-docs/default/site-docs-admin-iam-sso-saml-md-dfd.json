@@ -1,0 +1,29 @@
+{
+  "id": "admin/iam/sso-saml",
+  "title": "SSO — SAML kurulum",
+  "description": "Active Directory / Azure AD / Okta / PingIdentity entegrasyonu.",
+  "source": "@site/docs/admin/iam/sso-saml.md",
+  "sourceDirName": "admin/iam",
+  "slug": "/admin/iam/sso-saml",
+  "permalink": "/en/docs/admin/iam/sso-saml",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/iam/sso-saml.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "sso-saml",
+    "title": "SSO — SAML kurulum",
+    "sidebar_position": 1
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "İlk modül seçimi",
+    "permalink": "/en/docs/admin/tenant/ilk-modul-secimi"
+  },
+  "next": {
+    "title": "SSO — OIDC (OpenID Connect) kurulum",
+    "permalink": "/en/docs/admin/iam/sso-oidc"
+  }
+}

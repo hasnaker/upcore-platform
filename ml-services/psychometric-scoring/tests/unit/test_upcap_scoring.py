@@ -31,7 +31,7 @@ class TestReverseCode:
         assert reverse_code("upcap_01", 1) == 1
 
     def test_all_reverse_items_known(self) -> None:
-        assert REVERSE_CODED_ITEMS == frozenset({"upcap_05", "upcap_08", "upcap_11"})
+        assert frozenset({"upcap_05", "upcap_08", "upcap_11"}) == REVERSE_CODED_ITEMS
 
     def test_reverse_code_symmetry(self) -> None:
         """Reverse coding twice returns original value."""

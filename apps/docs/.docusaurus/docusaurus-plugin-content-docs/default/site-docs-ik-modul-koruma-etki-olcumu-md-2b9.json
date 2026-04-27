@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/etki-olcumu",
+  "title": "Etki ölçümü",
+  "description": "Müdahalenin işe yarayıp yaramadığını bilimsel olarak nasıl ölçeriz?",
+  "source": "@site/docs/ik/modul/koruma/etki-olcumu.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/etki-olcumu",
+  "permalink": "/en/docs/ik/modul/koruma/etki-olcumu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/etki-olcumu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "etki-olcumu",
+    "title": "Etki ölçümü",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Plan takibi",
+    "permalink": "/en/docs/ik/modul/koruma/plan-takibi"
+  },
+  "next": {
+    "title": "Cohen's d yorumu",
+    "permalink": "/en/docs/ik/modul/koruma/cohens-d-yorumu"
+  }
+}

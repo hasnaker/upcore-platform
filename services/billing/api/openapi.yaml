@@ -1,0 +1,278 @@
+openapi: 3.1.0
+info:
+  title: UpCore Billing Service
+  version: "1.1.0"
+  description: |
+    Billing service — abonelik, fatura, ödeme + **platform-admin analytics**.
+    Admin endpoint'leri api-gateway üzerinden `upcore_staff` rolüne sahip
+    kullanıcılara açılmıştır.
+servers:
+  - url: http://localhost:8026
+  - url: https://api.upcore.io
+tags:
+  - name: billing-public
+    description: Tenant-scoped subscription + invoice endpoints.
+  - name: billing-admin
+    description: Platform-admin analytics & operations.
+
+paths:
+  /api/v1/plans:
+    get:
+      tags: [billing-public]
+      summary: List plan catalog
+      responses:
+        "200": { description: OK }
+
+  /api/v1/subscriptions:
+    get:
+      tags: [billing-public]
+      summary: Get the caller's active subscription
+      responses:
+        "200": { description: OK }
+    post:
+      tags: [billing-public]
+      summary: Create subscription
+      responses:
+        "201": { description: Created }
+
+  /api/v1/invoices:
+    get:
+      tags: [billing-public]
+      summary: List invoices for the tenant
+      responses:
+        "200": { description: OK }
+
+  # ==========================================================================
+  # Admin analytics
+  # ==========================================================================
+
+  /api/v1/admin/billing/summary:
+    get:
+      tags: [billing-admin]
+      summary: Platform MRR/ARR + plan distribution + 12-month trend
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BillingSummary"
+        "403": { description: Platform admin role required }
+
+  /api/v1/admin/billing/invoices:
+    get:
+      tags: [billing-admin]
+      summary: All-tenant invoice list with filters
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [draft, issued, paid, overdue, void, refunded] }
+        - in: query
+          name: tenant_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: from
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          schema: { type: string, format: date }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50, maximum: 200 }
+        - in: query
+          name: offset
+          schema: { type: integer, default: 0 }
+      responses:
+        "200":
+          description: Invoice page
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: "#/components/schemas/AdminInvoice" }
+                  total: { type: integer }
+                  limit: { type: integer }
+                  offset: { type: integer }
+
+    post:
+      tags: [billing-admin]
+      summary: Issue a manual invoice (one-off line items)
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ManualInvoiceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminInvoice"
+        "422": { description: Validation failed }
+
+  /api/v1/admin/billing/stripe-portal:
+    post:
+      tags: [billing-admin]
+      summary: Create a Stripe Customer Portal session URL for a tenant
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [tenant_id]
+              properties:
+                tenant_id: { type: string, format: uuid }
+                return_url: { type: string, format: uri }
+      responses:
+        "200":
+          description: Portal URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url: { type: string, format: uri }
+        "422": { description: No Stripe customer registered for tenant }
+
+  /api/v1/admin/billing/churn-risk:
+    get:
+      tags: [billing-admin]
+      summary: Top churn risk tenants (feature-flag gated)
+      description: |
+        Requires feature flag `admin_billing_churn_risk` to be enabled
+        globally or for the caller's tenant. When disabled, responds with
+        `{ "enabled": false, "items": [] }` so the UI can hide the column.
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50, maximum: 200 }
+      responses:
+        "200":
+          description: Churn list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  enabled: { type: boolean }
+                  items:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/ChurnRiskRow"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    BillingSummary:
+      type: object
+      properties:
+        as_of: { type: string, format: date-time }
+        mrr_try: { type: number, format: double }
+        arr_try: { type: number, format: double }
+        active_subscriptions: { type: integer }
+        total_tenants: { type: integer }
+        plan_distribution:
+          type: array
+          items:
+            $ref: "#/components/schemas/PlanCount"
+        trend_12m:
+          type: array
+          items:
+            $ref: "#/components/schemas/MRRTrendPoint"
+
+    PlanCount:
+      type: object
+      properties:
+        plan_id: { type: string, format: uuid }
+        plan_code: { type: string }
+        plan_name: { type: string }
+        monthly_price_try: { type: number, format: double }
+        subscriptions: { type: integer }
+        mrr_contribution_try: { type: number, format: double }
+
+    MRRTrendPoint:
+      type: object
+      properties:
+        month: { type: string, description: "YYYY-MM" }
+        mrr_try: { type: number, format: double }
+        active_subscriptions: { type: integer }
+
+    AdminInvoice:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        tenant_name: { type: string }
+        tenant_slug: { type: string }
+        invoice_no: { type: string, nullable: true }
+        period_start: { type: string, format: date }
+        period_end: { type: string, format: date }
+        subtotal_try: { type: number, format: double }
+        kdv_try: { type: number, format: double }
+        total_try: { type: number, format: double }
+        currency: { type: string }
+        status: { type: string, enum: [draft, issued, paid, overdue, void, refunded] }
+        issued_at: { type: string, format: date-time, nullable: true }
+        due_at: { type: string, format: date-time, nullable: true }
+        paid_at: { type: string, format: date-time, nullable: true }
+        pdf_url: { type: string, nullable: true }
+        line_items:
+          type: array
+          items:
+            type: object
+            properties:
+              description: { type: string }
+              quantity: { type: number }
+              unit_price: { type: number }
+              amount: { type: number }
+
+    ManualInvoiceInput:
+      type: object
+      required: [tenant_id, line_items]
+      properties:
+        tenant_id: { type: string, format: uuid }
+        due_at: { type: string, format: date-time, nullable: true }
+        currency: { type: string, default: TRY }
+        kdv_rate: { type: number, default: 0.20, minimum: 0, maximum: 1 }
+        notes: { type: string }
+        line_items:
+          type: array
+          minItems: 1
+          items:
+            type: object
+            required: [description, quantity, unit_price]
+            properties:
+              description: { type: string }
+              quantity: { type: number, minimum: 0 }
+              unit_price: { type: number, minimum: 0 }
+
+    ChurnRiskRow:
+      type: object
+      properties:
+        tenant_id: { type: string, format: uuid }
+        tenant_name: { type: string }
+        score: { type: integer, minimum: 0, maximum: 100 }
+        usage_drop_3m_pct: { type: number }
+        payment_late_count: { type: integer }
+        open_tickets: { type: integer }

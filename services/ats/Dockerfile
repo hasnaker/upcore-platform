@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 WORKDIR /src
 COPY go.mod go.sum* ./
 RUN go mod download
@@ -10,6 +10,6 @@ RUN CGO_ENABLED=0 GOOS=linux go build -trimpath -ldflags="-s -w" -o /out/ats ./c
 FROM gcr.io/distroless/static-debian12:nonroot
 WORKDIR /app
 COPY --from=builder /out/ats /app/ats
-EXPOSE 8008
+EXPOSE 8011
 USER nonroot:nonroot
 ENTRYPOINT ["/app/ats"]

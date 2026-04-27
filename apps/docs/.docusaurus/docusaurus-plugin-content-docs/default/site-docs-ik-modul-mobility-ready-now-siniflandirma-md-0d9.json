@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/ready-now-siniflandirma",
+  "title": "Ready-now sınıflandırma",
+  "description": "Succession pool'daki \"ready now\" etiketinin kriterleri.",
+  "source": "@site/docs/ik/modul/mobility/ready-now-siniflandirma.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/ready-now-siniflandirma",
+  "permalink": "/en/docs/ik/modul/mobility/ready-now-siniflandirma",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/ready-now-siniflandirma.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "ready-now-siniflandirma",
+    "title": "Ready-now sınıflandırma",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Rotasyon iş akışı",
+    "permalink": "/en/docs/ik/modul/mobility/rotasyon-is-akisi"
+  },
+  "next": {
+    "title": "Ayrılış risk tahmini (ML)",
+    "permalink": "/en/docs/ik/modul/mobility/ayrilis-risk-tahmini"
+  }
+}

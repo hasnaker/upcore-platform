@@ -1,0 +1,95 @@
+openapi: 3.1.0
+info:
+  title: UpCore Bordro Servisi
+  version: 1.0.0
+  description: |
+    Türkiye maaş bordrosu hesaplama, SGK prim bildirgesi (APB/İGB/İAB), gelir vergisi dilimi,
+    AGİ, kıdem/ihbar tazminatı, e-bildirge XML üretimi.
+servers:
+  - url: https://api.upcore.io
+  - url: http://localhost:8017
+security:
+  - bearerAuth: []
+tags:
+  - name: payroll-runs
+  - name: payslips
+  - name: sgk
+  - name: severance
+
+paths:
+  /api/v1/bordro/runs:
+    post:
+      tags: [payroll-runs]
+      summary: Aylık bordro run başlat
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [period]
+              properties:
+                period: { type: string, pattern: "^\\d{4}-(0[1-9]|1[0-2])$", example: "2026-04" }
+                dry_run: { type: boolean, default: false }
+      responses: { "202": { description: Run kuyruğa alındı } }
+
+  /api/v1/bordro/payslips/{employeeId}:
+    get:
+      tags: [payslips]
+      summary: Çalışan maaş pusulasını getir (PDF + JSON)
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: period
+          in: query
+          required: true
+          schema: { type: string, pattern: "^\\d{4}-(0[1-9]|1[0-2])$" }
+      responses: { "200": { description: OK } }
+
+  /api/v1/bordro/sgk/e-bildirge:
+    post:
+      tags: [sgk]
+      summary: SGK APB/İGB/İAB XML dosyalarını üret
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [period, document_type]
+              properties:
+                period: { type: string, pattern: "^\\d{4}-(0[1-9]|1[0-2])$" }
+                document_type: { type: string, enum: [APB, IGB, IAB] }
+      responses: { "200": { description: XML içeriği (base64) } }
+
+  /api/v1/bordro/severance/{employeeId}:
+    get:
+      tags: [severance]
+      summary: Kıdem + ihbar tazminatı hesabı
+      parameters:
+        - name: employeeId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: termination_date
+          in: query
+          required: true
+          schema: { type: string, format: date }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  kidem_tazminati: { type: number }
+                  ihbar_tazminati: { type: number }
+                  kullanilmayan_yillik_izin: { type: number }
+                  toplam_net: { type: number }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

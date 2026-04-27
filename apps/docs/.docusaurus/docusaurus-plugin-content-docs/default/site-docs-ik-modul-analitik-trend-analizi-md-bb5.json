@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/trend-analizi",
+  "title": "Trend analizi",
+  "description": "Zaman serisi analizi — zaman içinde KPI değişimleri.",
+  "source": "@site/docs/ik/modul/analitik/trend-analizi.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/trend-analizi",
+  "permalink": "/en/docs/ik/modul/analitik/trend-analizi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/trend-analizi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "trend-analizi",
+    "title": "Trend analizi",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Departman karşılaştırma",
+    "permalink": "/en/docs/ik/modul/analitik/departman-karsilastirma"
+  },
+  "next": {
+    "title": "Tahmin modelleri",
+    "permalink": "/en/docs/ik/modul/analitik/tahmin-modelleri"
+  }
+}

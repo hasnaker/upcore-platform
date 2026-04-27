@@ -1,0 +1,26 @@
+{
+  "id": "developer/giris",
+  "title": "Geliştirici rehberine hoş geldiniz",
+  "description": "UpCore platformunu kendi sistemlerinizle entegre etmek için gereken her şey.",
+  "source": "@site/docs/developer/giris.md",
+  "sourceDirName": "developer",
+  "slug": "/developer/giris",
+  "permalink": "/en/docs/developer/giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "giris",
+    "title": "Geliştirici rehberine hoş geldiniz",
+    "slug": "/developer/giris",
+    "sidebar_position": 1
+  },
+  "sidebar": "developerSidebar",
+  "next": {
+    "title": "Mimari genel bakış",
+    "permalink": "/en/docs/developer/kavramlar/mimari-genel-bakis"
+  }
+}

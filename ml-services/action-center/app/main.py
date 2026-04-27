@@ -55,9 +55,9 @@ def create_app() -> FastAPI:
     application.mount("/metrics", metrics_app)
 
     application.include_router(health_router, tags=["health"])
-    application.include_router(actions_router, prefix="/v1/actions", tags=["actions"])
-    application.include_router(feedback_router, prefix="/v1/actions", tags=["feedback"])
-    application.include_router(history_router, prefix="/v1/actions", tags=["history"])
+    application.include_router(actions_router, prefix="/api/v1/actions", tags=["actions"])
+    application.include_router(feedback_router, prefix="/api/v1/actions", tags=["feedback"])
+    application.include_router(history_router, prefix="/api/v1/actions", tags=["history"])
 
     return application
 

@@ -1,0 +1,12 @@
+{
+  "type": "mdx",
+  "permalink": "/en/iletisim",
+  "source": "@site/src/pages/iletisim.mdx",
+  "title": "İletişime geçin",
+  "description": "UpCore destek kanalları, SLA, ve iletişim formu.",
+  "frontMatter": {
+    "title": "İletişime geçin",
+    "description": "UpCore destek kanalları, SLA, ve iletişim formu."
+  },
+  "unlisted": false
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/saklama-politikasi",
+  "title": "Saklama politikası",
+  "description": "Her veri kategorisinin saklama süresi + silme prosedürü.",
+  "source": "@site/docs/ik/modul/kvkk/saklama-politikasi.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/saklama-politikasi",
+  "permalink": "/en/docs/ik/modul/kvkk/saklama-politikasi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/saklama-politikasi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "saklama-politikasi",
+    "title": "Saklama politikası",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İhlal bildirim (72 saat)",
+    "permalink": "/en/docs/ik/modul/kvkk/ihlal-bildirim-72-saat"
+  },
+  "next": {
+    "title": "Yurt dışı aktarım",
+    "permalink": "/en/docs/ik/modul/kvkk/yurtdisi-aktarim"
+  }
+}

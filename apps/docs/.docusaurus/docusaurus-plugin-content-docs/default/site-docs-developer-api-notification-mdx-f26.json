@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/notification",
+  "title": "Notification Servisi API Referansı",
+  "description": "UpCore Notification servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/notification.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/notification",
+  "permalink": "/en/docs/developer/api/notification",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/notification.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 22,
+  "frontMatter": {
+    "id": "notification",
+    "title": "Notification Servisi API Referansı",
+    "sidebar_position": 22,
+    "slug": "/developer/api/notification",
+    "description": "UpCore Notification servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

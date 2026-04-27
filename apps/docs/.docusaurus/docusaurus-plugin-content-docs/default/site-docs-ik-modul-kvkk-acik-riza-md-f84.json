@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/acik-riza",
+  "title": "Açık rıza şablonu",
+  "description": "KVKK Madde 6/2 — özel nitelikli kişisel veriler için açık rıza zorunlu.",
+  "source": "@site/docs/ik/modul/kvkk/acik-riza.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/acik-riza",
+  "permalink": "/en/docs/ik/modul/kvkk/acik-riza",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/acik-riza.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "acik-riza",
+    "title": "Açık rıza şablonu",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Aydınlatma metni şablonu",
+    "permalink": "/en/docs/ik/modul/kvkk/aydınlatma-metni"
+  },
+  "next": {
+    "title": "DPIA (Veri Koruma Etki Değerlendirmesi)",
+    "permalink": "/en/docs/ik/modul/kvkk/dpia-sablon"
+  }
+}

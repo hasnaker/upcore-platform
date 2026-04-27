@@ -1,0 +1,29 @@
+{
+  "id": "developer/ml/model-kartlari",
+  "title": "ML model kartları (Google Model Cards formatı)",
+  "description": "UpCore'da kullanılan ML modelleri için şeffaf model kartları.",
+  "source": "@site/docs/developer/ml/model-kartlari.md",
+  "sourceDirName": "developer/ml",
+  "slug": "/developer/ml/model-kartlari",
+  "permalink": "/en/docs/developer/ml/model-kartlari",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/ml/model-kartlari.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "model-kartlari",
+    "title": "ML model kartları (Google Model Cards formatı)",
+    "sidebar_position": 1
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Go SDK",
+    "permalink": "/en/docs/developer/sdk/go"
+  },
+  "next": {
+    "title": "Model Card — Burnout Prediction v2.1",
+    "permalink": "/en/docs/developer/ml/burnout-prediction-kart"
+  }
+}

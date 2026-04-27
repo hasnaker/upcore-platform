@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/aydınlatma-metni",
+  "title": "Aydınlatma metni şablonu",
+  "description": "KVKK Madde 10 — aydınlatma yükümlülüğü.",
+  "source": "@site/docs/ik/modul/kvkk/aydınlatma-metni.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/aydınlatma-metni",
+  "permalink": "/en/docs/ik/modul/kvkk/aydınlatma-metni",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/aydınlatma-metni.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "aydınlatma-metni",
+    "title": "Aydınlatma metni şablonu",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "VERBIS kayıt süreci",
+    "permalink": "/en/docs/ik/modul/kvkk/verbis-kayit-sureci"
+  },
+  "next": {
+    "title": "Açık rıza şablonu",
+    "permalink": "/en/docs/ik/modul/kvkk/acik-riza"
+  }
+}

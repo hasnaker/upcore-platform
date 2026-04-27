@@ -85,12 +85,32 @@ func (h *EventHandler) Query(w http.ResponseWriter, r *http.Request) {
 	page := ParseIntQuery(r, "page", 1)
 	limit := ParseIntQuery(r, "limit", 50)
 
+	cursor, ok := ParseCursorQuery(w, r)
+	if !ok {
+		return
+	}
+	if cursor != nil {
+		ts := cursor.CreatedAt
+		id := cursor.ID
+		filter.CursorCreatedAt = &ts
+		filter.CursorID = &id
+	}
+
 	events, total, err := h.svc.Query(r.Context(), filter, page, limit)
 	if err != nil {
 		WriteError(w, err)
 		return
 	}
-	WriteJSON(w, http.StatusOK, map[string]any{"items": events, "total": total})
+	resp := map[string]any{"items": events, "total": total}
+	if len(events) > 0 {
+		last := events[len(events)-1]
+		resp["next_cursor"] = EncodeCursor(last.OccurredAt, last.ID)
+		resp["has_more"] = len(events) == limit
+	} else {
+		resp["next_cursor"] = ""
+		resp["has_more"] = false
+	}
+	WriteJSON(w, http.StatusOK, resp)
 }
 
 // GetByID handles GET /api/v1/audit/events/{id}.

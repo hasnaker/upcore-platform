@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/pulse/ekip-pulse-yorumu",
+  "title": "Ekip pulse sonuçlarını yorumlama",
+  "description": "Pulse agregaları bir yönetici için erken uyarı sistemidir.",
+  "source": "@site/docs/yonetici/pulse/ekip-pulse-yorumu.md",
+  "sourceDirName": "yonetici/pulse",
+  "slug": "/yonetici/pulse/ekip-pulse-yorumu",
+  "permalink": "/en/docs/yonetici/pulse/ekip-pulse-yorumu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/pulse/ekip-pulse-yorumu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "ekip-pulse-yorumu",
+    "title": "Ekip pulse sonuçlarını yorumlama",
+    "sidebar_position": 1
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "Sürekli geri bildirim verme",
+    "permalink": "/en/docs/yonetici/ekip/surekli-geri-bildirim"
+  },
+  "next": {
+    "title": "Kırmızı band triage",
+    "permalink": "/en/docs/yonetici/pulse/kirmizi-band-triage"
+  }
+}

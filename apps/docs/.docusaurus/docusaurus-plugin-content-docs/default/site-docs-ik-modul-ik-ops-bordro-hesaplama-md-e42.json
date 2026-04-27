@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/bordro-hesaplama",
+  "title": "Bordro hesaplama",
+  "description": "Türkiye ücret bordrosu hesaplama motoru.",
+  "source": "@site/docs/ik/modul/ik-ops/bordro-hesaplama.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/bordro-hesaplama",
+  "permalink": "/en/docs/ik/modul/ik-ops/bordro-hesaplama",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/bordro-hesaplama.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "bordro-hesaplama",
+    "title": "Bordro hesaplama",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İzin yönetimi",
+    "permalink": "/en/docs/ik/modul/ik-ops/izin-yonetimi"
+  },
+  "next": {
+    "title": "SGK e-Bildirge",
+    "permalink": "/en/docs/ik/modul/ik-ops/sgk-e-bildirge"
+  }
+}

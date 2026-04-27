@@ -26,6 +26,12 @@ type AssignmentRepository interface {
 	ListPendingConsent(ctx context.Context, tenantID, employeeID uuid.UUID) ([]*domain.Assignment, error)
 	BulkCreate(ctx context.Context, assignments []*domain.Assignment) (int, error)
 	Cancel(ctx context.Context, tenantID, id uuid.UUID, reason string) error
+
+	// ListBySourcePrediction returns every assignment derived from the given
+	// ML prediction id (linked via metadata->>'source_prediction_id').
+	// Used by the ml.prediction.retracted.v1 event handler to cancel
+	// recommendations when a KVKK Madde 22 objection is upheld.
+	ListBySourcePrediction(ctx context.Context, tenantID, predictionID uuid.UUID) ([]*domain.Assignment, error)
 }
 
 type assignmentRepo struct {
@@ -214,6 +220,25 @@ func (r *assignmentRepo) BulkCreate(ctx context.Context, assignments []*domain.A
 		created++
 	}
 	return created, nil
+}
+
+// ListBySourcePrediction queries assignments whose metadata JSONB column
+// carries source_prediction_id = predictionID. Migration 064 adds a GIN
+// index on (tenant_id, (metadata->>'source_prediction_id')) so this lookup
+// stays O(log n) even with millions of assignments per tenant.
+func (r *assignmentRepo) ListBySourcePrediction(
+	ctx context.Context, tenantID, predictionID uuid.UUID,
+) ([]*domain.Assignment, error) {
+	const q = `
+		SELECT * FROM app.intervention_assignments
+		 WHERE tenant_id = $1
+		   AND metadata ->> 'source_prediction_id' = $2::text
+		 ORDER BY assigned_at DESC`
+	var rows []*domain.Assignment
+	if err := r.db.SelectContext(ctx, &rows, q, tenantID, predictionID.String()); err != nil {
+		return nil, fmt.Errorf("list by source prediction: %w", err)
+	}
+	return rows, nil
 }
 
 func (r *assignmentRepo) Cancel(ctx context.Context, tenantID, id uuid.UUID, reason string) error {

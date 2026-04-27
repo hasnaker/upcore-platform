@@ -1,0 +1,29 @@
+{
+  "id": "calisan/kvkk/madde-11-haklar",
+  "title": "KVKK Madde 11 hakları",
+  "description": "6698 sayılı Kişisel Verilerin Korunması Kanunu'nun 11. maddesi size şu hakları tanır:",
+  "source": "@site/docs/calisan/kvkk/madde-11-haklar.md",
+  "sourceDirName": "calisan/kvkk",
+  "slug": "/calisan/kvkk/madde-11-haklar",
+  "permalink": "/en/docs/calisan/kvkk/madde-11-haklar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/kvkk/madde-11-haklar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "madde-11-haklar",
+    "title": "KVKK Madde 11 hakları",
+    "sidebar_position": 1
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Anonimlik güvencesi",
+    "permalink": "/en/docs/calisan/pulse/anonimlik-guvencesi"
+  },
+  "next": {
+    "title": "Verilerimi indirme",
+    "permalink": "/en/docs/calisan/kvkk/veri-indirme"
+  }
+}

@@ -31,12 +31,21 @@ type Config struct {
 	JWKSCacheTTL time.Duration `mapstructure:"JWKS_CACHE_TTL"`
 
 	// CORS
+	// Comma-separated list of exact origins + single-label wildcard patterns
+	// (e.g. "https://app.upcore.io,https://*.upcore.io"). Never use "*" when
+	// AllowCredentials=true — startup will panic.
 	CORSAllowedOrigins []string `mapstructure:"CORS_ALLOWED_ORIGINS"`
 
 	// Rate Limiting
 	RateLimitPerUser   int `mapstructure:"RATE_LIMIT_PER_USER"`
 	RateLimitPerTenant int `mapstructure:"RATE_LIMIT_PER_TENANT"`
 	RateLimitWindowSec int `mapstructure:"RATE_LIMIT_WINDOW_SEC"`
+	// RateLimitMode: "fail_closed" (default, reject on Redis down) or
+	// "fail_open_local" (use in-memory per-tenant token bucket fallback).
+	// "fail_open" is rejected — it is a DoS vector.
+	RateLimitMode                      string        `mapstructure:"RATE_LIMIT_MODE"`
+	RateLimitBreakerConsecutiveFails   int           `mapstructure:"RATE_LIMIT_BREAKER_CONSECUTIVE_FAILS"`
+	RateLimitBreakerOpenDuration       time.Duration `mapstructure:"RATE_LIMIT_BREAKER_OPEN_DURATION"`
 
 	// Routes
 	RoutesConfigPath string `mapstructure:"ROUTES_CONFIG_PATH"`
@@ -66,10 +75,16 @@ func Load() (*Config, error) {
 	v.SetDefault("CLERK_ISSUER", "https://clerk.upcore.app")
 	v.SetDefault("JWT_AUDIENCE", "upcore-api")
 	v.SetDefault("JWKS_CACHE_TTL", time.Hour)
-	v.SetDefault("CORS_ALLOWED_ORIGINS", []string{"*"})
+	// No default for CORS_ALLOWED_ORIGINS: the middleware loader picks the
+	// dev/prod default based on APP_ENV. A literal "*" is rejected because
+	// AllowCredentials=true is required for our JWT cookie flow.
+	v.SetDefault("CORS_ALLOWED_ORIGINS", []string{})
 	v.SetDefault("RATE_LIMIT_PER_USER", 100)
 	v.SetDefault("RATE_LIMIT_PER_TENANT", 1000)
 	v.SetDefault("RATE_LIMIT_WINDOW_SEC", 60)
+	v.SetDefault("RATE_LIMIT_MODE", "fail_closed")
+	v.SetDefault("RATE_LIMIT_BREAKER_CONSECUTIVE_FAILS", 5)
+	v.SetDefault("RATE_LIMIT_BREAKER_OPEN_DURATION", 30*time.Second)
 	v.SetDefault("ROUTES_CONFIG_PATH", "config/routes.yaml")
 	v.SetDefault("UPSTREAM_TIMEOUT", 30*time.Second)
 	v.SetDefault("CIRCUIT_BREAKER_THRESHOLD", 5)
@@ -109,6 +124,15 @@ func (c *Config) validate() error {
 	}
 	if c.ClerkJWKSURL == "" {
 		return fmt.Errorf("CLERK_JWKS_URL is required")
+	}
+	switch strings.ToLower(strings.TrimSpace(c.RateLimitMode)) {
+	case "", "fail_closed", "fail_open_local":
+		// ok
+	case "fail_open":
+		return fmt.Errorf(
+			"RATE_LIMIT_MODE=fail_open is not allowed (DoS vector). Use fail_closed or fail_open_local")
+	default:
+		return fmt.Errorf("RATE_LIMIT_MODE must be one of: fail_closed, fail_open_local (got %q)", c.RateLimitMode)
 	}
 	return nil
 }

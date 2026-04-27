@@ -1,0 +1,27 @@
+{
+  "id": "calisan/giris",
+  "title": "Çalışan rehberine hoş geldiniz",
+  "description": "UpCore platformunu bir çalışan olarak nasıl kullanacağınızı özetleyen giriş sayfası.",
+  "source": "@site/docs/calisan/giris.md",
+  "sourceDirName": "calisan",
+  "slug": "/calisan/giris",
+  "permalink": "/en/docs/calisan/giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "giris",
+    "title": "Çalışan rehberine hoş geldiniz",
+    "description": "UpCore platformunu bir çalışan olarak nasıl kullanacağınızı özetleyen giriş sayfası.",
+    "slug": "/calisan/giris",
+    "sidebar_position": 1
+  },
+  "sidebar": "employeeSidebar",
+  "next": {
+    "title": "İlk giriş ve hesap aktivasyonu",
+    "permalink": "/en/docs/calisan/hesap/ilk-giris"
+  }
+}

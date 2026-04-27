@@ -1,0 +1,412 @@
+openapi: 3.1.0
+info:
+  title: Upcore Organization Service
+  version: "1.0.0"
+  description: Department hierarchy (ltree), positions with JD-R profile, teams, reporting lines, and headcount.
+servers:
+  - url: http://localhost:8004
+    description: Local dev
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      responses:
+        "200": { description: ok }
+  /ready:
+    get:
+      summary: Readiness probe
+      responses:
+        "200": { description: ok }
+
+  /api/v1/departments:
+    get:
+      summary: List departments (flat)
+      parameters:
+        - in: query
+          name: include_archived
+          schema: { type: boolean, default: false }
+      responses:
+        "200": { description: ok }
+    post:
+      summary: Create department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreateDepartment" }
+      responses:
+        "201": { description: Created }
+        "409": { description: duplicate_code }
+        "422": { description: validation_error }
+
+  /api/v1/departments/tree:
+    get:
+      summary: Nested tree
+      responses:
+        "200": { description: ok }
+
+  /api/v1/departments/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Get department
+      responses:
+        "200": { description: ok }
+        "404": { description: not_found }
+    patch:
+      summary: Update department
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/UpdateDepartment" }
+      responses:
+        "200": { description: ok }
+    delete:
+      summary: Archive department (fails if has active children)
+      responses:
+        "200": { description: archived }
+        "409": { description: has_active_children }
+
+  /api/v1/departments/{id}/subtree:
+    get:
+      summary: Descendants including the department itself
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: ok }
+
+  /api/v1/departments/{id}/ancestors:
+    get:
+      summary: Parent chain (breadcrumb)
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: ok }
+
+  /api/v1/departments/{id}/children:
+    get:
+      summary: Direct children
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: ok }
+
+  /api/v1/departments/{id}/move:
+    post:
+      summary: Move subtree to a new parent
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                new_parent_id:
+                  type: string
+                  format: uuid
+                  nullable: true
+      responses:
+        "200": { description: ok }
+        "409": { description: cycle_detected }
+        "422": { description: max_depth_exceeded }
+
+  /api/v1/positions:
+    get:
+      summary: List positions
+      parameters:
+        - in: query
+          name: department_id
+          schema: { type: string, format: uuid }
+        - in: query
+          name: job_family
+          schema: { type: string }
+        - in: query
+          name: job_level
+          schema: { type: string, enum: [junior, mid, senior, lead, director] }
+        - in: query
+          name: search
+          schema: { type: string }
+        - in: query
+          name: page
+          schema: { type: integer, default: 1 }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 50 }
+      responses:
+        "200": { description: ok }
+    post:
+      summary: Create position
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/CreatePosition" }
+      responses:
+        "201": { description: Created }
+        "409": { description: duplicate_code }
+        "422": { description: validation_error }
+
+  /api/v1/positions/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Get position (with JD-R)
+      responses:
+        "200": { description: ok }
+    patch:
+      summary: Update position
+      responses:
+        "200": { description: ok }
+    delete:
+      summary: Archive position
+      responses:
+        "200": { description: archived }
+
+  /api/v1/positions/{id}/jdr:
+    patch:
+      summary: Update JD-R profile only
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/JDRProfile" }
+      responses:
+        "200": { description: ok }
+        "422": { description: validation_error }
+
+  /api/v1/teams:
+    get:
+      summary: List teams
+      responses:
+        "200": { description: ok }
+    post:
+      summary: Create team
+      responses:
+        "201": { description: Created }
+
+  /api/v1/teams/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Get team
+      responses:
+        "200": { description: ok }
+    patch:
+      summary: Update team
+      responses:
+        "200": { description: ok }
+    delete:
+      summary: Archive team
+      responses:
+        "200": { description: archived }
+
+  /api/v1/teams/{id}/members:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: List members
+      responses:
+        "200": { description: ok }
+    post:
+      summary: Add member
+      responses:
+        "201": { description: added }
+
+  /api/v1/teams/{id}/members/{employeeId}:
+    delete:
+      summary: Remove member
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: path
+          name: employeeId
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "204": { description: removed }
+
+  /api/v1/reporting/set-manager:
+    post:
+      summary: Assign manager to employee
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, manager_id, type]
+              properties:
+                employee_id: { type: string, format: uuid }
+                manager_id: { type: string, format: uuid }
+                type: { type: string, enum: [solid, dotted] }
+                effective_from: { type: string, format: date-time }
+      responses:
+        "200": { description: ok }
+        "409": { description: cycle_detected }
+        "422": { description: validation_error }
+
+  /api/v1/reporting/manager/{employee_id}/reports:
+    get:
+      summary: Direct reports of a manager
+      parameters:
+        - in: path
+          name: employee_id
+          required: true
+          schema: { type: string, format: uuid }
+        - in: query
+          name: include_dotted
+          schema: { type: boolean, default: false }
+      responses:
+        "200": { description: ok }
+
+  /api/v1/reporting/manager/{employee_id}/team:
+    get:
+      summary: Full team tree
+      parameters:
+        - in: path
+          name: employee_id
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: ok }
+
+  /api/v1/reporting/matrix:
+    get:
+      summary: Dotted-line matrix
+      responses:
+        "200": { description: ok }
+
+  /api/v1/headcount:
+    get:
+      summary: Current headcount snapshot
+      responses:
+        "200": { description: ok }
+
+  /api/v1/headcount/departments:
+    get:
+      summary: Headcount per department
+      responses:
+        "200": { description: ok }
+
+  /api/v1/headcount/trends:
+    get:
+      summary: Trend over time
+      parameters:
+        - in: query
+          name: period
+          schema: { type: string, example: "3m" }
+        - in: query
+          name: department_id
+          schema: { type: string, format: uuid }
+      responses:
+        "200": { description: ok }
+
+  /api/v1/headcount/snapshot:
+    post:
+      summary: Capture a snapshot (scheduled job)
+      responses:
+        "202": { description: accepted }
+
+components:
+  schemas:
+    CreateDepartment:
+      type: object
+      required: [code, name_tr]
+      properties:
+        code: { type: string }
+        name_tr: { type: string }
+        name_en: { type: string }
+        description: { type: string }
+        parent_id: { type: string, format: uuid, nullable: true }
+        head_user_id: { type: string, format: uuid, nullable: true }
+        cost_center: { type: string }
+        location: { type: string }
+        headcount_cap: { type: integer }
+    UpdateDepartment:
+      type: object
+      properties:
+        name_tr: { type: string }
+        name_en: { type: string }
+        description: { type: string }
+        head_user_id: { type: string, format: uuid }
+        cost_center: { type: string }
+        location: { type: string }
+        headcount_cap: { type: integer }
+        active: { type: boolean }
+    CreatePosition:
+      type: object
+      required: [code, title_tr]
+      properties:
+        code: { type: string }
+        title_tr: { type: string }
+        title_en: { type: string }
+        department_id: { type: string, format: uuid }
+        job_family: { type: string }
+        job_level: { type: string, enum: [junior, mid, senior, lead, director] }
+        seniority_min_years: { type: integer }
+        description_tr: { type: string }
+        description_en: { type: string }
+        salary_band_min: { type: number }
+        salary_band_max: { type: number }
+        salary_currency: { type: string, default: TRY }
+        employment_type: { type: string, enum: [full_time, part_time, contract, intern, freelance] }
+        remote_policy: { type: string, enum: [onsite, hybrid, remote] }
+        jdr_talepler: { $ref: "#/components/schemas/JDRDemands" }
+        jdr_kaynaklar: { $ref: "#/components/schemas/JDRResources" }
+    JDRDemands:
+      type: object
+      properties:
+        is_yuku: { type: integer, minimum: 0, maximum: 10 }
+        duygusal_yuk: { type: integer, minimum: 0, maximum: 10 }
+        bilissel_yuk: { type: integer, minimum: 0, maximum: 10 }
+        zaman_baskisi: { type: integer, minimum: 0, maximum: 10 }
+        rol_catismasi: { type: integer, minimum: 0, maximum: 10 }
+        rol_belirsizligi: { type: integer, minimum: 0, maximum: 10 }
+    JDRResources:
+      type: object
+      properties:
+        ozerklik: { type: integer, minimum: 0, maximum: 10 }
+        geri_bildirim: { type: integer, minimum: 0, maximum: 10 }
+        sosyal_destek: { type: integer, minimum: 0, maximum: 10 }
+        gelisim_firsati: { type: integer, minimum: 0, maximum: 10 }
+        beceri_cesitliligi: { type: integer, minimum: 0, maximum: 10 }
+        gorev_onemi: { type: integer, minimum: 0, maximum: 10 }
+    JDRProfile:
+      type: object
+      properties:
+        talepler: { $ref: "#/components/schemas/JDRDemands" }
+        kaynaklar: { $ref: "#/components/schemas/JDRResources" }

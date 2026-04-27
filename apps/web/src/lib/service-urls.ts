@@ -15,6 +15,9 @@ export const SERVICES = {
   notification: process.env['NOTIFICATION_SERVICE_URL'] || 'http://localhost:8010',
   ats: process.env['ATS_SERVICE_URL'] || 'http://localhost:8011',
   assessment: process.env['ASSESSMENT_SERVICE_URL'] || 'http://localhost:8012',
+  performance: process.env['PERFORMANCE_SERVICE_URL'] || 'http://localhost:8014',
+  bordro: process.env['BORDRO_SERVICE_URL'] || 'http://localhost:8015',
+  mobility: process.env['MOBILITY_SERVICE_URL'] || 'http://localhost:8013',
   gateway: process.env['GATEWAY_SERVICE_URL'] || 'http://localhost:8080',
   scoring: process.env['SCORING_SERVICE_URL'] || 'http://127.0.0.1:8025',
   burnout: process.env['BURNOUT_SERVICE_URL'] || 'http://127.0.0.1:8022',
@@ -24,11 +27,24 @@ export const SERVICES = {
 
 export const DB_URL = process.env['DATABASE_URL'] || 'postgresql://upcore:upcore_dev_password@localhost:5432/upcore_dev';
 
-export const TENANT_ID = '11111111-1111-1111-1111-111111111111';
+// Development-only fallbacks. Production must send gateway-authenticated headers.
+export const FALLBACK_TENANT_ID = process.env['DEV_TENANT_ID'] || '';
+export const FALLBACK_USER_ID = process.env['DEV_USER_ID'] || '';
+export const FALLBACK_USER_ROLE = process.env['DEV_USER_ROLE'] || 'employee';
 
+/**
+ * @deprecated Use request-context helpers instead.
+ * Kept as a compatibility bridge while route handlers migrate.
+ */
+export const TENANT_ID = FALLBACK_TENANT_ID;
+
+/**
+ * @deprecated Use request-context helpers instead.
+ * Kept as a compatibility bridge while route handlers migrate.
+ */
 export const DEV_HEADERS = {
-  'X-Tenant-Id': TENANT_ID,
-  'X-User-Id': '00000000-0000-0000-0000-000000000001',
-  'X-User-Role': 'hr_director',
+  'X-Tenant-Id': FALLBACK_TENANT_ID,
+  'X-User-Id': FALLBACK_USER_ID,
+  'X-User-Role': FALLBACK_USER_ROLE,
   'Content-Type': 'application/json',
 } as const;

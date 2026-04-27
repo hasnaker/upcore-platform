@@ -19,7 +19,7 @@ class TestNextActionsEndpoint:
     def test_returns_200(self, client: TestClient) -> None:
         """Valid request should return 200."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -33,7 +33,7 @@ class TestNextActionsEndpoint:
     def test_max_5_actions_enforced(self, client: TestClient) -> None:
         """Response should never contain more than 5 actions."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -47,7 +47,7 @@ class TestNextActionsEndpoint:
     def test_response_schema(self, client: TestClient) -> None:
         """Response should match NextActionsResponse schema."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -64,7 +64,7 @@ class TestNextActionsEndpoint:
     def test_action_fields(self, client: TestClient) -> None:
         """Each action should have all required fields."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -90,7 +90,7 @@ class TestNextActionsEndpoint:
     def test_priority_scores_bounded(self, client: TestClient) -> None:
         """All priority scores should be in [0, 1]."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -108,7 +108,7 @@ class TestNextActionsEndpoint:
     def test_sorted_by_priority(self, client: TestClient) -> None:
         """Actions should be sorted by priority score descending."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -125,7 +125,7 @@ class TestNextActionsEndpoint:
     def test_rationale_not_empty(self, client: TestClient) -> None:
         """Every action should have a non-empty rationale."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -140,7 +140,7 @@ class TestNextActionsEndpoint:
     def test_employee_role_filtering(self, client: TestClient) -> None:
         """Employee role should only see employee-visible actions."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",
@@ -156,7 +156,7 @@ class TestNextActionsEndpoint:
     def test_ttl_is_1800(self, client: TestClient) -> None:
         """TTL should be 30 minutes (1800 seconds)."""
         response = client.post(
-            "/v1/actions/next",
+            "/api/v1/actions/next",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "user_id": "22222222-2222-2222-2222-222222222222",

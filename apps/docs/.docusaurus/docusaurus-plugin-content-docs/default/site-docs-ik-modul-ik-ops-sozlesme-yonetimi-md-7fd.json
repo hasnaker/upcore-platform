@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/sozlesme-yonetimi",
+  "title": "Sözleşme yönetimi",
+  "description": "İş sözleşmesi türleri, şablonları, imza akışı.",
+  "source": "@site/docs/ik/modul/ik-ops/sozlesme-yonetimi.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/sozlesme-yonetimi",
+  "permalink": "/en/docs/ik/modul/ik-ops/sozlesme-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/sozlesme-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "sozlesme-yonetimi",
+    "title": "Sözleşme yönetimi",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Özlük dosyası",
+    "permalink": "/en/docs/ik/modul/ik-ops/ozluk-dosyasi"
+  },
+  "next": {
+    "title": "İzin yönetimi",
+    "permalink": "/en/docs/ik/modul/ik-ops/izin-yonetimi"
+  }
+}

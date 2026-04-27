@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/okr-kurulum",
+  "title": "OKR kurulumu",
+  "description": "Cycle tanımı",
+  "source": "@site/docs/ik/modul/performans/okr-kurulum.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/okr-kurulum",
+  "permalink": "/en/docs/ik/modul/performans/okr-kurulum",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/okr-kurulum.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "okr-kurulum",
+    "title": "OKR kurulumu",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Performans modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/performans/genel-bakis"
+  },
+  "next": {
+    "title": "Key Result ilerleme takibi",
+    "permalink": "/en/docs/ik/modul/performans/key-result-takibi"
+  }
+}

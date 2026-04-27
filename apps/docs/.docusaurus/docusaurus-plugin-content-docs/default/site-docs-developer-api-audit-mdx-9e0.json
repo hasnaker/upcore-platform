@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/audit",
+  "title": "Audit Servisi API Referansı",
+  "description": "UpCore Audit servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/audit.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/audit",
+  "permalink": "/en/docs/developer/api/audit",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/audit.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 25,
+  "frontMatter": {
+    "id": "audit",
+    "title": "Audit Servisi API Referansı",
+    "sidebar_position": 25,
+    "slug": "/developer/api/audit",
+    "description": "UpCore Audit servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

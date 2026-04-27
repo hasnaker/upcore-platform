@@ -19,6 +19,7 @@ type OutcomeRepository interface {
 	GetByAssignment(ctx context.Context, assignmentID uuid.UUID) (*domain.Outcome, error)
 	ListByIntervention(ctx context.Context, interventionID uuid.UUID) ([]*domain.Outcome, error)
 	ListWithBothScores(ctx context.Context, interventionID uuid.UUID) ([]*domain.Outcome, error)
+	ListWithBothScoresByTenant(ctx context.Context, tenantID uuid.UUID) ([]*domain.Outcome, error)
 }
 
 type outcomeRepo struct {
@@ -96,6 +97,22 @@ func (r *outcomeRepo) ListWithBothScores(ctx context.Context, interventionID uui
 		ORDER BY measured_at DESC`
 	if err := r.db.SelectContext(ctx, &rows, q, interventionID); err != nil {
 		return nil, fmt.Errorf("list outcomes with both scores: %w", err)
+	}
+	return rows, nil
+}
+
+// ListWithBothScoresByTenant returns every outcome for the tenant that has
+// both pre and post BAT scores recorded, across all interventions. Used by
+// the effectiveness summary and trend endpoints.
+func (r *outcomeRepo) ListWithBothScoresByTenant(ctx context.Context, tenantID uuid.UUID) ([]*domain.Outcome, error) {
+	var rows []*domain.Outcome
+	q := `SELECT * FROM app.intervention_outcomes
+		WHERE tenant_id = $1
+		  AND pre_bat_score IS NOT NULL
+		  AND post_bat_score IS NOT NULL
+		ORDER BY intervention_id, measured_at ASC`
+	if err := r.db.SelectContext(ctx, &rows, q, tenantID); err != nil {
+		return nil, fmt.Errorf("list tenant outcomes: %w", err)
 	}
 	return rows, nil
 }

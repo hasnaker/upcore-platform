@@ -5,8 +5,6 @@ Used for norm table caching and session management.
 
 from __future__ import annotations
 
-from typing import Any
-
 import redis.asyncio as aioredis
 import structlog
 

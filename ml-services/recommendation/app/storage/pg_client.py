@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import structlog
 
-from app.config import settings
 
 logger = structlog.get_logger()
 

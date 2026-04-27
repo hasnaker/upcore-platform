@@ -1,0 +1,25 @@
+version: "3.9"
+
+# Chaos test harness. toxiproxy sits between services and their dependencies
+# (postgres, redis, external APIs) so we can inject latency / packet loss /
+# bandwidth limits without code changes.
+services:
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    ports:
+      - "8474:8474" # control API
+      - "5433:5433" # postgres proxy
+      - "6380:6380" # redis proxy
+      - "9202:9202" # ml-burnout proxy
+    command: ["-config", "/config/toxics.json", "-host", "0.0.0.0"]
+    volumes:
+      - ./toxics.json:/config/toxics.json:ro
+
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_PASSWORD: upcore_chaos
+      POSTGRES_DB: upcore_test
+
+  redis:
+    image: redis:7-alpine

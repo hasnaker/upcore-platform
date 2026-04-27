@@ -1,0 +1,29 @@
+{
+  "id": "admin/operasyon/impersonation",
+  "title": "Impersonation (vekaletsiz giriş)",
+  "description": "Destek çalışanının müşteri hesabına geçici erişim.",
+  "source": "@site/docs/admin/operasyon/impersonation.md",
+  "sourceDirName": "admin/operasyon",
+  "slug": "/admin/operasyon/impersonation",
+  "permalink": "/en/docs/admin/operasyon/impersonation",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/operasyon/impersonation.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "impersonation",
+    "title": "Impersonation (vekaletsiz giriş)",
+    "sidebar_position": 4
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "API key oluşturma",
+    "permalink": "/en/docs/admin/operasyon/api-key-olusturma"
+  },
+  "next": {
+    "title": "Bulk export",
+    "permalink": "/en/docs/admin/operasyon/bulk-export"
+  }
+}

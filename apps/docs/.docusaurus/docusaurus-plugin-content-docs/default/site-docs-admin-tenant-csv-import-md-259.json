@@ -1,0 +1,29 @@
+{
+  "id": "admin/tenant/csv-import",
+  "title": "CSV ile çalışan import",
+  "description": "Toplu çalışan aktarımı.",
+  "source": "@site/docs/admin/tenant/csv-import.md",
+  "sourceDirName": "admin/tenant",
+  "slug": "/admin/tenant/csv-import",
+  "permalink": "/en/docs/admin/tenant/csv-import",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/tenant/csv-import.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "csv-import",
+    "title": "CSV ile çalışan import",
+    "sidebar_position": 3
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Onboarding wizard",
+    "permalink": "/en/docs/admin/tenant/onboarding-wizard"
+  },
+  "next": {
+    "title": "İlk modül seçimi",
+    "permalink": "/en/docs/admin/tenant/ilk-modul-secimi"
+  }
+}

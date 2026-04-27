@@ -1,0 +1,17 @@
+platform-team:
+  name: UpCore Platform Team
+  title: Kurum Ekibi
+  url: https://upcore.io/about
+  image_url: /img/authors/platform-team.svg
+
+ml-team:
+  name: UpCore ML Team
+  title: Makine Öğrenmesi Ekibi
+  url: https://upcore.io/about
+  image_url: /img/authors/ml-team.svg
+
+compliance-team:
+  name: UpCore Compliance Team
+  title: Uyum Ekibi
+  url: https://upcore.io/about
+  image_url: /img/authors/compliance-team.svg

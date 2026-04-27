@@ -16,7 +16,7 @@ def client() -> TestClient:
 class TestRecommendIndividual:
     def test_returns_200(self, client: TestClient) -> None:
         response = client.post(
-            "/v1/recommend/individual",
+            "/api/v1/recommend/individual",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -29,7 +29,7 @@ class TestRecommendIndividual:
 
     def test_response_schema(self, client: TestClient) -> None:
         response = client.post(
-            "/v1/recommend/individual",
+            "/api/v1/recommend/individual",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -46,7 +46,7 @@ class TestRecommendIndividual:
     def test_never_returns_empty(self, client: TestClient) -> None:
         """Recommendation endpoint should NEVER return empty list."""
         response = client.post(
-            "/v1/recommend/individual",
+            "/api/v1/recommend/individual",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -60,7 +60,7 @@ class TestRecommendIndividual:
 
     def test_recommendation_fields(self, client: TestClient) -> None:
         response = client.post(
-            "/v1/recommend/individual",
+            "/api/v1/recommend/individual",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",
@@ -79,7 +79,7 @@ class TestRecommendIndividual:
 
     def test_max_recommendations_respected(self, client: TestClient) -> None:
         response = client.post(
-            "/v1/recommend/individual",
+            "/api/v1/recommend/individual",
             json={
                 "tenant_id": "11111111-1111-1111-1111-111111111111",
                 "employee_id": "22222222-2222-2222-2222-222222222222",

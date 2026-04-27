@@ -1,0 +1,29 @@
+{
+  "id": "admin/operasyon/audit-log-izleme",
+  "title": "Audit log izleme",
+  "description": "Sistemdeki her önemli aksiyonun kaydı.",
+  "source": "@site/docs/admin/operasyon/audit-log-izleme.md",
+  "sourceDirName": "admin/operasyon",
+  "slug": "/admin/operasyon/audit-log-izleme",
+  "permalink": "/en/docs/admin/operasyon/audit-log-izleme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/operasyon/audit-log-izleme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "audit-log-izleme",
+    "title": "Audit log izleme",
+    "sidebar_position": 6
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Bulk export",
+    "permalink": "/en/docs/admin/operasyon/bulk-export"
+  },
+  "next": {
+    "title": "SOC 2 Type II readiness",
+    "permalink": "/en/docs/admin/uyum/soc2-readiness"
+  }
+}

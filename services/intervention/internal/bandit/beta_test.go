@@ -103,3 +103,66 @@ func TestThompsonSampleKGreaterThanArms(t *testing.T) {
 		t.Fatalf("expected 2 indices when k > len(arms), got %d", len(idx))
 	}
 }
+
+// Reproducibility guarantee: identical (tenant, bucket) pairs produce identical
+// sample sequences. This underpins A/B replay and algorithmic-transparency audits.
+func TestNewRNGForTenantIsDeterministic(t *testing.T) {
+	arms := []Arm{
+		{ID: "a", Alpha: 2, Beta: 8},
+		{ID: "b", Alpha: 5, Beta: 5},
+		{ID: "c", Alpha: 9, Beta: 1},
+	}
+	tenant := "11111111-1111-1111-1111-111111111111"
+	bucket := int64(470000) // e.g. unix hour bucket
+	g1 := NewRNGForTenant(tenant, bucket)
+	g2 := NewRNGForTenant(tenant, bucket)
+
+	for i := 0; i < 100; i++ {
+		a := g1.ThompsonSample(arms, 3)
+		b := g2.ThompsonSample(arms, 3)
+		if len(a) != len(b) {
+			t.Fatalf("length mismatch at iter %d: %d vs %d", i, len(a), len(b))
+		}
+		for j := range a {
+			if a[j] != b[j] {
+				t.Fatalf("sample divergence at iter %d pos %d: %d vs %d", i, j, a[j], b[j])
+			}
+		}
+	}
+}
+
+// Different tenants (or different buckets) MUST produce different sequences,
+// otherwise bucketing is broken and all tenants would get the same A/B assignment.
+func TestNewRNGForTenantDiverges(t *testing.T) {
+	arms := []Arm{
+		{ID: "a", Alpha: 2, Beta: 8},
+		{ID: "b", Alpha: 5, Beta: 5},
+		{ID: "c", Alpha: 9, Beta: 1},
+		{ID: "d", Alpha: 1, Beta: 1},
+	}
+	g1 := NewRNGForTenant("tenant-alpha", 42)
+	g2 := NewRNGForTenant("tenant-beta", 42)
+	g3 := NewRNGForTenant("tenant-alpha", 43)
+
+	// Run 50 samples each and ensure we observe at least one divergence between pairs.
+	var diff12, diff13 bool
+	for i := 0; i < 50; i++ {
+		a := g1.ThompsonSample(arms, 4)
+		b := g2.ThompsonSample(arms, 4)
+		c := g3.ThompsonSample(arms, 4)
+		for j := range a {
+			if a[j] != b[j] {
+				diff12 = true
+			}
+			if a[j] != c[j] {
+				diff13 = true
+			}
+		}
+	}
+	if !diff12 {
+		t.Fatalf("different tenants produced identical sequences (bucket=42)")
+	}
+	if !diff13 {
+		t.Fatalf("same tenant different buckets produced identical sequences")
+	}
+}

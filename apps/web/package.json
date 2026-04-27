@@ -15,10 +15,15 @@
   "dependencies": {
     "@clerk/localizations": "^3.0.0",
     "@clerk/nextjs": "^6.0.0",
+    "@dnd-kit/core": "^6.3.1",
+    "@dnd-kit/sortable": "^10.0.0",
+    "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^3.9.0",
+    "@sentry/nextjs": "^8.0.0",
     "@tanstack/react-query": "^5.51.0",
     "@upcore/design-system": "workspace:*",
     "@upcore/types": "workspace:*",
+    "exceljs": "^4.4.0",
     "lucide-react": "^0.400.0",
     "next": "^15.0.0",
     "pg": "^8.20.0",
@@ -30,6 +35,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^15.0.0",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.11.30",
     "@types/pg": "^8.20.0",

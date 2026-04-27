@@ -27,6 +27,9 @@ const (
 	CategoryOneOnOne        Category = "one_on_one"
 	CategoryWelcome         Category = "welcome"
 	CategoryDigest          Category = "digest"
+	CategoryATS             Category = "ats"
+	CategoryPayroll         Category = "payroll"
+	CategoryPerformance     Category = "performance"
 )
 
 // CriticalCategories are categories that cannot be opted out of (security/legal).

@@ -33,6 +33,7 @@ type ConsentLog struct {
 	Action       ConsentAction `db:"action" json:"action"`
 	Reason       *string       `db:"reason" json:"reason,omitempty"`
 	ActorIP      string        `db:"actor_ip" json:"actor_ip"`
+	UserAgent    string        `db:"user_agent" json:"user_agent"`
 	CreatedAt    time.Time     `db:"created_at" json:"created_at"`
 }
 

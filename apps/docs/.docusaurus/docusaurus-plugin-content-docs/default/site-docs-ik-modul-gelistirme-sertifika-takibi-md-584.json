@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/sertifika-takibi",
+  "title": "Sertifika takibi",
+  "description": "Dış + iç sertifikaların merkezi kayıt sistemi.",
+  "source": "@site/docs/ik/modul/gelistirme/sertifika-takibi.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/sertifika-takibi",
+  "permalink": "/en/docs/ik/modul/gelistirme/sertifika-takibi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/sertifika-takibi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "sertifika-takibi",
+    "title": "Sertifika takibi",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Öğrenme yolu (learning path)",
+    "permalink": "/en/docs/ik/modul/gelistirme/ogrenme-yolu"
+  },
+  "next": {
+    "title": "Koçluk programı",
+    "permalink": "/en/docs/ik/modul/gelistirme/koçluk-programi"
+  }
+}

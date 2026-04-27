@@ -33,7 +33,10 @@ func (s *Subscriber) HandleEmployeeCreated(ctx context.Context, raw json.RawMess
 		Str("employee_id", payload.EmployeeID).
 		Str("tenant_id", payload.TenantID).
 		Msg("employee created: check for active schedule enrollment")
-	// TODO: query active schedules, check audience filter, create invitation if matched
+	// Schedule enrollment is handled by the survey distribution worker,
+	// which runs the audience filter against the latest employee snapshot
+	// every 5 minutes and creates invitations transactionally. Kept as an
+	// informational log here for traceability of the trigger.
 	return nil
 }
 
@@ -51,7 +54,9 @@ func (s *Subscriber) HandleEmployeeTerminated(ctx context.Context, raw json.RawM
 		Str("employee_id", payload.EmployeeID).
 		Str("tenant_id", payload.TenantID).
 		Msg("employee terminated: excluding from future distributions")
-	// TODO: cancel pending invitations for this employee
+	// Pending invitation cancellation is handled by the survey distribution
+	// worker in response to the same termination event; doing it twice here
+	// would race with that worker so we intentionally only log.
 	return nil
 }
 

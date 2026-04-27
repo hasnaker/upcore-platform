@@ -32,7 +32,7 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": {f"bat_{i:02d}": 3 for i in range(1, 13)},
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         assert resp.status_code == 200
 
         data = resp.json()
@@ -54,7 +54,7 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": {f"bat_{i:02d}": 1 for i in range(1, 13)},
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert data["classifications"]["total"] == "GREEN"
@@ -67,7 +67,7 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": {f"bat_{i:02d}": 5 for i in range(1, 13)},
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert data["classifications"]["total"] == "RED"
@@ -82,7 +82,7 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": responses,
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert "bat_01" in data["imputed_items"]
@@ -96,7 +96,7 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": responses,
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -109,7 +109,7 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": responses,
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         assert resp.status_code == 422
 
     @pytest.mark.asyncio
@@ -120,6 +120,6 @@ class TestBATEndpoint:
             "assessment_id": str(uuid4()),
             "responses": {f"bat_{i:02d}": 3 for i in range(1, 13)},
         }
-        resp = await client.post("/v1/score/bat12", json=payload)
+        resp = await client.post("/api/v1/score/bat12", json=payload)
         data = resp.json()
         assert data["metadata"]["norm_version"] == "bat12-tr-provisional-v0.1"

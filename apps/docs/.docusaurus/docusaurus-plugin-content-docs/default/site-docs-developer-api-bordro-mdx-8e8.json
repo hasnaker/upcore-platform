@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/bordro",
+  "title": "Bordro Servisi API Referansı",
+  "description": "UpCore Bordro servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/bordro.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/bordro",
+  "permalink": "/en/docs/developer/api/bordro",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/bordro.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 23,
+  "frontMatter": {
+    "id": "bordro",
+    "title": "Bordro Servisi API Referansı",
+    "sidebar_position": 23,
+    "slug": "/developer/api/bordro",
+    "description": "UpCore Bordro servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/pulse/kirmizi-band-triage",
+  "title": "Kırmızı band triage",
+  "description": "Ekibinizde bir departman kırmızı banda düştüğünde adım adım ne yapmalısınız?",
+  "source": "@site/docs/yonetici/pulse/kirmizi-band-triage.md",
+  "sourceDirName": "yonetici/pulse",
+  "slug": "/yonetici/pulse/kirmizi-band-triage",
+  "permalink": "/en/docs/yonetici/pulse/kirmizi-band-triage",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/pulse/kirmizi-band-triage.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "kirmizi-band-triage",
+    "title": "Kırmızı band triage",
+    "sidebar_position": 2
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "Ekip pulse sonuçlarını yorumlama",
+    "permalink": "/en/docs/yonetici/pulse/ekip-pulse-yorumu"
+  },
+  "next": {
+    "title": "Müdahale onayı",
+    "permalink": "/en/docs/yonetici/pulse/mudahale-onayi"
+  }
+}

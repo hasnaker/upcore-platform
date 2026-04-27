@@ -13,13 +13,13 @@ import structlog
 from fastapi import APIRouter, HTTPException
 
 from app.models.model_cards import get_model_card, get_strengths_model_card
-from app.norms.norm_tables import get_norm_table, list_norm_tables
-from app.schemas.common import ModelCard, NormReference
+from app.norms.norm_tables import get_norm_table
+from app.schemas.common import NormReference
 from app.schemas.responses import ModelCardResponse, NormTableResponse, ReliabilityResponse
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/v1", tags=["norms"])
+router = APIRouter(prefix="/api/v1/score", tags=["norms"])
 
 
 @router.get(

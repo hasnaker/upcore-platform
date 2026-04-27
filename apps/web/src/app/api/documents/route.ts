@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
+import { SERVICES } from '@/lib/service-urls';
+import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 import { createAuditLogger } from '@/lib/audit-logger';
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
-    const res = await fetch(`${SERVICES.document}/api/v1/documents`, { headers: DEV_HEADERS, cache: 'no-store' });
+    const ctx = getRequestContext(request);
+    const res = await fetch(`${SERVICES.document}/api/v1/documents`, {
+      headers: buildServiceHeaders(ctx),
+      cache: 'no-store',
+    });
     const data = res.ok ? await res.json() : { items: [] };
     return NextResponse.json(data);
   } catch {
@@ -12,12 +17,13 @@ export async function GET() {
   }
 }
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const ctx = getRequestContext(request);
     const body = await request.json();
     const res = await fetch(`${SERVICES.document}/api/v1/documents`, {
       method: 'POST',
-      headers: DEV_HEADERS,
+      headers: buildServiceHeaders(ctx),
       body: JSON.stringify(body),
     });
     const data = await res.json();
@@ -32,6 +38,7 @@ export async function POST(request: Request) {
  */
 export async function DELETE(req: NextRequest) {
   try {
+    const ctx = getRequestContext(req);
     const documentId = req.nextUrl.searchParams.get('documentId');
     if (!documentId) {
       return NextResponse.json({ error: 'documentId parametresi gerekli' }, { status: 400 });
@@ -39,7 +46,7 @@ export async function DELETE(req: NextRequest) {
 
     const res = await fetch(`${SERVICES.document}/api/v1/documents/${documentId}`, {
       method: 'DELETE',
-      headers: DEV_HEADERS,
+      headers: buildServiceHeaders(ctx),
     });
 
     if (!res.ok) {
@@ -48,9 +55,7 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Audit
-    const actorId = req.headers.get('x-user-id') || DEV_HEADERS['X-User-Id'];
-    const actorRole = req.headers.get('x-user-role') || DEV_HEADERS['X-User-Role'];
-    const audit = createAuditLogger(actorId, actorRole);
+    const audit = createAuditLogger(ctx.userId, ctx.userRole, ctx.tenantId);
     void audit.log('delete', 'document', documentId);
 
     return NextResponse.json({ success: true, documentId });

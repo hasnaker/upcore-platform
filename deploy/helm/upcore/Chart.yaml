@@ -1,0 +1,14 @@
+apiVersion: v2
+name: upcore
+description: UpCore HR SaaS umbrella chart — 17 services + web + admin
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - upcore
+  - hr
+  - saas
+home: https://upcore.app
+maintainers:
+  - name: UpCore SRE
+    email: sre@upcore.app

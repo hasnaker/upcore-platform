@@ -1,0 +1,251 @@
+# ============================================================================
+# DISABLED — 2026-04-24
+#
+# Bu workflow **kullanılmıyor**. UpCore artık tek bir prod deploy pipeline'ı
+# kullanıyor: `.github/workflows/production.yml` (Bicep + ACA).
+#
+# AKS + Helm yolu arşivlendi → `deploy/helm.ARCHIVED/`
+# Terraform yolu arşivlendi → `infrastructure/terraform.ARCHIVED/`
+# Karar: `docs/deploy/REGION_DECISION.md`
+#
+# Cron tetikleyicileri tamamen kapalı (on: {} boş). Dosya sadece tarihsel
+# referans ve potansiyel rollback için saklanıyor. 2026-06-30 sonrası
+# tamamen silinecek.
+# ============================================================================
+
+name: Release (DISABLED)
+
+# Deliberately empty — no triggers. Tag push (v*) ve workflow_dispatch
+# kaldırıldı. Production deploy için `production.yml` kullan.
+on: {}
+
+concurrency:
+  group: release-disabled-${{ github.event.inputs.environment || 'prod' }}
+  cancel-in-progress: false
+
+env:
+  ACR: upcoreprodacr.azurecr.io
+  GO_VERSION: '1.23'
+  NODE_VERSION: '20'
+
+jobs:
+  # --------------------------------------------------------------------------
+  # Tüm eski job'lar aşağıda korundu (referans amaçlı). Çalıştırılamaz —
+  # on: {} boş olduğu için tetiklenmez. Silmek istiyorsan dosyayı sil.
+  # --------------------------------------------------------------------------
+  compute:
+    name: Compute image tag + env
+    runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.out.outputs.tag }}
+      env: ${{ steps.out.outputs.env }}
+    steps:
+      - id: out
+        run: |
+          if [ -n "${{ github.event.inputs.image_tag }}" ]; then
+            echo "tag=${{ github.event.inputs.image_tag }}" >> "$GITHUB_OUTPUT"
+          elif [ "${GITHUB_REF##*/}" != "${GITHUB_REF}" ] && [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+            echo "tag=${GITHUB_REF#refs/tags/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "tag=sha-$(echo ${GITHUB_SHA} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+          fi
+          echo "env=${{ github.event.inputs.environment || 'prod' }}" >> "$GITHUB_OUTPUT"
+
+  # --------------------------------------------------------------------------
+  build-go:
+    name: Build Go — ${{ matrix.svc }}
+    needs: compute
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        svc:
+          - api-gateway
+          - auth
+          - tenant
+          - organization
+          - employee
+          - leave
+          - survey
+          - assessment
+          - document
+          - notification
+          - audit
+          - intervention
+          - mobility
+          - ats
+          - billing
+          - bordro
+          - performance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: ${{ env.GO_VERSION }}
+          cache-dependency-path: services/${{ matrix.svc }}/go.sum
+
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.ACR }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build & push
+        working-directory: services/${{ matrix.svc }}
+        run: |
+          IMAGE="${ACR}/upcore-${{ matrix.svc }}:${{ needs.compute.outputs.tag }}"
+          docker build -t "$IMAGE" -t "${ACR}/upcore-${{ matrix.svc }}:latest" .
+          docker push "$IMAGE"
+          docker push "${ACR}/upcore-${{ matrix.svc }}:latest"
+
+  # --------------------------------------------------------------------------
+  build-web:
+    name: Build Web & Admin
+    needs: compute
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        app: [web, admin]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with: { version: '9' }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Login to ACR
+        uses: azure/docker-login@v2
+        with:
+          login-server: ${{ env.ACR }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build & push
+        working-directory: apps/${{ matrix.app }}
+        run: |
+          IMAGE="${ACR}/upcore-${{ matrix.app }}:${{ needs.compute.outputs.tag }}"
+          docker build -t "$IMAGE" -t "${ACR}/upcore-${{ matrix.app }}:latest" .
+          docker push "$IMAGE"
+          docker push "${ACR}/upcore-${{ matrix.app }}:latest"
+
+  # --------------------------------------------------------------------------
+  migrate-db:
+    name: Run DB migrations
+    needs: [compute, build-go]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Apply migrations
+        env:
+          PGPASSWORD: ${{ secrets.PG_ADMIN_PASSWORD }}
+        run: |
+          for f in database/migrations/*.up.sql; do
+            echo ">> $(basename "$f")"
+            psql -h upcore-prod-pg.postgres.database.azure.com -U upcore_admin -d upcore \
+              -v ON_ERROR_STOP=1 -f "$f"
+          done
+
+  # --------------------------------------------------------------------------
+  # DISABLED: AKS deploy — replaced by production.yml + ACA
+  # --------------------------------------------------------------------------
+  deploy:
+    name: Helm deploy (DISABLED)
+    needs: [compute, build-go, build-web, migrate-db]
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ needs.compute.outputs.env }}
+      url: https://app.upcore.app
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: AKS creds
+        uses: azure/aks-set-context@v4
+        with:
+          resource-group: upcore-prod-trc
+          cluster-name: upcore-aks
+
+      - name: Helm upgrade
+        env:
+          TAG: ${{ needs.compute.outputs.tag }}
+        run: |
+          helm upgrade --install upcore deploy/helm/upcore \
+            --namespace upcore --create-namespace \
+            -f deploy/helm/upcore/values.yaml \
+            -f deploy/helm/upcore/values-prod.yaml \
+            --set global.imageTag="$TAG" \
+            --atomic --timeout 10m \
+            --wait
+
+      - name: Rollout status
+        run: |
+          kubectl rollout status deploy/upcore-api-gateway -n upcore --timeout=5m
+          kubectl rollout status deploy/upcore-web         -n upcore --timeout=5m
+
+  # --------------------------------------------------------------------------
+  smoke:
+    name: Post-deploy smoke
+    needs: [compute, deploy]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update && sudo apt-get install -y k6
+
+      - name: Run smoke
+        env:
+          BASE_URL: https://api.upcore.app
+          API_KEY:  ${{ secrets.LOAD_TEST_API_KEY }}
+        run: k6 run --duration 60s --vus 5 tests/load/smoke.js
+
+  # --------------------------------------------------------------------------
+  rollback-on-failure:
+    name: Auto-rollback
+    needs: [compute, deploy, smoke]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - uses: azure/aks-set-context@v4
+        with: { resource-group: upcore-prod-trc, cluster-name: upcore-aks }
+
+      - name: Helm rollback
+        run: |
+          helm rollback upcore --namespace upcore --wait --timeout 5m
+          echo "::error::Deploy rolled back to previous revision"
+
+      - name: Page on-call
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{"text":":rotating_light: Prod deploy failed + rolled back. tag=${{ needs.compute.outputs.tag }}"}' \
+            "${{ secrets.SLACK_INCIDENT_WEBHOOK }}"

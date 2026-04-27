@@ -1,0 +1,29 @@
+{
+  "id": "developer/sdk/go",
+  "title": "Go SDK",
+  "description": "Go 1.23+.",
+  "source": "@site/docs/developer/sdk/go.md",
+  "sourceDirName": "developer/sdk",
+  "slug": "/developer/sdk/go",
+  "permalink": "/en/docs/developer/sdk/go",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/sdk/go.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "go",
+    "title": "Go SDK",
+    "sidebar_position": 3
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Python SDK",
+    "permalink": "/en/docs/developer/sdk/python"
+  },
+  "next": {
+    "title": "ML model kartları (Google Model Cards formatı)",
+    "permalink": "/en/docs/developer/ml/model-kartlari"
+  }
+}

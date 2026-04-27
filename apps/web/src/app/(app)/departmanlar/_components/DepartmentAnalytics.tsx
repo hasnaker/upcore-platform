@@ -14,23 +14,6 @@ interface DepartmentAnalyticsProps {
   departmentName: string;
 }
 
-/* ─── Mini Horizontal Bar ─── */
-
-function MiniBar({ value, max, color, label, suffix = '' }: { value: number; max: number; color: string; label: string; suffix?: string }) {
-  const pct = Math.min((value / max) * 100, 100);
-  return (
-    <div className="group relative flex items-center gap-3" title={`${label}: ${value}${suffix}`}>
-      <span style={{ fontSize: 12, color: '#555', width: 130, flexShrink: 0 }}>{label}</span>
-      <div style={{ flex: 1, height: 8, background: '#f0f0f0', borderRadius: 4, overflow: 'hidden' }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, borderRadius: 4, transition: 'width 0.5s ease' }} />
-      </div>
-      <span style={{ fontSize: 12, fontWeight: 600, color: '#111', width: 45, textAlign: 'right' }}>
-        {value}{suffix}
-      </span>
-    </div>
-  );
-}
-
 /* ─── Headcount Bar Chart ─── */
 
 function HeadcountChart({ data }: { data: { month: string; count: number }[] }) {
@@ -191,7 +174,7 @@ function ManagerScore({ score }: { score: number }) {
 
 /* ─── Main Component ─── */
 
-export const DepartmentAnalytics = ({ departmentId, departmentName }: DepartmentAnalyticsProps) => {
+export const DepartmentAnalytics = ({ departmentId: _departmentId, departmentName }: DepartmentAnalyticsProps) => {
   const [hoveredRisk, setHoveredRisk] = useState<number | null>(null);
 
   // Static data — will be replaced with API call

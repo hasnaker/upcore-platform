@@ -1,0 +1,29 @@
+{
+  "id": "calisan/kvkk/silme-talebi",
+  "title": "Silme talebi (unutulma hakkı)",
+  "description": "KVKK Madde 7 ve Madde 11/(e) kapsamında silinme isteme hakkınız vardır.",
+  "source": "@site/docs/calisan/kvkk/silme-talebi.md",
+  "sourceDirName": "calisan/kvkk",
+  "slug": "/calisan/kvkk/silme-talebi",
+  "permalink": "/en/docs/calisan/kvkk/silme-talebi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/kvkk/silme-talebi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "silme-talebi",
+    "title": "Silme talebi (unutulma hakkı)",
+    "sidebar_position": 3
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Verilerimi indirme",
+    "permalink": "/en/docs/calisan/kvkk/veri-indirme"
+  },
+  "next": {
+    "title": "Sıkça sorulanlar",
+    "permalink": "/en/docs/calisan/sss"
+  }
+}

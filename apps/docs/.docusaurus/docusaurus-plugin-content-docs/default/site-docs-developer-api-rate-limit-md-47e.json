@@ -1,0 +1,29 @@
+{
+  "id": "developer/api/rate-limit",
+  "title": "Rate limit",
+  "description": "Limitler",
+  "source": "@site/docs/developer/api/rate-limit.md",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/rate-limit",
+  "permalink": "/en/docs/developer/api/rate-limit",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/rate-limit.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "rate-limit",
+    "title": "Rate limit",
+    "sidebar_position": 2
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "API genel bakış",
+    "permalink": "/en/docs/developer/api/genel-bakis"
+  },
+  "next": {
+    "title": "API versiyonlama",
+    "permalink": "/en/docs/developer/api/versiyonlama"
+  }
+}

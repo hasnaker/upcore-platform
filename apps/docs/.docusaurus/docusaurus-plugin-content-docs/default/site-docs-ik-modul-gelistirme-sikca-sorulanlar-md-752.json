@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/sikca-sorulanlar",
+  "title": "Geliştirme — sıkça sorulanlar",
+  "description": "Mesai saati içinde öğrenme yapabilir miyim?",
+  "source": "@site/docs/ik/modul/gelistirme/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/gelistirme/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "Geliştirme — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Etki değerlendirme",
+    "permalink": "/en/docs/ik/modul/gelistirme/etki-degerlendirme"
+  },
+  "next": {
+    "title": "İK Ops modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/ik-ops/genel-bakis"
+  }
+}

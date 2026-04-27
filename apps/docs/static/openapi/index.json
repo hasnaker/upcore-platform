@@ -1,0 +1,158 @@
+{
+  "generated_at": "2026-04-24T13:43:04.359Z",
+  "services": [
+    {
+      "id": "auth",
+      "name": "Auth",
+      "title": "Upcore Auth Service",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/auth/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/auth"
+    },
+    {
+      "id": "tenant",
+      "name": "Tenant",
+      "title": "Upcore Tenant Service",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/tenant/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/tenant"
+    },
+    {
+      "id": "employee",
+      "name": "Employee",
+      "title": "Upcore Employee Service",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/employee/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/employee"
+    },
+    {
+      "id": "organization",
+      "name": "Organization",
+      "title": "Upcore Organization Service",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/organization/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/organization"
+    },
+    {
+      "id": "leave",
+      "name": "Leave",
+      "title": "Upcore Leave Service",
+      "version": "1.0.0",
+      "openapi": "3.0.3",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/leave/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/leave"
+    },
+    {
+      "id": "document",
+      "name": "Document",
+      "title": "Upcore Document Service",
+      "version": "1.0.0",
+      "openapi": "3.0.3",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/document/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/document"
+    },
+    {
+      "id": "assessment",
+      "name": "Assessment",
+      "title": "Upcore Assessment Service",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/assessment/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/assessment"
+    },
+    {
+      "id": "survey",
+      "name": "Survey",
+      "title": "UpCore Survey (Pulse Anketi) Servisi",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "./static/openapi/survey.yaml",
+      "docs_url": "/docs/developer/api/survey"
+    },
+    {
+      "id": "intervention",
+      "name": "Intervention",
+      "title": "UpCore Intervention (Müdahale) Servisi",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "./static/openapi/intervention.yaml",
+      "docs_url": "/docs/developer/api/intervention"
+    },
+    {
+      "id": "performance",
+      "name": "Performance",
+      "title": "UpCore Performance Service",
+      "version": "1.1.0",
+      "openapi": "3.0.3",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/performance/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/performance"
+    },
+    {
+      "id": "mobility",
+      "name": "Mobility",
+      "title": "UpCore Mobility (İç Yerleştirme) Servisi",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "./static/openapi/mobility.yaml",
+      "docs_url": "/docs/developer/api/mobility"
+    },
+    {
+      "id": "ats",
+      "name": "ATS",
+      "title": "UpCore ATS (Aday Takip) Servisi",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "./static/openapi/ats.yaml",
+      "docs_url": "/docs/developer/api/ats"
+    },
+    {
+      "id": "notification",
+      "name": "Notification",
+      "title": "UpCore Notification Servisi",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "./static/openapi/notification.yaml",
+      "docs_url": "/docs/developer/api/notification"
+    },
+    {
+      "id": "bordro",
+      "name": "Bordro",
+      "title": "UpCore Bordro Servisi",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "./static/openapi/bordro.yaml",
+      "docs_url": "/docs/developer/api/bordro"
+    },
+    {
+      "id": "billing",
+      "name": "Billing",
+      "title": "UpCore Billing Service",
+      "version": "1.1.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/billing/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/billing"
+    },
+    {
+      "id": "audit",
+      "name": "Audit",
+      "title": "Upcore Audit & KVKK Service",
+      "version": "1.1.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/audit/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/audit"
+    },
+    {
+      "id": "api-gateway",
+      "name": "API Gateway",
+      "title": "UpCore API Gateway",
+      "version": "1.0.0",
+      "openapi": "3.1.0",
+      "source": "/Users/hasanaker/Desktop/Projeler/SaaS/Upcore/upcore-platform/services/api-gateway/api/openapi.yaml",
+      "docs_url": "/docs/developer/api/api-gateway"
+    }
+  ]
+}

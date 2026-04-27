@@ -1,0 +1,29 @@
+{
+  "id": "admin/operasyon/webhook-konfigurasyon",
+  "title": "Webhook konfigürasyonu",
+  "description": "Event-driven entegrasyon için.",
+  "source": "@site/docs/admin/operasyon/webhook-konfigurasyon.md",
+  "sourceDirName": "admin/operasyon",
+  "slug": "/admin/operasyon/webhook-konfigurasyon",
+  "permalink": "/en/docs/admin/operasyon/webhook-konfigurasyon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/operasyon/webhook-konfigurasyon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "webhook-konfigurasyon",
+    "title": "Webhook konfigürasyonu",
+    "sidebar_position": 2
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Feature flag yönetimi",
+    "permalink": "/en/docs/admin/operasyon/feature-flag"
+  },
+  "next": {
+    "title": "API key oluşturma",
+    "permalink": "/en/docs/admin/operasyon/api-key-olusturma"
+  }
+}

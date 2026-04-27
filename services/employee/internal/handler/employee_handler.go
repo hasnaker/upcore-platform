@@ -29,6 +29,10 @@ func (h *EmployeeHandler) List(w http.ResponseWriter, r *http.Request) {
 		WriteJSON(w, http.StatusUnauthorized, ErrorResponse{Error: "unauthorized"})
 		return
 	}
+	cursor, ok := ParseCursorQuery(w, r)
+	if !ok {
+		return
+	}
 	f := repository.ListFilter{
 		TenantID:     tid,
 		Search:       r.URL.Query().Get("search"),
@@ -41,17 +45,57 @@ func (h *EmployeeHandler) List(w http.ResponseWriter, r *http.Request) {
 		SortBy:       r.URL.Query().Get("sort_by"),
 		SortDir:      r.URL.Query().Get("sort_dir"),
 	}
+	if cursor != nil {
+		ts := cursor.CreatedAt
+		id := cursor.ID
+		f.CursorCreatedAt = &ts
+		f.CursorID = &id
+	}
+
+	// Scope enforcement:
+	//   - Admin roles (hr_admin, hr_director, cxo, ...) — see everything.
+	//   - Manager role — restricted to their subordinate tree (recursive).
+	//   - Employee role — restricted to their own record only.
+	role := middleware.RoleFromContext(r.Context())
+	callerEmpID := middleware.EmployeeIDFromContext(r.Context())
+	switch {
+	case middleware.IsAdminRole(role):
+		// no additional filter
+	case middleware.IsManagerRole(role) && callerEmpID != uuid.Nil:
+		f.ScopeManagerID = &callerEmpID
+	case middleware.IsEmployeeOnlyRole(role) && callerEmpID != uuid.Nil:
+		// Employee-only: treat self as the scope (they see themselves in list).
+		f.ScopeManagerID = &callerEmpID
+	case callerEmpID == uuid.Nil && !middleware.IsAdminRole(role):
+		// Unknown role without employee mapping → empty result.
+		WriteJSON(w, http.StatusOK, map[string]any{
+			"items": []any{}, "total": 0, "page": f.Page, "limit": f.Limit,
+		})
+		return
+	}
+
 	items, total, err := h.svc.List(r.Context(), f)
 	if err != nil {
 		WriteError(w, err)
 		return
 	}
-	WriteJSON(w, http.StatusOK, map[string]any{
+	resp := map[string]any{
 		"items": items,
 		"total": total,
 		"page":  f.Page,
 		"limit": f.Limit,
-	})
+	}
+	// Keyset cursor semantics: emit next_cursor + has_more when cursor mode
+	// used or caller asked for cursor response (limit + items.len >= limit).
+	if len(items) > 0 {
+		last := items[len(items)-1]
+		resp["next_cursor"] = EncodeCursor(last.CreatedAt, last.ID)
+		resp["has_more"] = len(items) == f.Limit
+	} else {
+		resp["next_cursor"] = ""
+		resp["has_more"] = false
+	}
+	WriteJSON(w, http.StatusOK, resp)
 }
 
 // Get handles GET /employees/{id}.

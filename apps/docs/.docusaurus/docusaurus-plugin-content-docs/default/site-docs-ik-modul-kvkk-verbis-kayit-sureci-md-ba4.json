@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/verbis-kayit-sureci",
+  "title": "VERBIS kayıt süreci",
+  "description": "Veri Sorumluları Sicil Bilgi Sistemi'ne kayıt.",
+  "source": "@site/docs/ik/modul/kvkk/verbis-kayit-sureci.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/verbis-kayit-sureci",
+  "permalink": "/en/docs/ik/modul/kvkk/verbis-kayit-sureci",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/verbis-kayit-sureci.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "verbis-kayit-sureci",
+    "title": "VERBIS kayıt süreci",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "KVKK Madde 11 talep yönetimi",
+    "permalink": "/en/docs/ik/modul/kvkk/madde-11-talep-yonetimi"
+  },
+  "next": {
+    "title": "Aydınlatma metni şablonu",
+    "permalink": "/en/docs/ik/modul/kvkk/aydınlatma-metni"
+  }
+}

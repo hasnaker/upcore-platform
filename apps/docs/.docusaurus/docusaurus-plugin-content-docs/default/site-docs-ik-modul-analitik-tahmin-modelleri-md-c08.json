@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/tahmin-modelleri",
+  "title": "Tahmin modelleri",
+  "description": "Geleceğe yönelik tahminler — geleceğe hazırlıklı olmak için.",
+  "source": "@site/docs/ik/modul/analitik/tahmin-modelleri.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/tahmin-modelleri",
+  "permalink": "/en/docs/ik/modul/analitik/tahmin-modelleri",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/tahmin-modelleri.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "tahmin-modelleri",
+    "title": "Tahmin modelleri",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Trend analizi",
+    "permalink": "/en/docs/ik/modul/analitik/trend-analizi"
+  },
+  "next": {
+    "title": "İhracat ve entegrasyon",
+    "permalink": "/en/docs/ik/modul/analitik/ihracat-entegrasyon"
+  }
+}

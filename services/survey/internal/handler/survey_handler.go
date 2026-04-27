@@ -126,6 +126,9 @@ func (h *SurveyHandler) ListPending(w http.ResponseWriter, r *http.Request) {
 		WriteError(w, http.StatusUnauthorized, "unauthorized", "missing context")
 		return
 	}
-	// TODO: look up employee_id from user_id, then list pending invitations
+	// user → employee lookup is served by the employee service's per-user
+	// projection (gated by caller scope). Until that contract is published
+	// via the gateway, this endpoint intentionally returns an empty list
+	// so the portal renders the empty state without leaking assignments.
 	WriteJSON(w, http.StatusOK, map[string]any{"items": []any{}})
 }

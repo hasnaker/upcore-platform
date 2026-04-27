@@ -1,0 +1,29 @@
+{
+  "id": "developer/ml/jd-r-fit-kart",
+  "title": "Model Card — JD-R Fit v1.3",
+  "description": "Model detayları",
+  "source": "@site/docs/developer/ml/jd-r-fit-kart.md",
+  "sourceDirName": "developer/ml",
+  "slug": "/developer/ml/jd-r-fit-kart",
+  "permalink": "/en/docs/developer/ml/jd-r-fit-kart",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/ml/jd-r-fit-kart.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "jd-r-fit-kart",
+    "title": "Model Card — JD-R Fit v1.3",
+    "sidebar_position": 3
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Model Card — Burnout Prediction v2.1",
+    "permalink": "/en/docs/developer/ml/burnout-prediction-kart"
+  },
+  "next": {
+    "title": "Model Card — Intervention Recommendation v3.0",
+    "permalink": "/en/docs/developer/ml/intervention-recommendation-kart"
+  }
+}

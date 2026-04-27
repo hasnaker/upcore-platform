@@ -1,0 +1,43 @@
+{
+  "name": "@upcore/admin",
+  "version": "0.1.0",
+  "private": true,
+  "description": "UpCore internal admin panel — tenant yönetimi, billing, feature flags, monitoring, audit log viewer.",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev --port 3001",
+    "build": "next build",
+    "start": "next start --port 3001",
+    "lint": "next lint",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next .turbo node_modules"
+  },
+  "dependencies": {
+    "@clerk/localizations": "^3.0.0",
+    "@clerk/nextjs": "^6.0.0",
+    "@hookform/resolvers": "^3.9.0",
+    "@sentry/nextjs": "^8.0.0",
+    "@tanstack/react-query": "^5.51.0",
+    "@upcore/design-system": "workspace:*",
+    "@upcore/types": "workspace:*",
+    "lucide-react": "^0.400.0",
+    "next": "^15.0.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-hook-form": "^7.52.0",
+    "sonner": "^1.5.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@next/bundle-analyzer": "^15.0.0",
+    "@tailwindcss/postcss": "^4.0.0",
+    "@types/node": "^20.11.30",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^15.0.0",
+    "postcss": "^8.4.39",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.5.3"
+  }
+}

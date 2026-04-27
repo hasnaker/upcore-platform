@@ -63,6 +63,10 @@ func Router(d *Deps) http.Handler {
 
 		// Users
 		r.Get("/users/me", MakeGetMe(d.AuthService))
+
+		// SSO bağlantı testi (onboarding Step6 + ayarlar/sso) — discovery
+		// doğrulaması + userinfo probe. Tenant izolasyonu gerektirmez.
+		r.Post("/sso/test", MakeSSOTest())
 	})
 
 	return r

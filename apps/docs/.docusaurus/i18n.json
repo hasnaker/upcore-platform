@@ -1,0 +1,25 @@
+{
+  "defaultLocale": "tr",
+  "locales": [
+    "tr",
+    "en"
+  ],
+  "path": "i18n",
+  "currentLocale": "en",
+  "localeConfigs": {
+    "tr": {
+      "label": "Türkçe",
+      "direction": "ltr",
+      "htmlLang": "tr-TR",
+      "calendar": "gregory",
+      "path": "tr"
+    },
+    "en": {
+      "label": "English",
+      "direction": "ltr",
+      "htmlLang": "en-US",
+      "calendar": "gregory",
+      "path": "en"
+    }
+  }
+}

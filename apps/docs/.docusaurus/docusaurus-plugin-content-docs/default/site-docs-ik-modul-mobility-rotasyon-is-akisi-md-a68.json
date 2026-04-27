@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/rotasyon-is-akisi",
+  "title": "Rotasyon iş akışı",
+  "description": "Rotasyon = geçici veya kalıcı iç görev değişimi.",
+  "source": "@site/docs/ik/modul/mobility/rotasyon-is-akisi.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/rotasyon-is-akisi",
+  "permalink": "/en/docs/ik/modul/mobility/rotasyon-is-akisi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/rotasyon-is-akisi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "rotasyon-is-akisi",
+    "title": "Rotasyon iş akışı",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Kariyer yolu editörü",
+    "permalink": "/en/docs/ik/modul/mobility/kariyer-yolu"
+  },
+  "next": {
+    "title": "Ready-now sınıflandırma",
+    "permalink": "/en/docs/ik/modul/mobility/ready-now-siniflandirma"
+  }
+}

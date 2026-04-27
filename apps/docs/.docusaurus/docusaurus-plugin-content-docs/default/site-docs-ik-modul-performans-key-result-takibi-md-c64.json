@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/key-result-takibi",
+  "title": "Key Result ilerleme takibi",
+  "description": "Haftalık güncelleme",
+  "source": "@site/docs/ik/modul/performans/key-result-takibi.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/key-result-takibi",
+  "permalink": "/en/docs/ik/modul/performans/key-result-takibi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/key-result-takibi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "key-result-takibi",
+    "title": "Key Result ilerleme takibi",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "OKR kurulumu",
+    "permalink": "/en/docs/ik/modul/performans/okr-kurulum"
+  },
+  "next": {
+    "title": "360° anket süreci",
+    "permalink": "/en/docs/ik/modul/performans/360-anket"
+  }
+}

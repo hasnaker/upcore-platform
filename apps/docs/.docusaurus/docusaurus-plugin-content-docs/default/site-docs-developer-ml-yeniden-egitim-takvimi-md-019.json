@@ -1,0 +1,25 @@
+{
+  "id": "developer/ml/yeniden-egitim-takvimi",
+  "title": "ML yeniden eğitim takvimi",
+  "description": "UpCore ML modellerinin güncel kalması için düzenli retrain takvimi.",
+  "source": "@site/docs/developer/ml/yeniden-egitim-takvimi.md",
+  "sourceDirName": "developer/ml",
+  "slug": "/developer/ml/yeniden-egitim-takvimi",
+  "permalink": "/en/docs/developer/ml/yeniden-egitim-takvimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/ml/yeniden-egitim-takvimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "yeniden-egitim-takvimi",
+    "title": "ML yeniden eğitim takvimi",
+    "sidebar_position": 5
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Model Card — Intervention Recommendation v3.0",
+    "permalink": "/en/docs/developer/ml/intervention-recommendation-kart"
+  }
+}

@@ -5,6 +5,8 @@ import { ClerkProvider } from '@clerk/nextjs';
 import { trTR } from '@clerk/localizations';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from 'sonner';
+import { CookieConsent } from '@/components/CookieConsent';
+import { PlanLimitToaster } from '@/components/PlanLimitToaster';
 
 interface ProvidersProps {
   children: ReactNode;
@@ -40,6 +42,8 @@ export function Providers({ children }: ProvidersProps) {
     >
       <QueryClientProvider client={queryClient}>
         {children}
+        <CookieConsent />
+        <PlanLimitToaster />
         <Toaster position="top-right" richColors closeButton />
       </QueryClientProvider>
     </ClerkProvider>

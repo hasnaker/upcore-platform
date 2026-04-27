@@ -1,461 +1,328 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { Users, GitBranch, DollarSign, Clock, Building2, BarChart3, PieChart } from 'lucide-react';
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import {
+  Building2,
+  ChevronDown,
+  ChevronRight,
+  GitBranch,
+  LayoutGrid,
+  Search,
+  User,
+  Users,
+} from 'lucide-react';
+import { useDepartmentsTree, type DepartmentTreeNode } from '@/hooks/useDepartments';
 
-/* ─── Types ─── */
-
-interface OrgDepartment {
-  name: string;
-  headcount: number;
-  manager: string;
-  avgSalary: number;
-  totalCost: number;
-}
-
-interface OrgMetrics {
-  totalHeadcount: number;
-  avgSpanOfControl: number;
-  totalCost: number;
-  avgTenure: number;
-}
-
-interface OrgHistory {
-  date: string;
-  headcount: number;
-}
-
-interface OrgData {
-  departments: OrgDepartment[];
-  levels: Record<string, number>;
-  metrics: OrgMetrics;
-  history: OrgHistory[];
-}
-
-/* ─── Level labels ─── */
-const LEVEL_LABELS: Record<string, string> = {
-  junior: 'Junior',
-  mid: 'Mid-Level',
-  senior: 'Senior',
-  lead: 'Lead',
-  manager: 'Manager',
-  director: 'Director',
-  unassigned: 'Atanmamis',
-};
-
-const LEVEL_COLORS: Record<string, string> = {
-  junior: '#60A5FA',
-  mid: '#34D399',
-  senior: '#FBBF24',
-  lead: '#F472B6',
-  manager: '#A78BFA',
-  director: '#F97316',
-  unassigned: '#D1D5DB',
-};
-
-/* ─── Dept chart colors ─── */
-const DEPT_COLORS = ['#5E5CE6', '#059669', '#DC2626', '#D97706', '#2563EB', '#EA580C', '#8B5CF6', '#0891B2', '#BE185D', '#65A30D'];
-
-const formatCurrency = (val: number) =>
-  new Intl.NumberFormat('tr-TR', { style: 'currency', currency: 'TRY', maximumFractionDigits: 0 }).format(val);
+type ViewMode = 'tree' | 'grid';
 
 export default function OrganizasyonPage() {
-  const [data, setData] = useState<OrgData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<'department' | 'level' | 'cost'>('department');
+  const { data: tree = [], isLoading, isError, error, refetch } = useDepartmentsTree();
+  const [viewMode, setViewMode] = useState<ViewMode>('tree');
+  const [search, setSearch] = useState('');
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  const fetchData = useCallback(() => {
-    setLoading(true);
-    fetch('/api/org-design')
-      .then((r) => r.json())
-      .then((d: OrgData) => {
-        setData(d);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  }, []);
+  const flatList = useMemo(() => flattenTree(tree), [tree]);
+  const filtered = useMemo(() => {
+    if (!search.trim()) return flatList;
+    const q = search.toLocaleLowerCase('tr-TR');
+    return flatList.filter((d) => d.name_tr.toLocaleLowerCase('tr-TR').includes(q));
+  }, [flatList, search]);
 
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+  const stats = useMemo(() => {
+    let depth = 0;
+    const visit = (n: DepartmentTreeNode, d: number) => {
+      depth = Math.max(depth, d);
+      n.children?.forEach((c) => visit(c, d + 1));
+    };
+    tree.forEach((n) => visit(n, 1));
+    const totalEmp = flatList.reduce((sum, d) => sum + (d.employee_count ?? 0), 0);
+    return { deptCount: flatList.length, maxDepth: depth, totalEmp };
+  }, [tree, flatList]);
 
-  const metrics = data?.metrics;
-  const departments = data?.departments ?? [];
-  const levels = data?.levels ?? {};
+  const toggle = (id: string) => {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
 
-  const maxHeadcount = Math.max(...departments.map((d) => d.headcount), 1);
-  const totalLevelCount = Object.values(levels).reduce((s, v) => s + v, 0) || 1;
-  const maxLevelCount = Math.max(...Object.values(levels), 1);
-
-  // Cost chart data
-  const totalCostAll = departments.reduce((s, d) => s + d.totalCost, 0) || 1;
-
-  return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight text-[#0A0A0A]">
-          Organizasyon Tasarimi
-        </h1>
-        <p className="mt-1 text-sm text-[#525252]">
-          Departman yapisi, seviye dagilimi ve maliyet analizi.
-        </p>
-      </div>
-
-      {/* Metric Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <MetricCard
-          icon={<Users className="h-5 w-5 text-[#5E5CE6]" />}
-          label="Toplam Calisan"
-          value={loading ? '...' : String(metrics?.totalHeadcount ?? 0)}
-          bg="bg-[#EDEDFC]"
-        />
-        <MetricCard
-          icon={<GitBranch className="h-5 w-5 text-[#059669]" />}
-          label="Ort. Kontrol Alani"
-          value={loading ? '...' : String(metrics?.avgSpanOfControl ?? 0)}
-          bg="bg-[#ECFDF5]"
-        />
-        <MetricCard
-          icon={<DollarSign className="h-5 w-5 text-[#D97706]" />}
-          label="Toplam Aylik Maliyet"
-          value={loading ? '...' : formatCurrency(metrics?.totalCost ?? 0)}
-          bg="bg-[#FFFBEB]"
-        />
-        <MetricCard
-          icon={<Clock className="h-5 w-5 text-[#2563EB]" />}
-          label="Ort. Kidem (Yil)"
-          value={loading ? '...' : String(metrics?.avgTenure ?? 0)}
-          bg="bg-[#EFF6FF]"
-        />
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-2">
-        {([
-          { key: 'department' as const, label: 'Departman Gorunumu', icon: Building2 },
-          { key: 'level' as const, label: 'Seviye Dagilimi', icon: BarChart3 },
-          { key: 'cost' as const, label: 'Maliyet Analizi', icon: PieChart },
-        ]).map(({ key, label, icon: Icon }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex items-center gap-2 rounded-lg px-4 py-2 text-[13px] font-medium transition-colors ${
-              tab === key
-                ? 'bg-[#0A0A0A] text-white'
-                : 'border border-[#EDEDED] bg-white text-[#525252] hover:bg-[#FAFAFA]'
-            }`}
-          >
-            <Icon className="h-4 w-4" />
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {/* Tab Content */}
-      {loading ? (
-        <div className="rounded-xl border border-[#EDEDED] bg-white p-10 text-center text-[13px] text-[#888]">
-          Veriler yukleniyor...
-        </div>
-      ) : tab === 'department' ? (
-        <DepartmentTab departments={departments} maxHeadcount={maxHeadcount} />
-      ) : tab === 'level' ? (
-        <LevelTab levels={levels} maxLevelCount={maxLevelCount} totalCount={totalLevelCount} />
-      ) : (
-        <CostTab departments={departments} totalCostAll={totalCostAll} />
-      )}
-    </div>
-  );
-}
-
-/* ─── Metric Card ─── */
-
-const MetricCard = ({
-  icon,
-  label,
-  value,
-  bg,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  value: string;
-  bg: string;
-}) => (
-  <div className="rounded-xl border border-[#EDEDED] bg-white p-5">
-    <div className="flex items-center gap-3">
-      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${bg}`}>
-        {icon}
-      </div>
-      <div>
-        <div className="text-[12px] text-[#888]">{label}</div>
-        <div className="text-[20px] font-semibold text-[#0A0A0A]">{value}</div>
-      </div>
-    </div>
-  </div>
-);
-
-/* ─── Department Tab ─── */
-
-const DepartmentTab = ({
-  departments,
-  maxHeadcount,
-}: {
-  departments: OrgDepartment[];
-  maxHeadcount: number;
-}) => (
-  <div className="grid gap-4 md:grid-cols-2">
-    {departments.map((dept, i) => (
-      <div key={dept.name} className="rounded-xl border border-[#EDEDED] bg-white p-5">
-        <div className="flex items-start justify-between">
-          <div>
-            <h3 className="text-[15px] font-semibold text-[#0A0A0A]">{dept.name}</h3>
-            <p className="mt-0.5 text-[12px] text-[#888]">Yonetici: {dept.manager}</p>
-          </div>
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg text-[11px] font-bold text-white"
-            style={{ backgroundColor: DEPT_COLORS[i % DEPT_COLORS.length] }}
-          >
-            {dept.headcount}
-          </div>
-        </div>
-
-        <div className="mt-4 space-y-2">
-          <div className="flex items-center justify-between text-[12px] text-[#525252]">
-            <span>Calisan Sayisi</span>
-            <span className="font-medium text-[#0A0A0A]">{dept.headcount}</span>
-          </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
-            <div
-              className="h-full rounded-full transition-all"
-              style={{
-                width: `${(dept.headcount / maxHeadcount) * 100}%`,
-                backgroundColor: DEPT_COLORS[i % DEPT_COLORS.length],
-              }}
-            />
-          </div>
-        </div>
-
-        <div className="mt-3 grid grid-cols-2 gap-3">
-          <div className="rounded-lg bg-[#FAFAFA] p-2.5">
-            <div className="text-[11px] text-[#888]">Ort. Maas</div>
-            <div className="text-[13px] font-semibold text-[#0A0A0A]">
-              {formatCurrency(dept.avgSalary)}
-            </div>
-          </div>
-          <div className="rounded-lg bg-[#FAFAFA] p-2.5">
-            <div className="text-[11px] text-[#888]">Toplam Maliyet</div>
-            <div className="text-[13px] font-semibold text-[#0A0A0A]">
-              {formatCurrency(dept.totalCost)}
-            </div>
-          </div>
-        </div>
-      </div>
-    ))}
-    {departments.length === 0 && (
-      <div className="col-span-2 rounded-xl border border-[#EDEDED] bg-white p-10 text-center text-[13px] text-[#888]">
-        Departman verisi bulunamadi.
-      </div>
-    )}
-  </div>
-);
-
-/* ─── Level Tab ─── */
-
-const LevelTab = ({
-  levels,
-  maxLevelCount,
-  totalCount,
-}: {
-  levels: Record<string, number>;
-  maxLevelCount: number;
-  totalCount: number;
-}) => {
-  const entries = Object.entries(levels).sort((a, b) => b[1] - a[1]);
-
-  return (
-    <div className="rounded-xl border border-[#EDEDED] bg-white p-6">
-      <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Seviye Dagilimi</h3>
-      <p className="mt-1 text-[12px] text-[#888]">Calisanlarin kariyer seviyelerine gore dagilimi.</p>
-
-      <div className="mt-6 space-y-4">
-        {entries.map(([level, count]) => {
-          const color = LEVEL_COLORS[level] ?? '#94A3B8';
-          const label = LEVEL_LABELS[level] ?? level;
-          const pct = Math.round((count / totalCount) * 100);
-
-          return (
-            <div key={level}>
-              <div className="flex items-center justify-between text-[13px]">
-                <div className="flex items-center gap-2">
-                  <div className="h-3 w-3 rounded-full" style={{ backgroundColor: color }} />
-                  <span className="font-medium text-[#0A0A0A]">{label}</span>
-                </div>
-                <span className="text-[#525252]">
-                  {count} kisi ({pct}%)
-                </span>
-              </div>
-              <div className="mt-1.5 h-3 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${(count / maxLevelCount) * 100}%`,
-                    backgroundColor: color,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {entries.length === 0 && (
-        <div className="mt-6 text-center text-[13px] text-[#888]">Seviye verisi bulunamadi.</div>
-      )}
-    </div>
-  );
-};
-
-/* ─── Cost Tab ─── */
-
-const CostTab = ({
-  departments,
-  totalCostAll,
-}: {
-  departments: OrgDepartment[];
-  totalCostAll: number;
-}) => {
-  // Sort by cost desc
-  const sorted = [...departments].sort((a, b) => b.totalCost - a.totalCost);
-  const maxCost = Math.max(...sorted.map((d) => d.totalCost), 1);
+  const expandAll = () => setExpanded(new Set(flatList.map((d) => d.id)));
+  const collapseAll = () => setExpanded(new Set());
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Donut chart representation */}
-      <div className="rounded-xl border border-[#EDEDED] bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Departman Maliyet Dagilimi</h3>
-        <p className="mt-1 text-[12px] text-[#888]">
-          Toplam: {formatCurrency(totalCostAll)}
-        </p>
-
-        <div className="mt-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:gap-10">
-          {/* SVG Donut */}
-          <div className="flex shrink-0 items-center justify-center">
-            <DonutChart departments={sorted} totalCost={totalCostAll} />
-          </div>
-
-          {/* Legend */}
-          <div className="flex flex-1 flex-col gap-2">
-            {sorted.map((dept, i) => {
-              const pct = Math.round((dept.totalCost / totalCostAll) * 100);
-              return (
-                <div key={dept.name} className="flex items-center justify-between text-[13px]">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className="h-3 w-3 rounded-full"
-                      style={{ backgroundColor: DEPT_COLORS[i % DEPT_COLORS.length] }}
-                    />
-                    <span className="text-[#525252]">{dept.name}</span>
-                  </div>
-                  <span className="font-medium text-[#0A0A0A]">
-                    {formatCurrency(dept.totalCost)} ({pct}%)
-                  </span>
-                </div>
-              );
-            })}
-          </div>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">Organizasyon Şeması</h1>
+          <p className="mt-1 text-sm text-ink-60">
+            Tüm departmanlar ve hiyerarşik yapı — canlı API üzerinden.
+          </p>
+        </div>
+        <div className="flex items-center gap-1 rounded-md border border-line bg-bg p-1">
+          <button
+            type="button"
+            onClick={() => setViewMode('tree')}
+            className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-[12px] font-medium transition-colors ${
+              viewMode === 'tree' ? 'bg-accent-soft text-accent' : 'text-ink-60 hover:text-ink'
+            }`}
+          >
+            <GitBranch className="h-3.5 w-3.5" />
+            Ağaç
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewMode('grid')}
+            className={`inline-flex items-center gap-1.5 rounded px-3 py-1.5 text-[12px] font-medium transition-colors ${
+              viewMode === 'grid' ? 'bg-accent-soft text-accent' : 'text-ink-60 hover:text-ink'
+            }`}
+          >
+            <LayoutGrid className="h-3.5 w-3.5" />
+            Liste
+          </button>
         </div>
       </div>
 
-      {/* Cost per employee comparison */}
-      <div className="rounded-xl border border-[#EDEDED] bg-white p-6">
-        <h3 className="text-[15px] font-semibold text-[#0A0A0A]">Calisan Basina Maliyet</h3>
-        <p className="mt-1 text-[12px] text-[#888]">Departman bazli ortalama maas karsilastirmasi.</p>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard icon={<Building2 className="h-4 w-4" />} label="Departman" value={stats.deptCount} />
+        <StatCard icon={<GitBranch className="h-4 w-4" />} label="Max hiyerarşi" value={stats.maxDepth} />
+        <StatCard icon={<Users className="h-4 w-4" />} label="Toplam çalışan" value={stats.totalEmp} />
+      </div>
 
-        <div className="mt-6 space-y-3">
-          {sorted.map((dept, i) => (
-            <div key={dept.name}>
-              <div className="flex items-center justify-between text-[13px]">
-                <span className="text-[#525252]">{dept.name}</span>
-                <span className="font-medium text-[#0A0A0A]">{formatCurrency(dept.avgSalary)}</span>
-              </div>
-              <div className="mt-1 h-2.5 w-full overflow-hidden rounded-full bg-[#F5F5F5]">
-                <div
-                  className="h-full rounded-full transition-all"
-                  style={{
-                    width: `${(dept.totalCost / maxCost) * 100}%`,
-                    backgroundColor: DEPT_COLORS[i % DEPT_COLORS.length],
-                  }}
-                />
-              </div>
-            </div>
-          ))}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="relative flex-1 sm:max-w-md">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-40" />
+          <input
+            type="search"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Departman ara…"
+            className="h-10 w-full rounded-md border border-line bg-bg pl-9 pr-3 text-sm text-ink placeholder:text-ink-40 focus:border-accent focus:outline-none"
+          />
         </div>
-
-        {sorted.length === 0 && (
-          <div className="mt-6 text-center text-[13px] text-[#888]">Maliyet verisi bulunamadi.</div>
+        {viewMode === 'tree' && (
+          <div className="flex items-center gap-2 text-[12px] text-ink-60">
+            <button type="button" onClick={expandAll} className="hover:text-ink underline">
+              Hepsini aç
+            </button>
+            <span className="text-ink-20">·</span>
+            <button type="button" onClick={collapseAll} className="hover:text-ink underline">
+              Hepsini kapat
+            </button>
+          </div>
         )}
       </div>
+
+      {isLoading && (
+        <div className="flex flex-col gap-2">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <div key={i} className="h-12 animate-pulse rounded-lg border border-line bg-bg" />
+          ))}
+        </div>
+      )}
+
+      {isError && (
+        <div className="flex items-start gap-3 rounded-lg border border-red/30 bg-red-soft p-4 text-sm text-red">
+          <Building2 className="mt-0.5 h-4 w-4 shrink-0" />
+          <div className="flex-1">
+            <p className="font-medium">Organizasyon yapısı yüklenemedi</p>
+            <p className="mt-1 text-[12px]">{error?.message ?? 'Bilinmeyen hata'}</p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-3 rounded-md bg-red px-3 py-1.5 text-[12px] font-medium text-white"
+            >
+              Yeniden dene
+            </button>
+          </div>
+        </div>
+      )}
+
+      {!isLoading && !isError && tree.length === 0 && <EmptyState />}
+
+      {!isLoading && !isError && tree.length > 0 && viewMode === 'tree' && !search && (
+        <div className="rounded-xl border border-line bg-bg">
+          <ul className="divide-y divide-line">
+            {tree.map((node) => (
+              <TreeNode
+                key={node.id}
+                node={node}
+                depth={0}
+                expanded={expanded}
+                onToggle={toggle}
+              />
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {!isLoading && !isError && (viewMode === 'grid' || search) && (
+        <div className="rounded-xl border border-line bg-bg">
+          {filtered.length === 0 ? (
+            <p className="p-8 text-center text-sm text-ink-40">Aramayla eşleşen departman yok.</p>
+          ) : (
+            <ul className="divide-y divide-line">
+              {filtered.map((d) => (
+                <FlatRow key={d.id} dept={d} />
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
     </div>
   );
-};
+}
 
-/* ─── Donut Chart SVG ─── */
+// ---------------------------------------------------------------------------
 
-const DonutChart = ({
-  departments,
-  totalCost,
+const TreeNode = ({
+  node,
+  depth,
+  expanded,
+  onToggle,
 }: {
-  departments: OrgDepartment[];
-  totalCost: number;
+  node: DepartmentTreeNode;
+  depth: number;
+  expanded: Set<string>;
+  onToggle: (id: string) => void;
 }) => {
-  const size = 180;
-  const strokeWidth = 30;
-  const radius = (size - strokeWidth) / 2;
-  const circumference = 2 * Math.PI * radius;
-  const cx = size / 2;
-  const cy = size / 2;
-
-  let cumulativePercent = 0;
+  const hasChildren = (node.children?.length ?? 0) > 0;
+  const isOpen = expanded.has(node.id);
+  const leftPad = depth * 20;
 
   return (
-    <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-      {/* Background ring */}
-      <circle
-        cx={cx}
-        cy={cy}
-        r={radius}
-        fill="none"
-        stroke="#F5F5F5"
-        strokeWidth={strokeWidth}
-      />
-      {departments.map((dept, i) => {
-        const pct = dept.totalCost / totalCost;
-        const dashLength = circumference * pct;
-        const dashOffset = circumference * (1 - cumulativePercent) + circumference * 0.25;
-        cumulativePercent += pct;
+    <li>
+      <div
+        className="flex items-center gap-2 px-4 py-2.5 transition-colors hover:bg-bg-2"
+        style={{ paddingLeft: `${leftPad + 16}px` }}
+      >
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={() => onToggle(node.id)}
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded text-ink-40 hover:bg-bg-3 hover:text-ink-60"
+            aria-label={isOpen ? 'Kapat' : 'Aç'}
+          >
+            {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </button>
+        ) : (
+          <span className="h-5 w-5 shrink-0" />
+        )}
 
-        return (
-          <circle
-            key={dept.name}
-            cx={cx}
-            cy={cy}
-            r={radius}
-            fill="none"
-            stroke={DEPT_COLORS[i % DEPT_COLORS.length]}
-            strokeWidth={strokeWidth}
-            strokeDasharray={`${dashLength} ${circumference - dashLength}`}
-            strokeDashoffset={dashOffset}
-            strokeLinecap="butt"
-          />
-        );
-      })}
-      {/* Center text */}
-      <text x={cx} y={cy - 6} textAnchor="middle" className="text-[11px] fill-[#888]">
-        Toplam
-      </text>
-      <text x={cx} y={cy + 12} textAnchor="middle" className="text-[13px] font-semibold fill-[#0A0A0A]">
-        {departments.length} Dept
-      </text>
-    </svg>
+        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-accent-soft">
+          <Building2 className="h-4 w-4 text-accent" />
+        </div>
+
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium text-ink">{node.name_tr}</p>
+          {node.name_en && (
+            <p className="truncate text-[11px] text-ink-40">{node.name_en}</p>
+          )}
+        </div>
+
+        {typeof node.employee_count === 'number' && (
+          <span className="inline-flex items-center gap-1 text-[11px] text-ink-60">
+            <Users className="h-3 w-3" />
+            {node.employee_count}
+          </span>
+        )}
+
+        {node.manager_id && (
+          <span
+            className="inline-flex items-center gap-1 text-[11px] text-ink-40"
+            title="Yönetici atanmış"
+          >
+            <User className="h-3 w-3" />
+          </span>
+        )}
+      </div>
+
+      {hasChildren && isOpen && (
+        <ul className="divide-y divide-line border-t border-line bg-bg-2">
+          {node.children!.map((child) => (
+            <TreeNode
+              key={child.id}
+              node={child}
+              depth={depth + 1}
+              expanded={expanded}
+              onToggle={onToggle}
+            />
+          ))}
+        </ul>
+      )}
+    </li>
   );
 };
+
+const FlatRow = ({ dept }: { dept: DepartmentTreeNode }) => (
+  <li className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-bg-2">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft">
+      <Building2 className="h-4 w-4 text-accent" />
+    </div>
+    <div className="min-w-0 flex-1">
+      <p className="text-sm font-medium text-ink">{dept.name_tr}</p>
+      {dept.path && <p className="text-[11px] text-ink-40">{dept.path}</p>}
+    </div>
+    {typeof dept.employee_count === 'number' && (
+      <span className="inline-flex items-center gap-1 text-[12px] text-ink-60">
+        <Users className="h-3 w-3" />
+        {dept.employee_count}
+      </span>
+    )}
+  </li>
+);
+
+const StatCard = ({
+  icon,
+  label,
+  value,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number;
+}) => (
+  <div className="flex items-center gap-3 rounded-lg border border-line bg-bg p-4">
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-accent-soft text-accent">
+      {icon}
+    </div>
+    <div>
+      <p className="text-[11px] font-medium uppercase tracking-wider text-ink-40">{label}</p>
+      <p className="mt-0.5 text-xl font-semibold tabular-nums text-ink">{value}</p>
+    </div>
+  </div>
+);
+
+const EmptyState = () => (
+  <div className="flex flex-col items-center gap-3 rounded-xl border border-line bg-bg px-6 py-16 text-center">
+    <div className="flex h-12 w-12 items-center justify-center rounded-full bg-accent-soft">
+      <Building2 className="h-6 w-6 text-accent" />
+    </div>
+    <p className="text-sm font-medium text-ink">Henüz departman yok</p>
+    <p className="max-w-md text-xs text-ink-40">
+      İlk departmanı ekleyerek organizasyon yapınızı kurmaya başlayın. Hiyerarşik olarak
+      alt-departmanlar ekleyebilir, yöneticiler atayabilirsiniz.
+    </p>
+    <Link
+      href="/departmanlar"
+      className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-accent hover:underline"
+    >
+      Departman yönetimine git →
+    </Link>
+  </div>
+);
+
+// ---------------------------------------------------------------------------
+
+function flattenTree(nodes: DepartmentTreeNode[]): DepartmentTreeNode[] {
+  const out: DepartmentTreeNode[] = [];
+  const walk = (ns: DepartmentTreeNode[]) => {
+    for (const n of ns) {
+      out.push(n);
+      if (n.children?.length) walk(n.children);
+    }
+  };
+  walk(nodes);
+  return out;
+}

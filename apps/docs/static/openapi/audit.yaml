@@ -1,0 +1,279 @@
+openapi: 3.1.0
+info:
+  title: Upcore Audit & KVKK Service
+  version: 1.1.0
+  description: |
+    Audit microservice for UpCore. Handles:
+      - Append-only audit events (tenant-scoped, partitioned)
+      - KVKK Madde 5 access log (personal-data access audit)
+      - KVKK Madde 11 DSR (data subject rights) lifecycle
+      - KVKK çalışan rıza yönetimi (employee consent management, Madde 5/6/22)
+      - Export / retention tooling
+  contact:
+    name: Upcore Platform
+
+servers:
+  - url: http://localhost:8009
+    description: Local development
+  - url: https://api.upcore.app
+    description: Production (via API gateway)
+
+security:
+  - bearerAuth: []
+  - tenantHeaders: []
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: OK
+  /ready:
+    get:
+      summary: Readiness probe
+      security: []
+      responses:
+        '200':
+          description: Ready
+
+  # --- KVKK çalışan rıza yönetimi (P1) -----------------------------------
+  /api/v1/kvkk/consents:
+    get:
+      summary: Mevcut kullanıcının tüm KVKK rıza durumlarını + kataloğu döner
+      operationId: listUserConsents
+      tags: [KVKKConsent]
+      responses:
+        '200':
+          description: Katalog + kullanıcının mevcut kararları
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConsentsOverview'
+        '400':
+          $ref: '#/components/responses/MissingTenant'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+    post:
+      summary: Kullanıcının bir rızasını günceller (IP + UA otomatik kaydedilir)
+      operationId: upsertUserConsent
+      tags: [KVKKConsent]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpsertConsentRequest'
+      responses:
+        '200':
+          description: Güncellenmiş rıza kaydı
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DataConsent'
+        '400':
+          description: Geçersiz istek gövdesi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '422':
+          description: Geçersiz rıza tipi veya zorunlu rıza reddi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/kvkk/consents/history/{consentType}:
+    get:
+      summary: Kullanıcının verdiği rıza tipinin tüm değişim geçmişi
+      operationId: getConsentHistory
+      tags: [KVKKConsent]
+      parameters:
+        - name: consentType
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/ConsentType'
+      responses:
+        '200':
+          description: Tarihsel kayıtlar (yeni → eski)
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  consent_type:
+                    $ref: '#/components/schemas/ConsentType'
+                  entries:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ConsentHistoryEntry'
+        '422':
+          description: Geçersiz rıza tipi
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/v1/kvkk/consents/ai-allowed:
+    get:
+      summary: Bir kullanıcının `ai_recommendations` rızası var mı? (ML servisleri kullanır)
+      operationId: checkAIConsent
+      tags: [KVKKConsent]
+      parameters:
+        - name: user_id
+          in: query
+          required: false
+          description: Kontrol edilecek kullanıcı UUID'si — boşsa oturum sahibi
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Rıza kontrolü sonucu
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user_id, consent_type, ai_allowed]
+                properties:
+                  user_id:
+                    type: string
+                    format: uuid
+                  consent_type:
+                    $ref: '#/components/schemas/ConsentType'
+                  ai_allowed:
+                    type: boolean
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    tenantHeaders:
+      type: apiKey
+      in: header
+      name: X-Tenant-ID
+
+  responses:
+    Unauthorized:
+      description: Kimlik doğrulanamadı
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    MissingTenant:
+      description: Tenant context eksik
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+    ConsentType:
+      type: string
+      enum:
+        - data_processing
+        - performance_evaluation
+        - burnout_monitoring
+        - analytics
+        - ai_recommendations
+
+    ConsentStatus:
+      type: string
+      enum:
+        - granted
+        - declined
+        - revoked
+
+    DataConsent:
+      type: object
+      required: [id, tenant_id, user_id, consent_type, version, status, metadata, created_at, updated_at]
+      properties:
+        id:              { type: string, format: uuid }
+        tenant_id:       { type: string, format: uuid }
+        user_id:         { type: string, format: uuid }
+        consent_type:    { $ref: '#/components/schemas/ConsentType' }
+        version:         { type: integer, minimum: 1 }
+        status:          { $ref: '#/components/schemas/ConsentStatus' }
+        accepted_at:     { type: string, format: date-time, nullable: true }
+        ip_addr:         { type: string, nullable: true }
+        user_agent:      { type: string, nullable: true }
+        metadata:        { type: object, additionalProperties: true }
+        created_at:      { type: string, format: date-time }
+        updated_at:      { type: string, format: date-time }
+
+    ConsentCatalogEntry:
+      type: object
+      required: [type, version, title_tr, summary_tr, legal_basis, article, required, blocks_ai]
+      properties:
+        type:            { $ref: '#/components/schemas/ConsentType' }
+        version:         { type: integer, minimum: 1 }
+        title_tr:        { type: string }
+        summary_tr:      { type: string }
+        legal_basis:     { type: string, description: "KVKK yasal dayanak metni" }
+        article:         { type: string, description: "Örn. 'KVKK md.22'" }
+        required:        { type: boolean, description: "Zorunlu rıza — reddedilemez" }
+        blocks_ai:       { type: boolean, description: "True ise decline/revoke ML pipeline'ını kapatır" }
+
+    ConsentsOverview:
+      type: object
+      required: [catalog, consents, current_version]
+      properties:
+        catalog:
+          type: array
+          items: { $ref: '#/components/schemas/ConsentCatalogEntry' }
+        consents:
+          type: array
+          items: { $ref: '#/components/schemas/DataConsent' }
+        current_version:
+          type: integer
+          minimum: 1
+
+    UpsertConsentRequest:
+      type: object
+      required: [consent_type, status]
+      properties:
+        consent_type: { $ref: '#/components/schemas/ConsentType' }
+        status:       { $ref: '#/components/schemas/ConsentStatus' }
+        version:      { type: integer, minimum: 1 }
+        metadata:     { type: object, additionalProperties: true }
+
+    ConsentHistoryEntry:
+      type: object
+      required: [id, tenant_id, consent_id, user_id, consent_type, version, new_status, change_reason, metadata, changed_at]
+      properties:
+        id:               { type: string, format: uuid }
+        tenant_id:        { type: string, format: uuid }
+        consent_id:       { type: string, format: uuid }
+        user_id:          { type: string, format: uuid }
+        consent_type:     { $ref: '#/components/schemas/ConsentType' }
+        version:          { type: integer }
+        previous_status:  { $ref: '#/components/schemas/ConsentStatus', nullable: true }
+        new_status:       { $ref: '#/components/schemas/ConsentStatus' }
+        change_reason:
+          type: string
+          enum: [user_action, version_upgrade, admin_override, system_reset]
+        ip_addr:          { type: string, nullable: true }
+        user_agent:       { type: string, nullable: true }
+        metadata:         { type: object, additionalProperties: true }
+        changed_at:       { type: string, format: date-time }
+
+tags:
+  - name: KVKKConsent
+    description: KVKK çalışan rıza yönetimi — Madde 5 (açık rıza), Madde 6 (özel nitelikli veri), Madde 22 (otomatik karar itirazı).

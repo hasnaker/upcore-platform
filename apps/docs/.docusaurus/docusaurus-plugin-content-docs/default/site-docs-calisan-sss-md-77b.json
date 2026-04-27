@@ -1,0 +1,25 @@
+{
+  "id": "calisan/sss",
+  "title": "Sıkça sorulanlar",
+  "description": "Yöneticim pulse cevaplarımı görüyor mu?",
+  "source": "@site/docs/calisan/sss.md",
+  "sourceDirName": "calisan",
+  "slug": "/calisan/sss",
+  "permalink": "/en/docs/calisan/sss",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/sss.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 99,
+  "frontMatter": {
+    "id": "sss",
+    "title": "Sıkça sorulanlar",
+    "sidebar_position": 99
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Silme talebi (unutulma hakkı)",
+    "permalink": "/en/docs/calisan/kvkk/silme-talebi"
+  }
+}

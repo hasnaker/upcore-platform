@@ -1,0 +1,29 @@
+{
+  "id": "ik/hizli-baslangic/yil-sonu-degerlendirme",
+  "title": "Yıl sonu değerlendirme — 360 + OKR + 9-kutu tam senaryo",
+  "description": "Aralık ayında başlayıp Ocak ortasına kadar süren kapsamlı değerlendirme akışı.",
+  "source": "@site/docs/ik/hizli-baslangic/yil-sonu-degerlendirme.md",
+  "sourceDirName": "ik/hizli-baslangic",
+  "slug": "/ik/hizli-baslangic/yil-sonu-degerlendirme",
+  "permalink": "/en/docs/ik/hizli-baslangic/yil-sonu-degerlendirme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/hizli-baslangic/yil-sonu-degerlendirme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "yil-sonu-degerlendirme",
+    "title": "Yıl sonu değerlendirme — 360 + OKR + 9-kutu tam senaryo",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İlk müdahale — kırmızı band → Thompson → consent → plan",
+    "permalink": "/en/docs/ik/hizli-baslangic/ilk-mudahale"
+  },
+  "next": {
+    "title": "Sürdürme modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/surdurme/genel-bakis"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/pulse-kurulum",
+  "title": "Pulse anketi kurulumu",
+  "description": "Pulse anketinin detaylı adım-adım kurulumu.",
+  "source": "@site/docs/ik/modul/surdurme/pulse-kurulum.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/pulse-kurulum",
+  "permalink": "/en/docs/ik/modul/surdurme/pulse-kurulum",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/pulse-kurulum.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "pulse-kurulum",
+    "title": "Pulse anketi kurulumu",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Sürdürme modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/surdurme/genel-bakis"
+  },
+  "next": {
+    "title": "Anket güvenilirliği",
+    "permalink": "/en/docs/ik/modul/surdurme/anket-guvenilirligi"
+  }
+}

@@ -80,13 +80,26 @@ func (s *AssignmentService) Assign(ctx context.Context, req AssignRequest) (*dom
 		return nil, fmt.Errorf("create assignment: %w", err)
 	}
 
-	_ = s.publisher.Publish(ctx, event.TopicAssigned, map[string]any{
-		"assignment_id": a.ID,
-		"tenant_id":     a.TenantID,
-		"intervention":  interv.Code,
-		"employee_id":   a.EmployeeID,
-		"assigned_at":   a.AssignedAt,
-	})
+	payload := map[string]any{
+		"assignment_id":     a.ID,
+		"tenant_id":         a.TenantID,
+		"intervention":      interv.Code,
+		"intervention_type": interv.TitleTR,
+		"description":       interv.DescriptionTR,
+		"evidence_tier":     string(interv.EvidenceTier),
+		"employee_id":       a.EmployeeID,
+		"assigned_at":       a.AssignedAt,
+	}
+	if interv.ExpectedEffectSize != nil {
+		payload["expected_effect_size"] = fmt.Sprintf("%.2f", *interv.ExpectedEffectSize)
+	}
+	if interv.DurationWeeks != nil {
+		payload["duration_weeks"] = *interv.DurationWeeks
+	}
+	if interv.TimeToEffectWeeks != nil {
+		payload["time_to_effect_weeks"] = *interv.TimeToEffectWeeks
+	}
+	_ = s.publisher.Publish(ctx, event.TopicAssigned, payload)
 
 	s.log.Info().
 		Str("assignment_id", a.ID.String()).
@@ -163,6 +176,73 @@ func (s *AssignmentService) Decline(ctx context.Context, tenantID, id uuid.UUID)
 // Cancel cancels an assignment with a reason.
 func (s *AssignmentService) Cancel(ctx context.Context, tenantID, id uuid.UUID, reason string) error {
 	return s.assignments.Cancel(ctx, tenantID, id, reason)
+}
+
+// RetractFromPrediction cancels every non-terminal intervention assignment
+// that was derived from a retracted ML prediction. Called from the event
+// subscriber when ml.prediction.retracted.v1 arrives (KVKK Madde 22 upheld
+// objection). Each cancelled assignment emits an intervention.cancelled.v1
+// event so downstream reminders, notifications and analytics can react.
+//
+// The derivation link is stored in assignment.metadata (JSONB) as
+// {"source_prediction_id": "<uuid>", "source_objection_id": "<uuid>"}.
+// Older rows written before migration 064 may not have metadata; those are
+// simply skipped (logged as info).
+//
+// Satisfies event.PredictionRetractionHandler.
+func (s *AssignmentService) RetractFromPrediction(
+	ctx context.Context,
+	tenantID, predictionID, objectionID, retractedBy uuid.UUID,
+	reason string,
+) error {
+	if tenantID == uuid.Nil || predictionID == uuid.Nil {
+		return fmt.Errorf("retract_from_prediction: tenant_id and prediction_id required")
+	}
+	if reason == "" {
+		reason = "KVKK m.22 — kullanıcı itirazı üzerine tahmin geri alındı"
+	}
+
+	assignments, err := s.assignments.ListBySourcePrediction(ctx, tenantID, predictionID)
+	if err != nil {
+		return fmt.Errorf("list by source prediction: %w", err)
+	}
+	s.log.Info().
+		Str("tenant_id", tenantID.String()).
+		Str("prediction_id", predictionID.String()).
+		Int("derived_assignments", len(assignments)).
+		Msg("ml prediction retracted: cancelling derived assignments")
+
+	cancelled := 0
+	for _, a := range assignments {
+		if !a.CanCancel() {
+			continue
+		}
+		if err := s.assignments.Cancel(ctx, tenantID, a.ID, reason); err != nil {
+			s.log.Error().Err(err).
+				Str("assignment_id", a.ID.String()).
+				Msg("cancel derived assignment failed")
+			continue
+		}
+		cancelled++
+		_ = s.publisher.Publish(ctx, event.TopicCancelled, map[string]any{
+			"assignment_id":      a.ID,
+			"tenant_id":          tenantID,
+			"employee_id":        a.EmployeeID,
+			"reason":             reason,
+			"source_prediction":  predictionID,
+			"source_objection":   objectionID,
+			"cancelled_by":       retractedBy,
+			"kvkk_madde22":       true,
+		})
+	}
+
+	s.log.Info().
+		Str("tenant_id", tenantID.String()).
+		Str("prediction_id", predictionID.String()).
+		Int("cancelled", cancelled).
+		Int("scanned", len(assignments)).
+		Msg("derived assignments retracted")
+	return nil
 }
 
 // Get retrieves an assignment by ID.

@@ -1,0 +1,29 @@
+{
+  "id": "developer/sdk/python",
+  "title": "Python SDK",
+  "description": "Python 3.9+.",
+  "source": "@site/docs/developer/sdk/python.md",
+  "sourceDirName": "developer/sdk",
+  "slug": "/developer/sdk/python",
+  "permalink": "/en/docs/developer/sdk/python",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/sdk/python.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "python",
+    "title": "Python SDK",
+    "sidebar_position": 2
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "JavaScript / TypeScript SDK",
+    "permalink": "/en/docs/developer/sdk/javascript"
+  },
+  "next": {
+    "title": "Go SDK",
+    "permalink": "/en/docs/developer/sdk/go"
+  }
+}

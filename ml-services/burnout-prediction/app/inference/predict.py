@@ -16,6 +16,7 @@ import structlog
 
 from app.config import settings
 from app.features.engineering import engineer_features
+from app.inference.consent import check_ai_consent
 from app.models.lstm_burnout import HeuristicBurnoutPredictor
 from app.schemas.responses import (
     BurnoutPredictionResponse,
@@ -38,6 +39,23 @@ CLASSIFICATION_THRESHOLDS: dict[int, dict[str, float]] = {
 }
 
 
+class ConsentDeniedError(Exception):
+    """Raised when an employee has not granted the ``ai_recommendations`` consent.
+
+    The API layer translates this to HTTP 403 so the caller can show an
+    opt-out notice in the UI ("Bu kullanıcı KVKK kapsamında AI önerilerinden
+    çekilmiştir").
+    """
+
+    def __init__(self, employee_id: UUID, consent_status: str) -> None:
+        self.employee_id = employee_id
+        self.consent_status = consent_status
+        super().__init__(
+            f"employee {employee_id} opted out of AI predictions "
+            f"(consent status = {consent_status})"
+        )
+
+
 async def predict_burnout(
     employee_id: UUID,
     tenant_id: UUID,
@@ -56,7 +74,26 @@ async def predict_burnout(
 
     Returns:
         BurnoutPredictionResponse with predictions for all horizons.
+
+    Raises:
+        ConsentDeniedError: when the employee has not granted the
+            ``ai_recommendations`` consent. KVKK Madde 22 itiraz hakkı —
+            otomatik karar alma süreçlerinden kullanıcı hariç tutulur.
     """
+    # Step 0: KVKK çalışan rıza kontrolü — declined/revoked ise tahmin yapılmaz.
+    consent = await check_ai_consent(tenant_id=tenant_id, employee_id=employee_id)
+    if not consent.allowed:
+        logger.info(
+            "prediction_skipped_consent_denied",
+            employee_id=str(employee_id),
+            tenant_id=str(tenant_id),
+            consent_status=consent.status,
+        )
+        raise ConsentDeniedError(
+            employee_id=employee_id,
+            consent_status=consent.status,
+        )
+
     # Step 1: Feature engineering
     if features is None:
         if raw_signals is None:

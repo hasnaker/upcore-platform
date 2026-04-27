@@ -1,0 +1,12 @@
+{
+  "type": "mdx",
+  "permalink": "/en/hukuki/gizlilik",
+  "source": "@site/src/pages/hukuki/gizlilik.mdx",
+  "title": "Gizlilik politikası",
+  "description": "docs.upcore.io gizlilik politikası.",
+  "frontMatter": {
+    "title": "Gizlilik politikası",
+    "description": "docs.upcore.io gizlilik politikası."
+  },
+  "unlisted": false
+}

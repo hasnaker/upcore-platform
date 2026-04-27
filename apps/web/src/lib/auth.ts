@@ -27,5 +27,21 @@ export async function getAuthedUser() {
 
 export async function getAuthToken(): Promise<string | null> {
   const { getToken } = await auth();
-  return getToken();
+  // Gateway expects tenant_id claim — available only in `upcore` template.
+  return getToken({ template: 'upcore' });
+}
+
+/** Shape returned by GET /api/v1/auth/me (snake_case from Go auth service). */
+export interface AuthMe {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  locale: string;
+  status: string;
+  tenant_id: string;
+  roles: string[];
+  metadata: Record<string, unknown>;
+  created_at: string;
+  updated_at: string;
 }

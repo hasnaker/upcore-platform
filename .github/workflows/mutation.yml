@@ -1,0 +1,105 @@
+name: Mutation Testing
+
+# Weekly mutation-testing run across the four business-critical Go services.
+# Mutation score measures how many "mutants" (intentional small bugs injected
+# into the code) are caught by the existing test suite; a score below our
+# threshold means tests are asserting types but not behaviour.
+#
+# Scope: audit, billing, intervention, performance.
+# Tool: zimmski/go-mutesting (https://github.com/zimmski/go-mutesting).
+#
+# Success gate:
+#   - >= 60% per service (soft — does not fail the run).
+#   - >= 50% absolute (hard — fails the job, opens an issue via Slack alert).
+#
+# The baseline score report is uploaded as an artifact and linked in the weekly
+# quality newsletter. We do not run this on every PR because it is slow
+# (15-45 min per service); PR authors instead get fast feedback from unit +
+# integration tests. See docs/runbook/<service>.md for owner info.
+
+on:
+  schedule:
+    # Sundays 02:00 UTC — overnight so artifacts are ready Monday morning.
+    - cron: "0 2 * * 0"
+  workflow_dispatch:
+    inputs:
+      services:
+        description: "Comma-separated service names (leave blank for all)"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  mutate:
+    name: Mutate ${{ matrix.service }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [audit, billing, intervention, performance]
+    steps:
+      - name: Skip unless selected
+        id: gate
+        run: |
+          wanted="${{ github.event.inputs.services }}"
+          if [[ -z "$wanted" ]]; then
+            echo "enabled=1" >> "$GITHUB_OUTPUT"
+          elif [[ ",$wanted," == *",${{ matrix.service }},"* ]]; then
+            echo "enabled=1" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=0" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.gate.outputs.enabled == '1'
+
+      - name: Set up Go
+        if: steps.gate.outputs.enabled == '1'
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: true
+
+      - name: Install go-mutesting
+        if: steps.gate.outputs.enabled == '1'
+        run: |
+          go install github.com/zimmski/go-mutesting/cmd/go-mutesting@latest
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+
+      - name: Run mutations
+        if: steps.gate.outputs.enabled == '1'
+        id: run
+        working-directory: services/${{ matrix.service }}
+        env:
+          CGO_ENABLED: "0"
+        run: |
+          set -o pipefail
+          mkdir -p ../../mutation-reports
+          # Use the default mutator suite (arithmetic, conditional, branch,
+          # identifier replacement). Timeout per mutant 60s; total budget 30m.
+          go-mutesting \
+            --exec-timeout=60 \
+            --timeout=60 \
+            ./internal/... \
+            | tee "../../mutation-reports/${{ matrix.service }}.txt"
+          score=$(grep -oE 'The mutation score is [0-9.]+' \
+            "../../mutation-reports/${{ matrix.service }}.txt" \
+            | grep -oE '[0-9.]+' || echo "0")
+          echo "score=${score}" >> "$GITHUB_OUTPUT"
+          echo "### ${{ matrix.service }} mutation score: **$score**" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Hard gate (< 0.50 fails)
+        if: steps.gate.outputs.enabled == '1'
+        run: |
+          awk -v s="${{ steps.run.outputs.score }}" 'BEGIN { exit (s+0 < 0.50) ? 1 : 0 }'
+
+      - name: Upload report
+        if: steps.gate.outputs.enabled == '1'
+        uses: actions/upload-artifact@v4
+        with:
+          name: mutation-${{ matrix.service }}
+          path: mutation-reports/${{ matrix.service }}.txt
+          retention-days: 30

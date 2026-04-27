@@ -1,0 +1,29 @@
+{
+  "id": "developer/kavramlar/idempotency",
+  "title": "Idempotency (tekrar güvenlik)",
+  "description": "Aynı isteği iki kez göndermenin güvenli olması.",
+  "source": "@site/docs/developer/kavramlar/idempotency.md",
+  "sourceDirName": "developer/kavramlar",
+  "slug": "/developer/kavramlar/idempotency",
+  "permalink": "/en/docs/developer/kavramlar/idempotency",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/kavramlar/idempotency.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "idempotency",
+    "title": "Idempotency (tekrar güvenlik)",
+    "sidebar_position": 5
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Hata kodları",
+    "permalink": "/en/docs/developer/kavramlar/hata-kodlari"
+  },
+  "next": {
+    "title": "Pagination (sayfalama)",
+    "permalink": "/en/docs/developer/kavramlar/pagination"
+  }
+}

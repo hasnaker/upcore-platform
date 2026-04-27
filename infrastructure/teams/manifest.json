@@ -1,0 +1,52 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.17/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.17",
+  "version": "1.0.0",
+  "id": "REPLACE_WITH_AZURE_APP_ID",
+  "developer": {
+    "name": "UpCore Teknoloji A.Ş.",
+    "websiteUrl": "https://upcore.io",
+    "privacyUrl": "https://upcore.io/kvkk",
+    "termsOfUseUrl": "https://upcore.io/terms"
+  },
+  "icons": {
+    "color": "color.png",
+    "outline": "outline.png"
+  },
+  "name": {
+    "short": "UpCore",
+    "full": "UpCore Çalışan Deneyim Botu"
+  },
+  "description": {
+    "short": "Pulse anketleri, müdahale onayı ve geri bildirim.",
+    "full": "UpCore botu haftalık pulse anketlerini hatırlatır, KVKK onaylı müdahale kartlarını iletir ve sürekli geri bildirim gönderir. @UpCore pulse · @UpCore feedback · @UpCore help komutlarını destekler."
+  },
+  "accentColor": "#1B5CF3",
+  "bots": [
+    {
+      "botId": "REPLACE_WITH_AZURE_APP_ID",
+      "scopes": ["personal", "team", "groupchat"],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": ["personal", "team"],
+          "commands": [
+            { "title": "pulse", "description": "Haftalık pulse anketi linkini alır" },
+            { "title": "feedback", "description": "Yönetici veya ekibiniz için geri bildirim gönderir" },
+            { "title": "help", "description": "Komut listesini gösterir" }
+          ]
+        }
+      ]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": [
+    "*.upcore.io",
+    "token.botframework.com"
+  ],
+  "webApplicationInfo": {
+    "id": "REPLACE_WITH_AZURE_APP_ID",
+    "resource": "api://upcore.io/REPLACE_WITH_AZURE_APP_ID"
+  }
+}

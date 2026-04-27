@@ -19,7 +19,6 @@ import json
 from datetime import UTC, datetime
 from pathlib import Path
 from statistics import mean
-from typing import Literal
 
 import numpy as np
 
@@ -32,7 +31,6 @@ from app.schemas.bat import (
     BAT_ITEM_KEYS,
     BATClassifications,
     BATPercentiles,
-    BATScoreResponse,
     BATSubscaleScores,
 )
 from app.schemas.common import (
@@ -75,7 +73,6 @@ def impute_missing(
     Returns (imputed_responses, list_of_imputed_keys).
     Raises InvalidResponseError when too many items are missing.
     """
-    provided = {k for k in BAT_ITEM_KEYS if k in responses}
     missing = [k for k in BAT_ITEM_KEYS if k not in responses]
 
     if len(missing) > max_missing:

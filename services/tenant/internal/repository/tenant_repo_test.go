@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/upcore/tenant/internal/domain"
+	"github.com/upcore/tenant/internal/repository"
 	"github.com/upcore/tenant/internal/testsupport"
 )
 
@@ -107,6 +108,99 @@ func TestFakeSubscriptionRepo(t *testing.T) {
 	got3, _ := repo.GetByTenantID(ctx, tid)
 	if got3.Status != domain.SubStatusCanceled {
 		t.Fatalf("expected canceled, got %s", got3.Status)
+	}
+}
+
+func TestFakeTenantRepo_ListAdmin_FiltersAndPagination(t *testing.T) {
+	ctx := context.Background()
+	subs := testsupport.NewFakeSubscriptionRepo()
+	usage := testsupport.NewFakeUsageRepo()
+	repo := testsupport.NewFakeTenantRepo().WithSubs(subs).WithUsage(usage)
+
+	// seed 4 tenants with different statuses/plans
+	seed := func(slug, plan string, status domain.TenantStatus) uuid.UUID {
+		t.Helper()
+		tid := uuid.New()
+		tn := &domain.Tenant{ID: tid, Name: slug, Slug: slug, Status: status, CreatedAt: time.Now().UTC()}
+		if err := repo.Create(ctx, nil, tn); err != nil {
+			t.Fatalf("create %s: %v", slug, err)
+		}
+		sub := &domain.Subscription{TenantID: tid, PlanID: plan, Status: domain.SubStatusActive, Seats: 10}
+		_ = subs.Create(ctx, nil, sub)
+		_ = usage.Increment(ctx, tid, domain.MetricEmployees, 7, time.Now().UTC())
+		return tid
+	}
+
+	_ = seed("alpha", "free", domain.TenantStatusActive)
+	_ = seed("beta", "starter", domain.TenantStatusTrial)
+	suspID := seed("gamma", "growth", domain.TenantStatusSuspended)
+	_ = seed("delta", "free", domain.TenantStatusActive)
+
+	// total default
+	rows, total, err := repo.ListAdmin(ctx, repository.TenantListFilter{})
+	if err != nil {
+		t.Fatalf("list: %v", err)
+	}
+	if total != 4 {
+		t.Fatalf("total=%d want 4", total)
+	}
+	if len(rows) != 4 {
+		t.Fatalf("rows=%d", len(rows))
+	}
+	// employee count wired via usage
+	for _, row := range rows {
+		if row.EmployeeCount != 7 {
+			t.Fatalf("expected 7 employees, got %d", row.EmployeeCount)
+		}
+		if row.PlanID == nil {
+			t.Fatalf("plan not joined for %s", row.Slug)
+		}
+	}
+
+	// status filter = suspended
+	rows, total, err = repo.ListAdmin(ctx, repository.TenantListFilter{Status: "suspended"})
+	if err != nil {
+		t.Fatalf("list suspended: %v", err)
+	}
+	if total != 1 || rows[0].ID != suspID {
+		t.Fatalf("suspended filter failed: total=%d", total)
+	}
+
+	// plan filter
+	_, total, err = repo.ListAdmin(ctx, repository.TenantListFilter{PlanID: "free"})
+	if err != nil {
+		t.Fatalf("list plan: %v", err)
+	}
+	if total != 2 {
+		t.Fatalf("expected 2 free plans, got %d", total)
+	}
+
+	// search
+	_, total, err = repo.ListAdmin(ctx, repository.TenantListFilter{Search: "amm"})
+	if err != nil {
+		t.Fatalf("list search: %v", err)
+	}
+	if total != 1 {
+		t.Fatalf("expected 1 'gamma' match, got %d", total)
+	}
+
+	// pagination
+	rows, total, err = repo.ListAdmin(ctx, repository.TenantListFilter{PageSize: 2, Page: 1})
+	if err != nil {
+		t.Fatalf("list paginated: %v", err)
+	}
+	if len(rows) != 2 || total != 4 {
+		t.Fatalf("page 1: rows=%d total=%d", len(rows), total)
+	}
+	rows, _, _ = repo.ListAdmin(ctx, repository.TenantListFilter{PageSize: 2, Page: 2})
+	if len(rows) != 2 {
+		t.Fatalf("page 2 len=%d", len(rows))
+	}
+
+	// invalid status
+	_, _, err = repo.ListAdmin(ctx, repository.TenantListFilter{Status: "banana"})
+	if err == nil {
+		t.Fatalf("expected validation error")
 	}
 }
 

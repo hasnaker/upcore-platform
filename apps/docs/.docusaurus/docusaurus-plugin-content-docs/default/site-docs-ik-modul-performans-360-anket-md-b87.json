@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/360-anket",
+  "title": "360° anket süreci",
+  "description": "360 = \"her yönden\" geri bildirim: üst, ast, akran, müşteri, öz.",
+  "source": "@site/docs/ik/modul/performans/360-anket.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/360-anket",
+  "permalink": "/en/docs/ik/modul/performans/360-anket",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/360-anket.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "360-anket",
+    "title": "360° anket süreci",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Key Result ilerleme takibi",
+    "permalink": "/en/docs/ik/modul/performans/key-result-takibi"
+  },
+  "next": {
+    "title": "360 soru havuzu",
+    "permalink": "/en/docs/ik/modul/performans/360-soru-havuzu"
+  }
+}

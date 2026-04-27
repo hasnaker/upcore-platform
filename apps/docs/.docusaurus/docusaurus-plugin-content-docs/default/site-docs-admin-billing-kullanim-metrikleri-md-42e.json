@@ -1,0 +1,29 @@
+{
+  "id": "admin/billing/kullanim-metrikleri",
+  "title": "Kullanım metrikleri",
+  "description": "Ölçülen metrikler",
+  "source": "@site/docs/admin/billing/kullanim-metrikleri.md",
+  "sourceDirName": "admin/billing",
+  "slug": "/admin/billing/kullanim-metrikleri",
+  "permalink": "/en/docs/admin/billing/kullanim-metrikleri",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/billing/kullanim-metrikleri.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "kullanim-metrikleri",
+    "title": "Kullanım metrikleri",
+    "sidebar_position": 3
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Fatura yönetimi",
+    "permalink": "/en/docs/admin/billing/fatura-yonetimi"
+  },
+  "next": {
+    "title": "Seat yönetimi",
+    "permalink": "/en/docs/admin/billing/seat-yonetimi"
+  }
+}

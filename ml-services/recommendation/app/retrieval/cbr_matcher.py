@@ -13,7 +13,7 @@ from uuid import UUID
 
 import structlog
 
-from app.schemas.internal import Candidate, CaseHit, HistoricalCase, WeightedCase
+from app.schemas.internal import CaseHit, HistoricalCase, WeightedCase
 
 logger = structlog.get_logger()
 

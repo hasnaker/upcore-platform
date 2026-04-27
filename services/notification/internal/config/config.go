@@ -53,6 +53,16 @@ type Config struct {
 	// JWT
 	JWTIssuer   string `mapstructure:"JWT_ISSUER"`
 	JWTAudience string `mapstructure:"JWT_AUDIENCE"`
+
+	// Slack adapter
+	SlackClientID       string `mapstructure:"SLACK_CLIENT_ID"`
+	SlackClientSecret   string `mapstructure:"SLACK_CLIENT_SECRET"`
+	SlackSigningSecret  string `mapstructure:"SLACK_SIGNING_SECRET"`
+	SlackRedirectURL    string `mapstructure:"SLACK_REDIRECT_URL"`
+	SlackAppID          string `mapstructure:"SLACK_APP_ID"`
+	SlackDataEncryptKey string `mapstructure:"SLACK_DATA_ENCRYPT_KEY"` // hex/base64 — used for pgcrypto pgp_sym_encrypt
+	SlackKeyVaultURL    string `mapstructure:"SLACK_KEY_VAULT_URL"`    // optional Azure Key Vault reference
+	SlackPublicBaseURL  string `mapstructure:"SLACK_PUBLIC_BASE_URL"`  // used for pulse / slash command deep links
 }
 
 // Load reads configuration from env (+ optional .env) applying sensible defaults.
@@ -130,4 +140,11 @@ func (c *Config) HasSendGrid() bool {
 // HasSMTP returns true when SMTP fallback is configured.
 func (c *Config) HasSMTP() bool {
 	return strings.TrimSpace(c.SMTPHost) != ""
+}
+
+// HasSlack returns true when Slack OAuth credentials are configured.
+func (c *Config) HasSlack() bool {
+	return strings.TrimSpace(c.SlackClientID) != "" &&
+		strings.TrimSpace(c.SlackClientSecret) != "" &&
+		strings.TrimSpace(c.SlackSigningSecret) != ""
 }

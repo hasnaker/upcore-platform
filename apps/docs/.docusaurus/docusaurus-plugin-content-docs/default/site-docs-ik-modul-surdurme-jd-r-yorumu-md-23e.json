@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/jd-r-yorumu",
+  "title": "JD-R boyut yorumu",
+  "description": "JD-R modeli (Job Demands–Resources, Demerouti & Bakker 2001) çalışan refahını iki eksende değerlendirir.",
+  "source": "@site/docs/ik/modul/surdurme/jd-r-yorumu.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/jd-r-yorumu",
+  "permalink": "/en/docs/ik/modul/surdurme/jd-r-yorumu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/jd-r-yorumu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "jd-r-yorumu",
+    "title": "JD-R boyut yorumu",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Soru bankası",
+    "permalink": "/en/docs/ik/modul/surdurme/soru-bankasi"
+  },
+  "next": {
+    "title": "BAT-TR skorlama ve yorumlama",
+    "permalink": "/en/docs/ik/modul/surdurme/bat-tr-skorlama"
+  }
+}

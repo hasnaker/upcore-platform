@@ -1,0 +1,36 @@
+{{- range $svcName, $svc := .Values.services }}
+{{- if and $svc.enabled $svc.ingress $svc.ingress.enabled }}
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: upcore-{{ $svcName }}
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/proxy-body-size: "20m"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts: [{{ $svc.ingress.host | quote }}]
+      secretName: upcore-{{ $svcName }}-tls
+  rules:
+    - host: {{ $svc.ingress.host | quote }}
+      http:
+        paths:
+          - path: {{ $svc.ingress.path | default "/" }}
+            pathType: Prefix
+            backend:
+              service:
+                name: upcore-{{ $svcName }}
+                port: { number: 80 }
+{{- end }}
+{{- end }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: upcore-sa
+  annotations:
+    azure.workload.identity/client-id: {{ .Values.global.azureClientId | default "" | quote }}

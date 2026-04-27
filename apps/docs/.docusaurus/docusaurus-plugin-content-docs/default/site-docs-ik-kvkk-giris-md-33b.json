@@ -1,0 +1,30 @@
+{
+  "id": "ik/kvkk/giris",
+  "title": "KVKK rehberine genel bakış",
+  "description": "6698 sayılı Kişisel Verilerin Korunması Kanunu'na uyumlu bir İK süreci kurmak için UpCore'un sunduğu tüm kaynaklar bu bölümdedir.",
+  "source": "@site/docs/ik/kvkk/giris.md",
+  "sourceDirName": "ik/kvkk",
+  "slug": "/ik/kvkk/giris",
+  "permalink": "/en/docs/ik/kvkk/giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/kvkk/giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "giris",
+    "title": "KVKK rehberine genel bakış",
+    "slug": "/ik/kvkk/giris",
+    "sidebar_position": 1
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Analitik — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/analitik/sikca-sorulanlar"
+  },
+  "next": {
+    "title": "KVKK / GRC modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/kvkk/genel-bakis"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "permalink": "/en/changelog/q2-ml-retrain",
+  "source": "@site/changelog/2026-04-01-quarterly-ml-retrain.md",
+  "title": "Q2 2026 ML modelleri retrain tamamlandı",
+  "description": "Çeyreklik retrain süreci tamamlandı. Tüm modeller için performans iyileşmesi kaydedildi.",
+  "date": "2026-04-01T00:00:00.000Z",
+  "tags": [
+    {
+      "inline": true,
+      "label": "ml",
+      "permalink": "/en/changelog/tags/ml"
+    },
+    {
+      "inline": true,
+      "label": "models",
+      "permalink": "/en/changelog/tags/models"
+    }
+  ],
+  "readingTime": 0.54,
+  "hasTruncateMarker": true,
+  "authors": [
+    {
+      "name": "UpCore ML Team",
+      "title": "Makine Öğrenmesi Ekibi",
+      "url": "https://upcore.io/about",
+      "imageURL": "/en/img/authors/ml-team.svg",
+      "key": "ml-team",
+      "page": null
+    }
+  ],
+  "frontMatter": {
+    "slug": "q2-ml-retrain",
+    "title": "Q2 2026 ML modelleri retrain tamamlandı",
+    "authors": [
+      "ml-team"
+    ],
+    "tags": [
+      "ml",
+      "models"
+    ],
+    "date": "2026-04-01T00:00:00.000Z"
+  },
+  "unlisted": false,
+  "prevItem": {
+    "title": "UpCore v2 Beta yayında",
+    "permalink": "/en/changelog/v2-beta-yayinda"
+  },
+  "nextItem": {
+    "title": "SOC 2 Type I denetim tamamlandı",
+    "permalink": "/en/changelog/soc2-type-i-tamamlandi"
+  }
+}

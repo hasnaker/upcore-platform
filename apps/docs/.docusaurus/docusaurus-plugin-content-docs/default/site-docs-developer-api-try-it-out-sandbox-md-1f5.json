@@ -1,0 +1,29 @@
+{
+  "id": "developer/api/try-it-out-sandbox",
+  "title": "Try it out sandbox",
+  "description": "Her API endpoint sayfasında \"Try it out\" butonu.",
+  "source": "@site/docs/developer/api/try-it-out-sandbox.md",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/try-it-out-sandbox",
+  "permalink": "/en/docs/developer/api/try-it-out-sandbox",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/try-it-out-sandbox.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "try-it-out-sandbox",
+    "title": "Try it out sandbox",
+    "sidebar_position": 4
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "API versiyonlama",
+    "permalink": "/en/docs/developer/api/versiyonlama"
+  },
+  "next": {
+    "title": "Webhook genel bakış",
+    "permalink": "/en/docs/developer/webhook/genel-bakis"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/tenant",
+  "title": "Tenant Servisi API Referansı",
+  "description": "UpCore Tenant servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/tenant.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/tenant",
+  "permalink": "/en/docs/developer/api/tenant",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/tenant.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 11,
+  "frontMatter": {
+    "id": "tenant",
+    "title": "Tenant Servisi API Referansı",
+    "sidebar_position": 11,
+    "slug": "/developer/api/tenant",
+    "description": "UpCore Tenant servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

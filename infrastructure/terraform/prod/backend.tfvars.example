@@ -1,0 +1,4 @@
+resource_group_name  = "upcore-tfstate"
+storage_account_name = "upcoretfstate"
+container_name       = "tfstate"
+key                  = "prod.tfstate"

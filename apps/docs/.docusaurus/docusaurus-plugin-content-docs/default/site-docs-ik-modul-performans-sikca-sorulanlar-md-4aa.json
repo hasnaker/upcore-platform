@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/sikca-sorulanlar",
+  "title": "Performans — sıkça sorulanlar",
+  "description": "360 sonucunu çalışana ne kadar göstermeliyim?",
+  "source": "@site/docs/ik/modul/performans/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/performans/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "Performans — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Bonus hesabı",
+    "permalink": "/en/docs/ik/modul/performans/bonus-hesabi"
+  },
+  "next": {
+    "title": "Mobility modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/mobility/genel-bakis"
+  }
+}

@@ -1,0 +1,331 @@
+openapi: 3.1.0
+info:
+  title: Upcore Assessment Service
+  version: 1.0.0
+  description: |
+    Assessment microservice for Upcore V1. Handles psychometric test delivery,
+    session management, anti-cheating monitoring, response collection, and
+    scoring integration. Supports BAT-12-TR, COPSOQ, and UpCap instruments.
+  contact:
+    name: Upcore Platform
+servers:
+  - url: http://localhost:8012
+    description: Local development
+  - url: https://api.upcore.dev
+    description: Production (via API gateway)
+
+security:
+  - bearerAuth: []
+  - tenantHeaders: []
+
+paths:
+  /health:
+    get:
+      summary: Liveness probe
+      security: []
+      responses:
+        '200':
+          description: OK
+  /ready:
+    get:
+      summary: Readiness probe
+      security: []
+      responses:
+        '200':
+          description: Ready
+
+  /api/v1/assessments:
+    get:
+      summary: List assessments
+      parameters:
+        - { name: page, in: query, schema: { type: integer, default: 1 } }
+        - { name: limit, in: query, schema: { type: integer, default: 50, maximum: 500 } }
+        - { name: status, in: query, schema: { type: string, enum: [pending, in_progress, completed, scored, expired, cancelled] } }
+        - { name: instrument_code, in: query, schema: { type: string, enum: [BAT-12-TR, COPSOQ, UPCAP] } }
+        - { name: employee_id, in: query, schema: { type: string, format: uuid } }
+        - { name: sort_by, in: query, schema: { type: string, enum: [created_at, updated_at, expires_at, instrument_code, status] } }
+        - { name: sort_dir, in: query, schema: { type: string, enum: [asc, desc] } }
+      responses:
+        '200':
+          description: Paginated list of assessments
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items: { type: array, items: { $ref: '#/components/schemas/Assessment' } }
+                  total: { type: integer }
+                  page: { type: integer }
+                  limit: { type: integer }
+    post:
+      summary: Create a new assessment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAssessmentRequest'
+      responses:
+        '201':
+          description: Assessment created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+        '422':
+          description: Validation error
+
+  /api/v1/assessments/{id}:
+    get:
+      summary: Get assessment by ID
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Assessment found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+        '404':
+          description: Not found
+
+  /api/v1/assessments/{id}/sessions:
+    post:
+      summary: Start a test session
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartSessionRequest'
+      responses:
+        '201':
+          description: Session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '409':
+          description: Active session already exists
+
+  /api/v1/assessments/{id}/sessions/{sid}:
+    get:
+      summary: Resume a session
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+        - { name: sid, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Session state
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Session'
+        '404':
+          description: Session not found
+
+  /api/v1/assessments/{id}/responses:
+    post:
+      summary: Submit item responses
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitResponsesRequest'
+      responses:
+        '200':
+          description: Responses saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  saved: { type: integer }
+        '422':
+          description: Validation error
+
+  /api/v1/assessments/{id}/complete:
+    post:
+      summary: Complete assessment and trigger scoring
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Assessment completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+        '409':
+          description: Already completed
+
+  /api/v1/assessments/{id}/results:
+    get:
+      summary: Get scoring results
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Score results
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Score'
+        '404':
+          description: Assessment not found
+
+  /api/v1/assessments/{id}/report:
+    post:
+      summary: Trigger report generation
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '202':
+          description: Report generation requested
+        '422':
+          description: Assessment not in valid state
+
+  /api/v1/assessments/candidate/{token}:
+    get:
+      summary: Get assessment by candidate token (public)
+      security: []
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: Assessment info for candidate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Assessment'
+        '401':
+          description: Invalid token
+
+  /api/v1/assessments/candidate/{token}/responses:
+    post:
+      summary: Submit responses as candidate (public)
+      security: []
+      parameters:
+        - { name: token, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SubmitResponsesRequest'
+      responses:
+        '200':
+          description: Responses saved
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  saved: { type: integer }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+    tenantHeaders:
+      type: apiKey
+      in: header
+      name: X-Tenant-ID
+
+  schemas:
+    Assessment:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        employee_id: { type: string, format: uuid }
+        candidate_email: { type: string }
+        candidate_name: { type: string }
+        instrument_code: { type: string, enum: [BAT-12-TR, COPSOQ, UPCAP] }
+        status: { type: string, enum: [pending, in_progress, completed, scored, expired, cancelled] }
+        candidate_token: { type: string }
+        assigned_by: { type: string, format: uuid }
+        expires_at: { type: string, format: date-time }
+        metadata: { type: object }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    CreateAssessmentRequest:
+      type: object
+      required: [instrument_code]
+      properties:
+        employee_id: { type: string, format: uuid }
+        candidate_email: { type: string, format: email }
+        candidate_name: { type: string }
+        instrument_code: { type: string, enum: [BAT-12-TR, COPSOQ, UPCAP] }
+        expires_at: { type: string, format: date-time }
+
+    Session:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        assessment_id: { type: string, format: uuid }
+        tenant_id: { type: string, format: uuid }
+        status: { type: string, enum: [active, paused, completed, timed_out] }
+        started_at: { type: string, format: date-time }
+        completed_at: { type: string, format: date-time }
+        time_limit_seconds: { type: integer }
+        elapsed_seconds: { type: integer }
+        current_item_index: { type: integer }
+        total_items: { type: integer }
+        cheating_metrics: { type: object }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    StartSessionRequest:
+      type: object
+      properties:
+        browser_fingerprint: { type: string }
+        user_agent: { type: string }
+        ip_address: { type: string }
+
+    SubmitResponsesRequest:
+      type: object
+      required: [session_id, responses]
+      properties:
+        session_id: { type: string, format: uuid }
+        responses:
+          type: array
+          items:
+            $ref: '#/components/schemas/ResponseInput'
+        focus_lost_count: { type: integer }
+        elapsed_seconds: { type: integer }
+
+    ResponseInput:
+      type: object
+      required: [item_code]
+      properties:
+        item_code: { type: string }
+        item_index: { type: integer }
+        response_value: { type: integer }
+        response_text: { type: string }
+        time_spent_seconds: { type: number, format: double }
+
+    Score:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        assessment_id: { type: string, format: uuid }
+        scale_code: { type: string }
+        scale_name: { type: string }
+        raw_score: { type: number, format: double }
+        t_score: { type: number, format: double }
+        percentile: { type: number, format: double }
+        risk_level: { type: string }
+        norm_group: { type: string }
+        metadata: { type: object }
+        scored_at: { type: string, format: date-time }
+        created_at: { type: string, format: date-time }

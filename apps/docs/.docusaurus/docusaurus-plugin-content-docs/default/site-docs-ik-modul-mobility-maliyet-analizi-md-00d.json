@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/maliyet-analizi",
+  "title": "Maliyet analizi",
+  "description": "İç mobilite yatırımının ROI (yatırım getirisi) analizi.",
+  "source": "@site/docs/ik/modul/mobility/maliyet-analizi.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/maliyet-analizi",
+  "permalink": "/en/docs/ik/modul/mobility/maliyet-analizi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/maliyet-analizi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "maliyet-analizi",
+    "title": "Maliyet analizi",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "9-kutu entegrasyon (Mobility ↔ Performans)",
+    "permalink": "/en/docs/ik/modul/mobility/9-kutu-entegrasyon"
+  },
+  "next": {
+    "title": "Mobility — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/mobility/sikca-sorulanlar"
+  }
+}

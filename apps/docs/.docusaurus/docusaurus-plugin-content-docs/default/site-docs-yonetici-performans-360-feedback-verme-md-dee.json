@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/performans/360-feedback-verme",
+  "title": "360° geri bildirim verme",
+  "description": "360 değerlendirme, çalışanın üst, ast, akran ve müşterilerden çok yönlü geri bildirim almasıdır.",
+  "source": "@site/docs/yonetici/performans/360-feedback-verme.md",
+  "sourceDirName": "yonetici/performans",
+  "slug": "/yonetici/performans/360-feedback-verme",
+  "permalink": "/en/docs/yonetici/performans/360-feedback-verme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/performans/360-feedback-verme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "360-feedback-verme",
+    "title": "360° geri bildirim verme",
+    "sidebar_position": 2
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "OKR belirleme",
+    "permalink": "/en/docs/yonetici/performans/okr-belirleme"
+  },
+  "next": {
+    "title": "9-kutu kalibrasyon toplantısı",
+    "permalink": "/en/docs/yonetici/performans/9-kutu-kalibrasyon"
+  }
+}

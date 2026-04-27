@@ -88,7 +88,7 @@ const statusLabel = (s: string) => {
 
 /* ─── Sparkline ─── */
 
-function Sparkline({ data, color = '#5E5CE6', width = 60, height = 20 }: { data: (number | null)[]; color?: string; width?: number; height?: number }) {
+function Sparkline({ data, color: _color = '#5E5CE6', width = 60, height = 20 }: { data: (number | null)[]; color?: string; width?: number; height?: number }) {
   const values = data.filter((v): v is number => v !== null);
   if (values.length < 2) return <span style={{ fontSize: 10, color: '#ccc' }}>—</span>;
   const min = Math.min(...values);

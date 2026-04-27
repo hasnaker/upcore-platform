@@ -27,7 +27,7 @@
  * CREATE INDEX idx_audit_log_resource ON app.audit_log(resource_type, resource_id);
  */
 
-import { DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { DB_URL, FALLBACK_TENANT_ID } from '@/lib/service-urls';
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                              */
@@ -36,6 +36,7 @@ import { DB_URL, TENANT_ID } from '@/lib/service-urls';
 export type AuditAction = 'create' | 'update' | 'delete' | 'view' | 'export' | 'login';
 
 export interface AuditEntry {
+  tenantId?: string;
   actorId: string;
   actorRole: string;
   action: AuditAction;
@@ -63,6 +64,12 @@ export interface AuditEntry {
  */
 export async function logAudit(entry: AuditEntry): Promise<void> {
   try {
+    const tenantId = entry.tenantId || FALLBACK_TENANT_ID;
+    if (!tenantId) {
+      // Do not write tenant-unsafe audit entries.
+      return;
+    }
+
     const { Pool } = await import('pg');
 
     const pool = new Pool({ connectionString: DB_URL });
@@ -80,7 +87,7 @@ export async function logAudit(entry: AuditEntry): Promise<void> {
           metadata
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`,
         [
-          TENANT_ID,
+          tenantId,
           entry.actorId,
           entry.actorRole,
           entry.action,
@@ -121,7 +128,7 @@ export interface AuditLogger {
  * void audit.log('view', 'employee', employeeId);
  * ```
  */
-export function createAuditLogger(actorId: string, actorRole: string): AuditLogger {
+export function createAuditLogger(actorId: string, actorRole: string, tenantId?: string): AuditLogger {
   return {
     log: (
       action: AuditAction,
@@ -131,6 +138,7 @@ export function createAuditLogger(actorId: string, actorRole: string): AuditLogg
       metadata?: Record<string, unknown>,
     ): Promise<void> =>
       logAudit({
+        tenantId,
         actorId,
         actorRole,
         action,

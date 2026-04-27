@@ -1,0 +1,29 @@
+{
+  "id": "calisan/hesap/profil-guncelleme",
+  "title": "Profil güncelleme",
+  "description": "Hesap menüsü > Profil sayfasından güncelleyebileceğiniz alanlar:",
+  "source": "@site/docs/calisan/hesap/profil-guncelleme.md",
+  "sourceDirName": "calisan/hesap",
+  "slug": "/calisan/hesap/profil-guncelleme",
+  "permalink": "/en/docs/calisan/hesap/profil-guncelleme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/hesap/profil-guncelleme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "profil-guncelleme",
+    "title": "Profil güncelleme",
+    "sidebar_position": 2
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "İlk giriş ve hesap aktivasyonu",
+    "permalink": "/en/docs/calisan/hesap/ilk-giris"
+  },
+  "next": {
+    "title": "Şifre ve MFA yönetimi",
+    "permalink": "/en/docs/calisan/hesap/sifre-mfa"
+  }
+}

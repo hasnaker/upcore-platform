@@ -2,8 +2,6 @@
 
 from __future__ import annotations
 
-import pytest
-
 from app.psychometrics.classifiers import classify_risk_level, classify_traffic_light
 from app.schemas.common import TrafficLight
 

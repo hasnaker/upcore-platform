@@ -146,10 +146,28 @@ func (r *eventRepo) Query(ctx context.Context, filter domain.QueryFilter, page, 
 		return nil, 0, fmt.Errorf("count audit events: %w", err)
 	}
 
-	dataQ := fmt.Sprintf(
-		`SELECT * FROM audit_events %s ORDER BY occurred_at DESC LIMIT %d OFFSET %d`,
-		where, limit, offset,
-	)
+	useKeyset := filter.CursorCreatedAt != nil && filter.CursorID != nil
+	var dataQ string
+	if useKeyset {
+		// Append keyset predicate with fresh positional indices.
+		idx := len(args) + 1
+		whereWithCursor := where
+		if whereWithCursor == "" {
+			whereWithCursor = fmt.Sprintf("WHERE (occurred_at, id) < ($%d, $%d)", idx, idx+1)
+		} else {
+			whereWithCursor = fmt.Sprintf("%s AND (occurred_at, id) < ($%d, $%d)", whereWithCursor, idx, idx+1)
+		}
+		args = append(args, *filter.CursorCreatedAt, *filter.CursorID)
+		dataQ = fmt.Sprintf(
+			`SELECT * FROM audit_events %s ORDER BY occurred_at DESC, id DESC LIMIT %d`,
+			whereWithCursor, limit,
+		)
+	} else {
+		dataQ = fmt.Sprintf(
+			`SELECT * FROM audit_events %s ORDER BY occurred_at DESC, id DESC LIMIT %d OFFSET %d`,
+			where, limit, offset,
+		)
+	}
 	var events []*domain.Event
 	if err := r.db.SelectContext(ctx, &events, dataQ, args...); err != nil {
 		return nil, 0, fmt.Errorf("query audit events: %w", err)

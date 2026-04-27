@@ -1,0 +1,49 @@
+# Local Pact broker for contract-testing developers.
+#
+# Run with:
+#   docker compose -f docker-compose.contract.yml up -d
+#
+# Broker UI: http://localhost:9292
+# Credentials: pact / pact
+#
+# Set PACT_BROKER_URL=http://localhost:9292 in each service's .env.test to
+# publish consumer pacts. Providers then run `pact verify` against the URL.
+
+version: "3.9"
+
+services:
+  pact-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: pact
+      POSTGRES_PASSWORD: pact
+      POSTGRES_DB: pact
+    volumes:
+      - pact_db:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "pact"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  pact-broker:
+    image: pactfoundation/pact-broker:2.112.0.1
+    depends_on:
+      pact-db:
+        condition: service_healthy
+    ports:
+      - "9292:9292"
+    environment:
+      PACT_BROKER_DATABASE_ADAPTER: postgres
+      PACT_BROKER_DATABASE_HOST: pact-db
+      PACT_BROKER_DATABASE_USERNAME: pact
+      PACT_BROKER_DATABASE_PASSWORD: pact
+      PACT_BROKER_DATABASE_NAME: pact
+      PACT_BROKER_BASIC_AUTH_USERNAME: pact
+      PACT_BROKER_BASIC_AUTH_PASSWORD: pact
+      PACT_BROKER_PORT: "9292"
+      PACT_BROKER_WEBHOOK_SCHEME_WHITELIST: "http https"
+      PACT_BROKER_ALLOW_PUBLIC_READ: "false"
+
+volumes:
+  pact_db:

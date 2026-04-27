@@ -1,20 +1,55 @@
-version: "3.9"
-
 # ============================================================================
-# Upcore V1 - Local Development Infrastructure
-# PostgreSQL 16 + pgvector, Redis 7, Azurite (Blob), Mailhog (SMTP)
-# ============================================================================
-# Usage:
-#   docker compose up -d
+# UpCore Platform — Tam Stack Local Development
+# ----------------------------------------------------------------------------
+# Infrastructure (postgres, redis, azurite, mailhog) +
+# 13 Go mikroservis + 4 Python ML servisi + Next.js frontend
+# ----------------------------------------------------------------------------
+# Hızlı başlangıç:
+#   docker compose up -d postgres redis azurite mailhog  # altyapı önce
+#   docker compose up -d auth tenant employee organization leave document \
+#                        survey intervention audit notification ats assessment
+#   docker compose up -d api-gateway
+#   docker compose up -d psychometric-scoring burnout-prediction \
+#                        recommendation action-center
+#   docker compose up -d web
+#
+# Sağlık kontrolü:
 #   docker compose ps
-#   docker compose logs -f postgres
-#   docker compose down -v   # destroys volumes
+#   curl http://localhost:8080/health   # gateway
+#   curl http://localhost:8001/health   # auth
+#
+# Tekrar temiz kurulum:
+#   docker compose down -v              # volume'ları da siler (DB reset)
 # ============================================================================
+
+name: upcore
+
+x-go-service-defaults: &go-service-defaults
+  restart: unless-stopped
+  networks: [upcore-net]
+  depends_on:
+    postgres: { condition: service_healthy }
+    redis:    { condition: service_healthy }
+
+x-go-env-defaults: &go-env-defaults
+  APP_ENV: development
+  LOG_LEVEL: info
+  DATABASE_URL: "postgres://upcore:upcore_dev_password@postgres:5432/upcore_dev?sslmode=disable"
+  REDIS_URL: "redis://:upcore_redis_dev@redis:6379/0"
+  CLERK_JWKS_URL: "${CLERK_JWKS_URL:-https://api.clerk.dev/v1/jwks}"
+  CLERK_ISSUER:   "${CLERK_ISSUER:-https://clerk.upcore.app}"
+  JWT_AUDIENCE:   "upcore-api"
+  TZ: Europe/Istanbul
+  # Observability — OTLP collector in the same network.
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector:4318"
+  SERVICE_VERSION: "${SERVICE_VERSION:-0.1.0}"
+  # Azure Service Bus — opt-in; boş bırakılırsa NopPublisher kullanılır.
+  SERVICE_BUS_CONNECTION_STRING: "${SERVICE_BUS_CONNECTION_STRING:-}"
 
 services:
-  # --------------------------------------------------------------------------
-  # PostgreSQL 16 with pgvector extension (via pgvector/pgvector image)
-  # --------------------------------------------------------------------------
+  # ==========================================================================
+  # ALTYAPI
+  # ==========================================================================
   postgres:
     image: pgvector/pgvector:pg16
     container_name: upcore-postgres
@@ -41,8 +76,6 @@ services:
       - "-c"
       - "maintenance_work_mem=128MB"
       - "-c"
-      - "log_statement=none"
-      - "-c"
       - "log_min_duration_statement=500"
     ports:
       - "5432:5432"
@@ -55,12 +88,8 @@ services:
       timeout: 5s
       retries: 10
       start_period: 10s
-    networks:
-      - upcore-net
+    networks: [upcore-net]
 
-  # --------------------------------------------------------------------------
-  # Redis 7 - caching, rate limiting, pub/sub, Bull queues
-  # --------------------------------------------------------------------------
   redis:
     image: redis:7-alpine
     container_name: upcore-redis
@@ -85,12 +114,8 @@ services:
       timeout: 3s
       retries: 10
       start_period: 5s
-    networks:
-      - upcore-net
+    networks: [upcore-net]
 
-  # --------------------------------------------------------------------------
-  # Azurite - Azure Blob Storage emulator (documents, attachments, ML artifacts)
-  # --------------------------------------------------------------------------
   azurite:
     image: mcr.microsoft.com/azure-storage/azurite:latest
     container_name: upcore-azurite
@@ -108,9 +133,9 @@ services:
       - "--loose"
       - "--skipApiVersionCheck"
     ports:
-      - "10000:10000" # Blob
-      - "10001:10001" # Queue
-      - "10002:10002" # Table
+      - "10000:10000"
+      - "10001:10001"
+      - "10002:10002"
     volumes:
       - azurite_data:/data
     healthcheck:
@@ -119,42 +144,580 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
-    networks:
-      - upcore-net
+    networks: [upcore-net]
 
-  # --------------------------------------------------------------------------
-  # Mailhog - SMTP test server, inspects outbound emails in a web UI
-  # --------------------------------------------------------------------------
   mailhog:
     image: mailhog/mailhog:latest
     container_name: upcore-mailhog
     restart: unless-stopped
     ports:
-      - "1025:1025" # SMTP
-      - "8025:8025" # Web UI
+      - "1025:1025"
+      - "8025:8025"
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "1025"]
       interval: 10s
       timeout: 3s
       retries: 5
       start_period: 5s
-    networks:
-      - upcore-net
+    networks: [upcore-net]
 
-# ============================================================================
-# Persistent volumes
+  # ==========================================================================
+  # GO MİKROSERVİSLER (port 8001-8013)
+  # ==========================================================================
+  auth:
+    <<: *go-service-defaults
+    build:
+      context: ../services/auth
+      dockerfile: Dockerfile
+    container_name: upcore-auth
+    environment:
+      <<: *go-env-defaults
+      PORT: "8001"
+      CLERK_WEBHOOK_SECRET: "${CLERK_WEBHOOK_SECRET:-whsec_dev_placeholder}"
+    ports:
+      - "8001:8001"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8001/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  tenant:
+    <<: *go-service-defaults
+    build:
+      context: ../services/tenant
+      dockerfile: Dockerfile
+    container_name: upcore-tenant
+    environment:
+      <<: *go-env-defaults
+      PORT: "8002"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8002:8002"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+      auth:     { condition: service_started }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8002/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  employee:
+    <<: *go-service-defaults
+    build:
+      context: ../services/employee
+      dockerfile: Dockerfile
+    container_name: upcore-employee
+    environment:
+      <<: *go-env-defaults
+      PORT: "8003"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8003:8003"
+    depends_on:
+      postgres: { condition: service_healthy }
+      auth:     { condition: service_started }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8003/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  organization:
+    <<: *go-service-defaults
+    build:
+      context: ../services/organization
+      dockerfile: Dockerfile
+    container_name: upcore-organization
+    environment:
+      <<: *go-env-defaults
+      PORT: "8004"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8004:8004"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8004/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  leave:
+    <<: *go-service-defaults
+    build:
+      context: ../services/leave
+      dockerfile: Dockerfile
+    container_name: upcore-leave
+    environment:
+      <<: *go-env-defaults
+      PORT: "8005"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8005:8005"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8005/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  document:
+    <<: *go-service-defaults
+    build:
+      context: ../services/document
+      dockerfile: Dockerfile
+    container_name: upcore-document
+    environment:
+      <<: *go-env-defaults
+      PORT: "8006"
+      AUTH_SERVICE_URL: "http://auth:8001"
+      AZURE_STORAGE_CONNECTION_STRING: "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;BlobEndpoint=http://azurite:10000/devstoreaccount1;"
+    ports:
+      - "8006:8006"
+    depends_on:
+      postgres: { condition: service_healthy }
+      azurite:  { condition: service_healthy }
+      auth:     { condition: service_started }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8006/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  survey:
+    <<: *go-service-defaults
+    build:
+      context: ../services/survey
+      dockerfile: Dockerfile
+    container_name: upcore-survey
+    environment:
+      <<: *go-env-defaults
+      PORT: "8007"
+      AUTH_SERVICE_URL: "http://auth:8001"
+      SCORING_SERVICE_URL: "http://psychometric-scoring:8021"
+    ports:
+      - "8007:8007"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8007/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  intervention:
+    <<: *go-service-defaults
+    build:
+      context: ../services/intervention
+      dockerfile: Dockerfile
+    container_name: upcore-intervention
+    environment:
+      <<: *go-env-defaults
+      PORT: "8008"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8008:8008"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8008/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  audit:
+    <<: *go-service-defaults
+    build:
+      context: ../services/audit
+      dockerfile: Dockerfile
+    container_name: upcore-audit
+    environment:
+      <<: *go-env-defaults
+      PORT: "8009"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8009:8009"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8009/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  notification:
+    <<: *go-service-defaults
+    build:
+      context: ../services/notification
+      dockerfile: Dockerfile
+    container_name: upcore-notification
+    environment:
+      <<: *go-env-defaults
+      PORT: "8010"
+      AUTH_SERVICE_URL: "http://auth:8001"
+      SMTP_HOST: "mailhog"
+      SMTP_PORT: "1025"
+      SMTP_USER: ""
+      SMTP_PASSWORD: ""
+      SMTP_FROM: "noreply@upcore.local"
+    ports:
+      - "8010:8010"
+    depends_on:
+      postgres: { condition: service_healthy }
+      redis:    { condition: service_healthy }
+      mailhog:  { condition: service_healthy }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8010/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  ats:
+    <<: *go-service-defaults
+    build:
+      context: ../services/ats
+      dockerfile: Dockerfile
+    container_name: upcore-ats
+    environment:
+      <<: *go-env-defaults
+      PORT: "8011"
+      AUTH_SERVICE_URL: "http://auth:8001"
+      SCORING_SERVICE_URL: "http://psychometric-scoring:8021"
+    ports:
+      - "8011:8011"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8011/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  assessment:
+    <<: *go-service-defaults
+    build:
+      context: ../services/assessment
+      dockerfile: Dockerfile
+    container_name: upcore-assessment
+    environment:
+      <<: *go-env-defaults
+      PORT: "8012"
+      AUTH_SERVICE_URL: "http://auth:8001"
+      SCORING_SERVICE_URL: "http://psychometric-scoring:8021"
+      REDIS_URL: "redis:6379"
+      REDIS_PASSWORD: "upcore_redis_dev"
+      REDIS_DB: "0"
+    ports:
+      - "8012:8012"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8012/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  mobility:
+    <<: *go-service-defaults
+    build:
+      context: ../services/mobility
+      dockerfile: Dockerfile
+    container_name: upcore-mobility
+    environment:
+      <<: *go-env-defaults
+      PORT: "8013"
+      AUTH_SERVICE_URL: "http://auth:8001"
+    ports:
+      - "8013:8013"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8013/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  performance:
+    <<: *go-service-defaults
+    build:
+      context: ../services/performance
+      dockerfile: Dockerfile
+    container_name: upcore-performance
+    environment:
+      <<: *go-env-defaults
+      PORT: "8014"
+    ports:
+      - "8014:8014"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8014/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  bordro:
+    <<: *go-service-defaults
+    build:
+      # bordro depends on packages/go/bordro via replace directive;
+      # build context is the repo root so both trees are available.
+      context: ..
+      dockerfile: services/bordro/Dockerfile
+    container_name: upcore-bordro
+    environment:
+      <<: *go-env-defaults
+      PORT: "8015"
+    ports:
+      - "8015:8015"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8015/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  billing:
+    <<: *go-service-defaults
+    build:
+      context: ../services/billing
+      dockerfile: Dockerfile
+    container_name: upcore-billing
+    environment:
+      <<: *go-env-defaults
+      PORT: "8026"
+    ports:
+      - "8026:8026"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8026/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # ==========================================================================
+  # STATUS SERVICE (port 8030) — public status page backend
+  # ==========================================================================
+  status:
+    <<: *go-service-defaults
+    build:
+      context: ../services/status
+      dockerfile: Dockerfile
+    container_name: upcore-status
+    environment:
+      <<: *go-env-defaults
+      PORT: "8030"
+      PROMETHEUS_URL: "http://prometheus:9090"
+      PUBLIC_BASE_URL: "https://status.upcore.io"
+    ports:
+      - "8030:8030"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8030/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+
+  # ==========================================================================
+  # API GATEWAY (port 8080) — tüm downstream servislerin önünde
+  # ==========================================================================
+  api-gateway:
+    <<: *go-service-defaults
+    build:
+      context: ../services/api-gateway
+      dockerfile: Dockerfile
+    container_name: upcore-api-gateway
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: info
+      PORT: "8080"
+      REDIS_URL: "redis://:upcore_redis_dev@redis:6379/0"
+      CLERK_JWKS_URL: "${CLERK_JWKS_URL:-https://api.clerk.dev/v1/jwks}"
+      CLERK_ISSUER:   "${CLERK_ISSUER:-https://clerk.upcore.app}"
+      JWT_AUDIENCE:   "upcore-api"
+      CORS_ALLOWED_ORIGINS: "http://localhost:3000,http://localhost:3001,http://web:3000"
+      ROUTES_CONFIG_PATH: "/app/config/routes.yaml"
+      TZ: Europe/Istanbul
+    ports:
+      - "8080:8080"
+    depends_on:
+      redis: { condition: service_healthy }
+      auth:  { condition: service_started }
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O-", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 20s
+    volumes:
+      - ../services/api-gateway/config/routes.docker.yaml:/app/config/routes.yaml:ro
+
+  # ==========================================================================
+  # PYTHON ML SERVİSLERİ (port 8021-8024)
+  # ==========================================================================
+  psychometric-scoring:
+    build:
+      context: ../ml-services/psychometric-scoring
+      dockerfile: Dockerfile
+    container_name: upcore-scoring
+    restart: unless-stopped
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: info
+      PORT: "8021"
+      TZ: Europe/Istanbul
+    ports:
+      - "8021:8021"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8021/health', timeout=2)"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 25s
+    networks: [upcore-net]
+
+  burnout-prediction:
+    build:
+      context: ../ml-services/burnout-prediction
+      dockerfile: Dockerfile
+    container_name: upcore-burnout
+    restart: unless-stopped
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: info
+      PORT: "8022"
+      TZ: Europe/Istanbul
+    ports:
+      - "8022:8022"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8022/health || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    networks: [upcore-net]
+
+  recommendation:
+    build:
+      context: ../ml-services/recommendation
+      dockerfile: Dockerfile
+    container_name: upcore-recommendation
+    restart: unless-stopped
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: info
+      PORT: "8023"
+      TZ: Europe/Istanbul
+    ports:
+      - "8023:8023"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8023/health || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    networks: [upcore-net]
+
+  action-center:
+    build:
+      context: ../ml-services/action-center
+      dockerfile: Dockerfile
+    container_name: upcore-action-center
+    restart: unless-stopped
+    environment:
+      APP_ENV: development
+      LOG_LEVEL: info
+      PORT: "8024"
+      TZ: Europe/Istanbul
+    ports:
+      - "8024:8024"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8024/health || exit 1"]
+      interval: 15s
+      timeout: 3s
+      retries: 5
+      start_period: 30s
+    networks: [upcore-net]
+
+  # ==========================================================================
+  # FRONTEND (Next.js 15) — port 3000
+  # ==========================================================================
+  web:
+    build:
+      context: ..
+      dockerfile: apps/web/Dockerfile
+    container_name: upcore-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+      NEXT_PUBLIC_APP_URL: "http://localhost:3000"
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: "${NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:-pk_test_placeholder}"
+      CLERK_SECRET_KEY: "${CLERK_SECRET_KEY:-sk_test_placeholder}"
+      TZ: Europe/Istanbul
+    ports:
+      - "3000:3000"
+    depends_on:
+      api-gateway: { condition: service_started }
+    networks: [upcore-net]
+
+  # ==========================================================================
+  # Observability — Prometheus + Grafana + OpenTelemetry Collector
+  # ==========================================================================
+  prometheus:
+    image: prom/prometheus:v2.54.1
+    container_name: upcore-prometheus
+    restart: unless-stopped
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.enable-lifecycle'
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    ports:
+      - "9090:9090"
+    networks: [upcore-net]
+
+  grafana:
+    image: grafana/grafana:11.2.0
+    container_name: upcore-grafana
+    restart: unless-stopped
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: upcore_dev
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
+      - grafana_data:/var/lib/grafana
+    ports:
+      - "3001:3000"
+    depends_on:
+      prometheus: { condition: service_started }
+    networks: [upcore-net]
+
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.108.0
+    container_name: upcore-otel-collector
+    restart: unless-stopped
+    command: ["--config=/etc/otel/config.yaml"]
+    volumes:
+      - ./otel-collector.yaml:/etc/otel/config.yaml:ro
+    ports:
+      - "4317:4317" # OTLP gRPC
+      - "4318:4318" # OTLP HTTP
+    networks: [upcore-net]
+
 # ============================================================================
 volumes:
-  postgres_data:
-    name: upcore_postgres_data
-  redis_data:
-    name: upcore_redis_data
-  azurite_data:
-    name: upcore_azurite_data
+  postgres_data:   { name: upcore_postgres_data }
+  redis_data:      { name: upcore_redis_data }
+  azurite_data:    { name: upcore_azurite_data }
+  prometheus_data: { name: upcore_prometheus_data }
+  grafana_data:    { name: upcore_grafana_data }
 
-# ============================================================================
-# Shared bridge network
-# ============================================================================
 networks:
   upcore-net:
     name: upcore-net

@@ -6,7 +6,7 @@ recommendations based on burnout band and top driver features.
 
 from __future__ import annotations
 
-from uuid import UUID, uuid5, NAMESPACE_DNS
+from uuid import uuid5, NAMESPACE_DNS
 
 import structlog
 

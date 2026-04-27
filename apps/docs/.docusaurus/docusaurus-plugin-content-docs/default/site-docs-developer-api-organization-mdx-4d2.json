@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/organization",
+  "title": "Organization Servisi API Referansı",
+  "description": "UpCore Organization servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/organization.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/organization",
+  "permalink": "/en/docs/developer/api/organization",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/organization.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 13,
+  "frontMatter": {
+    "id": "organization",
+    "title": "Organization Servisi API Referansı",
+    "sidebar_position": 13,
+    "slug": "/developer/api/organization",
+    "description": "UpCore Organization servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

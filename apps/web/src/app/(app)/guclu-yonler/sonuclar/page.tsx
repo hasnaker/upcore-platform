@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { STRENGTH_DOMAINS, DEPARTMENT_AVERAGES } from '../lib/strengths-data';
+import { DEPARTMENT_AVERAGES } from '../lib/strengths-data';
 import {
   loadResults,
   clearStrengthsData,

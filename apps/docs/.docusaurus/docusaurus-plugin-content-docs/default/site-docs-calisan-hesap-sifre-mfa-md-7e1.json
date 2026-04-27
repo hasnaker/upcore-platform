@@ -1,0 +1,29 @@
+{
+  "id": "calisan/hesap/sifre-mfa",
+  "title": "Şifre ve MFA yönetimi",
+  "description": "Şifreyi değiştir",
+  "source": "@site/docs/calisan/hesap/sifre-mfa.md",
+  "sourceDirName": "calisan/hesap",
+  "slug": "/calisan/hesap/sifre-mfa",
+  "permalink": "/en/docs/calisan/hesap/sifre-mfa",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/hesap/sifre-mfa.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "sifre-mfa",
+    "title": "Şifre ve MFA yönetimi",
+    "sidebar_position": 3
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Profil güncelleme",
+    "permalink": "/en/docs/calisan/hesap/profil-guncelleme"
+  },
+  "next": {
+    "title": "Bildirim tercihleri",
+    "permalink": "/en/docs/calisan/hesap/bildirim-tercihleri"
+  }
+}

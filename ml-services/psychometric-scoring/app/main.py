@@ -2,23 +2,34 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app import __version__
-from app.api import routes_bat, routes_batch, routes_copsoq, routes_health
-from app.api import routes_jdr, routes_norms, routes_strengths, routes_upcap
+from app.api import (
+    routes_bat,
+    routes_batch,
+    routes_copsoq,
+    routes_fit,
+    routes_health,
+    routes_instruments,
+    routes_jdr,
+    routes_norms,
+    routes_strengths,
+    routes_upcap,
+    routes_upcap_tr,
+)
 from app.config import get_settings
 from app.core.exceptions import PsychometricError
 from app.core.logging import configure_logging
 from app.middleware import MetricsMiddleware, RequestIDMiddleware, TenantContextMiddleware
 from app.norms.norm_loader import load_all_norms
 from app.storage import pg_client, redis_client
-from app.utils.errors import generic_error_handler, psychometric_error_handler
+from app.utils.errors import psychometric_error_handler
 
 logger = structlog.get_logger(__name__)
 
@@ -100,10 +111,13 @@ def create_app() -> FastAPI:
     app.include_router(routes_bat.router)
     app.include_router(routes_jdr.router)
     app.include_router(routes_upcap.router)
+    app.include_router(routes_upcap_tr.router)
     app.include_router(routes_copsoq.router)
     app.include_router(routes_strengths.router)
     app.include_router(routes_batch.router)
     app.include_router(routes_norms.router)
+    app.include_router(routes_fit.router)
+    app.include_router(routes_instruments.router)
 
     return app
 

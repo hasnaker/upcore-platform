@@ -56,6 +56,20 @@ export async function apiFetch<T>(
       isJson && typeof payload === 'object' && payload !== null && 'message' in payload
         ? String((payload as { message: unknown }).message)
         : `Request failed with status ${response.status}`;
+
+    // 402 Payment Required — plan limit. Global bir toast listener'a forward et.
+    // Frontend `PlanLimitToaster` component'i bu event'i dinler ve kullanıcıya
+    // "Planı yükselt" CTA gösterir.
+    if (response.status === 402 && typeof window !== 'undefined') {
+      const ev = new CustomEvent('upcore:plan-limit', {
+        detail: {
+          payload,
+          path,
+          status: response.status,
+        },
+      });
+      window.dispatchEvent(ev);
+    }
     throw new ApiError(response.status, message, payload);
   }
 

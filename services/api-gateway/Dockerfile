@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.6
-FROM golang:1.23-alpine AS builder
+FROM golang:1.25-alpine AS builder
 WORKDIR /app
 
 # Better layer caching
@@ -15,6 +15,7 @@ RUN apk add --no-cache ca-certificates tzdata && \
 
 COPY --from=builder /out/api-gateway /usr/local/bin/api-gateway
 COPY config/routes.yaml /etc/upcore/routes.yaml
+COPY config/routes.prod.yaml /etc/upcore/routes.prod.yaml
 
 USER appuser
 EXPOSE 8080

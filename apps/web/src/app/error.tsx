@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
+import * as Sentry from '@sentry/nextjs';
 
 export default function GlobalError({
   error,
@@ -10,8 +11,14 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    // Structured logging: could replace with Sentry/App Insights.
+    // Structured log + Sentry capture. digest Next.js'in hata redaction
+    // ID'si — kullanıcıya gösterilen hata ile Sentry kaydı arasında
+    // korelasyon kurulur (support workflow).
     console.error('[app error]', { message: error.message, digest: error.digest });
+    Sentry.captureException(error, {
+      tags: { source: 'app-root-error-boundary' },
+      extra: { digest: error.digest },
+    });
   }, [error]);
 
   return (

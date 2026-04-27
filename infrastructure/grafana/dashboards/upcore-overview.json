@@ -1,0 +1,253 @@
+{
+  "annotations": {"list": []},
+  "description": "UpCore SaaS — tüm Go servisleri için cross-service HTTP + iş metrikleri",
+  "editable": true,
+  "graphTooltip": 1,
+  "id": null,
+  "iteration": 1,
+  "links": [],
+  "panels": [
+    {
+      "type": "row",
+      "title": "HTTP Health",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 0},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Request rate (req/s)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 1},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (service) (rate({__name__=~\"upcore_(bordro|employee|performance|leave|ats)_http_requests_total\"}[1m]))",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "reqps"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "p95 latency (s)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 1},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (service, le) (rate({__name__=~\"upcore_(bordro|employee|performance|leave|ats)_http_request_duration_seconds_bucket\"}[5m])))",
+          "legendFormat": "{{service}} p95",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Error rate % (5xx)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 9},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "100 * sum by (service) (rate({__name__=~\"upcore_(bordro|employee|performance|leave|ats)_http_requests_total\", status=~\"5..\"}[5m])) / sum by (service) (rate({__name__=~\"upcore_(bordro|employee|performance|leave|ats)_http_requests_total\"}[5m]))",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "percent"}}
+    },
+    {
+      "type": "timeseries",
+      "title": "In-flight requests",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 9},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (service) ({__name__=~\"upcore_(bordro|employee|performance|leave|ats)_http_requests_in_flight\"})",
+          "legendFormat": "{{service}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Business KPIs",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 17},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "stat",
+      "title": "Employees created (today)",
+      "gridPos": {"h": 6, "w": 6, "x": 0, "y": 18},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "increase(upcore_employee_employees_created_total[1d])", "refId": "A"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Payroll slips generated (today)",
+      "gridPos": {"h": 6, "w": 6, "x": 6, "y": 18},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(increase(upcore_bordro_payroll_slips_generated_total[1d]))", "refId": "A"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "SGK XML generated (7d)",
+      "gridPos": {"h": 6, "w": 6, "x": 12, "y": 18},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(increase(upcore_bordro_sgk_xml_generated_total[7d]))", "refId": "A"}
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Leave requests (today)",
+      "gridPos": {"h": 6, "w": 6, "x": 18, "y": 18},
+      "datasource": "Prometheus",
+      "targets": [
+        {"expr": "sum(increase(upcore_leave_requests_created_total[1d]))", "refId": "A"}
+      ]
+    },
+    {
+      "type": "piechart",
+      "title": "ATS applications by source (7d)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 24},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (source) (increase(upcore_ats_applications_received_total[7d]))",
+          "legendFormat": "{{source}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "piechart",
+      "title": "Performance goals by category (30d)",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 24},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (category) (increase(upcore_performance_goals_total[30d]))",
+          "legendFormat": "{{category}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Service Bus publish failures (employee)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 32},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (topic) (rate(upcore_employee_event_publish_failures_total[5m]))",
+          "legendFormat": "{{topic}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Payroll runs by status",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 32},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (status) (rate(upcore_bordro_payroll_runs_total[5m]))",
+          "legendFormat": "{{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "row",
+      "title": "Saga Orchestrator",
+      "gridPos": {"h": 1, "w": 24, "x": 0, "y": 40},
+      "collapsed": false,
+      "panels": []
+    },
+    {
+      "type": "timeseries",
+      "title": "Saga instances by outcome",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 41},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (saga, status) (rate(upcore_saga_instances_total[5m]))",
+          "legendFormat": "{{saga}} · {{status}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "In-flight sagas",
+      "gridPos": {"h": 4, "w": 6, "x": 12, "y": 41},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (saga) (upcore_saga_in_flight)",
+          "legendFormat": "{{saga}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "Saga failed rate (1h)",
+      "gridPos": {"h": 4, "w": 6, "x": 18, "y": 41},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum(rate(upcore_saga_instances_total{status=~\"failed|compensated\"}[1h]))",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "ops", "thresholds": {"mode": "absolute", "steps": [{"color": "green", "value": null}, {"color": "orange", "value": 0.01}, {"color": "red", "value": 0.05}]}}}
+    },
+    {
+      "type": "timeseries",
+      "title": "Saga step failures",
+      "gridPos": {"h": 8, "w": 12, "x": 12, "y": 45},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "sum by (saga, step, direction) (rate(upcore_saga_steps_total{status=\"failed\"}[5m]))",
+          "legendFormat": "{{saga}} · {{step}} ({{direction}})",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Saga p95 duration (seconds)",
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 49},
+      "datasource": "Prometheus",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (saga, le) (rate(upcore_saga_duration_seconds_bucket[5m])))",
+          "legendFormat": "{{saga}} p95",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {"defaults": {"unit": "s"}}
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["upcore", "overview"],
+  "templating": {"list": []},
+  "time": {"from": "now-6h", "to": "now"},
+  "timepicker": {},
+  "timezone": "Europe/Istanbul",
+  "title": "UpCore — Cross-Service Overview",
+  "uid": "upcore-overview",
+  "version": 1,
+  "weekStart": ""
+}

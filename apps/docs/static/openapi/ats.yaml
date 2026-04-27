@@ -1,0 +1,175 @@
+openapi: 3.1.0
+info:
+  title: UpCore ATS (Aday Takip) Servisi
+  version: 1.0.0
+  description: |
+    İş başvuru pipeline yönetimi, iş ilanı CRUD, mülakat planlama, teklif mektubu süreci.
+    Kaynak: `services/ats`. Bu spec dosyası docs repo'sunda senkronize tutulur; Go servisi
+    kendi `api/openapi.yaml` dosyasını üretince bu dosya kaldırılır.
+  contact:
+    name: UpCore Platform Team
+    email: platform@upcore.io
+servers:
+  - url: https://api.upcore.io
+    description: Production
+  - url: https://api.staging.upcore.io
+    description: Staging
+  - url: http://localhost:8011
+    description: Local
+security:
+  - bearerAuth: []
+tags:
+  - name: jobs
+    description: İş ilanı yönetimi
+  - name: candidates
+    description: Aday CRUD ve pipeline durumu
+  - name: interviews
+    description: Mülakat planlama
+  - name: offers
+    description: Teklif mektubu
+
+paths:
+  /api/v1/jobs:
+    get:
+      tags: [jobs]
+      summary: Aktif iş ilanlarını listele
+      parameters:
+        - name: department_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: status
+          in: query
+          schema: { type: string, enum: [draft, open, on_hold, filled, closed] }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/Job" }
+    post:
+      tags: [jobs]
+      summary: Yeni iş ilanı oluştur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/JobCreate" }
+      responses:
+        "201":
+          description: Oluşturuldu
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/Job" }
+
+  /api/v1/jobs/{jobId}/candidates:
+    get:
+      tags: [candidates]
+      summary: İlana başvuran adayları listele
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+
+  /api/v1/candidates/{candidateId}/stage:
+    post:
+      tags: [candidates]
+      summary: Adayı bir sonraki aşamaya taşı
+      parameters:
+        - name: candidateId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [stage]
+              properties:
+                stage:
+                  type: string
+                  enum: [applied, screening, interview, offer, hired, rejected]
+                note: { type: string }
+      responses:
+        "200":
+          description: Aşama güncellendi
+
+  /api/v1/interviews:
+    post:
+      tags: [interviews]
+      summary: Mülakat planla
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/InterviewCreate" }
+      responses:
+        "201":
+          description: Oluşturuldu
+
+  /api/v1/offers:
+    post:
+      tags: [offers]
+      summary: Teklif mektubu oluştur
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: "#/components/schemas/OfferCreate" }
+      responses:
+        "201":
+          description: Teklif oluşturuldu
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Job:
+      type: object
+      required: [id, title, status, department_id, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        title: { type: string }
+        status: { type: string, enum: [draft, open, on_hold, filled, closed] }
+        department_id: { type: string, format: uuid }
+        location: { type: string }
+        created_at: { type: string, format: date-time }
+    JobCreate:
+      type: object
+      required: [title, department_id]
+      properties:
+        title: { type: string, minLength: 3, maxLength: 120 }
+        department_id: { type: string, format: uuid }
+        location: { type: string }
+        description: { type: string }
+        headcount: { type: integer, minimum: 1, maximum: 100, default: 1 }
+    InterviewCreate:
+      type: object
+      required: [candidate_id, scheduled_at, duration_minutes]
+      properties:
+        candidate_id: { type: string, format: uuid }
+        scheduled_at: { type: string, format: date-time }
+        duration_minutes: { type: integer, minimum: 15, maximum: 180 }
+        interviewer_ids:
+          type: array
+          items: { type: string, format: uuid }
+        mode: { type: string, enum: [online, in_person, phone] }
+    OfferCreate:
+      type: object
+      required: [candidate_id, salary_gross, start_date]
+      properties:
+        candidate_id: { type: string, format: uuid }
+        salary_gross: { type: number, minimum: 0 }
+        currency: { type: string, default: TRY }
+        start_date: { type: string, format: date }
+        expires_at: { type: string, format: date-time }

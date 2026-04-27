@@ -1,0 +1,29 @@
+{
+  "id": "developer/webhook/olaylar",
+  "title": "Webhook olayları",
+  "description": "Platform üzerindeki önemli olayların listesi.",
+  "source": "@site/docs/developer/webhook/olaylar.md",
+  "sourceDirName": "developer/webhook",
+  "slug": "/developer/webhook/olaylar",
+  "permalink": "/en/docs/developer/webhook/olaylar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/webhook/olaylar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "olaylar",
+    "title": "Webhook olayları",
+    "sidebar_position": 4
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Retry politikası",
+    "permalink": "/en/docs/developer/webhook/retry-politikasi"
+  },
+  "next": {
+    "title": "JavaScript / TypeScript SDK",
+    "permalink": "/en/docs/developer/sdk/javascript"
+  }
+}

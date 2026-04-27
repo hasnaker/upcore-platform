@@ -1,0 +1,80 @@
+# ============================================================================
+# Deploy Status Page (status.upcore.io)
+# ----------------------------------------------------------------------------
+# - main push → Azure Static Web Apps deploy
+# - Ana platform (westeurope) down olsa bile status page ayakta kalmalı:
+#   Bu SWA ayrı region (swedencentral) ve ayrı cloud altyapısı.
+# - Subdomain: status.upcore.io (Cloudflare CNAME → <SWA>.azurestaticapps.net)
+# ============================================================================
+
+name: Deploy Status Page
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/status/**'
+      - '.github/workflows/deploy-status.yml'
+      - 'packages/design-system/**'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-status-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  deploy:
+    name: Build & Deploy to Azure Static Web Apps
+    runs-on: ubuntu-latest
+    environment:
+      name: status-prod
+      url: https://status.upcore.io
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: false
+          submodules: false
+
+      - uses: pnpm/action-setup@v4
+        with: { version: '9' }
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build status app
+        working-directory: apps/status
+        run: pnpm build
+
+      - name: Deploy to Azure Static Web Apps
+        id: swa
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          # Token repo secret'ına eklenmelidir — `az staticwebapp secrets list`
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_STATUS_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: upload
+          app_location: apps/status
+          output_location: .next
+          api_location: ''
+          # Build SWA service tarafında değil; biz yukarıda pnpm build ile hallettik.
+          skip_app_build: true
+
+      - name: Post-deploy smoke test
+        run: |
+          echo "Waiting 30s for DNS propagation..."
+          sleep 30
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://status.upcore.io --max-time 15 || echo "000")
+          if [[ "$HTTP_STATUS" != "200" ]]; then
+            echo "::warning::Status page returned $HTTP_STATUS — may still be propagating"
+          else
+            echo "Status page healthy: HTTP 200"
+          fi

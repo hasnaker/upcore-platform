@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<!--
+  Placeholder Outlook Add-in manifest (content add-in, task pane).
+  Fills pipeline entry point for the next sprint; currently registers the
+  UpCore "Pulse" command on the ribbon. Full v1.3 manifest will replace this
+  when ATS + Koruma integrations ship.
+-->
+<OfficeApp
+  xmlns="http://schemas.microsoft.com/office/appforoffice/1.1"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xmlns:bt="http://schemas.microsoft.com/office/officeappbasictypes/1.0"
+  xmlns:mailappor="http://schemas.microsoft.com/office/mailappversionoverrides"
+  xsi:type="MailApp">
+
+  <Id>REPLACE-WITH-GUID</Id>
+  <Version>0.1.0</Version>
+  <ProviderName>UpCore Teknoloji A.Ş.</ProviderName>
+  <DefaultLocale>tr-TR</DefaultLocale>
+  <DisplayName DefaultValue="UpCore Pulse" />
+  <Description DefaultValue="Haftalık pulse anketlerini Outlook'ta aç." />
+  <IconUrl DefaultValue="https://static.upcore.io/outlook/icon-64.png" />
+  <HighResolutionIconUrl DefaultValue="https://static.upcore.io/outlook/icon-128.png" />
+  <SupportUrl DefaultValue="https://upcore.io/destek" />
+  <AppDomains>
+    <AppDomain>https://app.upcore.io</AppDomain>
+  </AppDomains>
+  <Hosts>
+    <Host Name="Mailbox" />
+  </Hosts>
+  <Requirements>
+    <Sets>
+      <Set Name="Mailbox" MinVersion="1.5" />
+    </Sets>
+  </Requirements>
+  <FormSettings>
+    <Form xsi:type="ItemRead">
+      <DesktopSettings>
+        <SourceLocation DefaultValue="https://app.upcore.io/outlook/taskpane.html" />
+        <RequestedHeight>250</RequestedHeight>
+      </DesktopSettings>
+    </Form>
+  </FormSettings>
+  <Permissions>ReadWriteItem</Permissions>
+  <Rule xsi:type="RuleCollection" Mode="Or">
+    <Rule xsi:type="ItemIs" ItemType="Message" />
+    <Rule xsi:type="ItemIs" ItemType="Appointment" />
+  </Rule>
+  <DisableEntityHighlighting>false</DisableEntityHighlighting>
+</OfficeApp>

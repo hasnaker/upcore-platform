@@ -1,201 +1,150 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
 import { Greeting } from './_components/Greeting';
 import { PriorityActions } from './_components/PriorityActions';
 import { WeeklyRecap } from './_components/WeeklyRecap';
 import { ModuleOverview } from './_components/ModuleOverview';
+import { FirstPulseCTA } from './_components/FirstPulseCTA';
+import { usePriorityActions, type RankedAction } from '@/hooks/useActions';
 
-interface BurnoutApiData {
-  heatmap?: Array<{ department_name: string; week_start: string; avg_score: number; respondent_count: number }>;
-  critical?: Array<{ id: number; ad: string; soyad: string; department_name: string; score: number }>;
-  jdr?: Array<{ department_name: string; demands: number; resources: number }>;
-  stats?: { avg_total: number; red_count: number; total_employees: number };
+type Urgency = 'critical' | 'warning' | 'info';
+type ActionCategory = 'tukenmislik' | 'ise-alim' | 'izin' | 'gelisim';
+
+interface ActionItem {
+  id: string;
+  urgency: Urgency;
+  title: string;
+  description: string;
+  department: string;
+  affectedCount: number;
+  suggestedAction: string;
+  reasoning: string[];
+  status: 'pending' | 'approved' | 'rejected' | 'deferred';
+  category: ActionCategory;
+  impactBefore: number;
+  impactAfter: number;
+  impactLabel: string;
 }
 
-interface IntelligenceSummary {
-  totalEmployees: number;
-  criticalRisk: number;
-  highRisk: number;
-  avgOkrProgress: number;
-  avgBurnout: number;
-  nineBoxDistribution: Record<string, number>;
-}
-
-const formatTimeAgo = (date: Date): string => {
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMin = Math.floor(diffMs / 60000);
-  if (diffMin < 1) return 'az once';
-  if (diffMin === 1) return '1 dk once';
-  if (diffMin < 60) return `${diffMin} dk once`;
-  const diffHours = Math.floor(diffMin / 60);
-  if (diffHours === 1) return '1 saat once';
-  return `${diffHours} saat once`;
+const urgencyFromScore = (urgency: number): Urgency => {
+  if (urgency >= 0.75) return 'critical';
+  if (urgency >= 0.45) return 'warning';
+  return 'info';
 };
 
-interface IntelligenceEmployee {
-  id: string;
-  name: string;
-  department: string;
-  synthesis: {
-    riskScore: { score: number; level: string; signals: Array<{ source: string; metric: string; severity: string }>; recommendations: string[] };
-    nineBox: { performance: string; potential: string; performanceScore: number; potentialScore: number };
-    okrProgress: number | null;
-    burnoutScore: number | null;
-    feedbackAvg: number | null;
-    strengthsDepth: number;
-    overallHealth: string;
+const categoryFromType = (type: string): ActionCategory => {
+  const t = type.toLowerCase();
+  if (t.includes('burn') || t.includes('tukenmislik') || t.includes('coaching')) return 'tukenmislik';
+  if (t.includes('hire') || t.includes('recruit') || t.includes('candidate')) return 'ise-alim';
+  if (t.includes('leave') || t.includes('izin')) return 'izin';
+  return 'gelisim';
+};
+
+const mapRankedAction = (a: RankedAction): ActionItem => {
+  const urgency = urgencyFromScore(a.urgency);
+  const impactBefore = Math.round(a.impact * 100);
+  const impactAfter = Math.max(5, impactBefore - Math.round(a.actionability * 45));
+  return {
+    id: a.action_id,
+    urgency,
+    title: a.title_tr,
+    description: a.rationale_tr,
+    department: a.target.name_masked || '—',
+    affectedCount: a.target.employee_id ? 1 : 0,
+    suggestedAction: a.cta.label_tr ?? 'İncele',
+    reasoning: a.supporting_signals.length
+      ? a.supporting_signals
+      : [a.rationale_tr],
+    status: 'pending',
+    category: categoryFromType(a.type),
+    impactBefore,
+    impactAfter,
+    impactLabel: 'risk skoru',
   };
-}
+};
 
 export default function PanelPage() {
-  const [burnoutData, setBurnoutData] = useState<BurnoutApiData | null>(null);
-  const [actionData, setActionData] = useState<Record<string, unknown> | null>(null);
-  const [intelligence, setIntelligence] = useState<{ employees: IntelligenceEmployee[]; summary: IntelligenceSummary } | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
+  const { data, isLoading, isError, error, refetch } = usePriorityActions();
 
-  const fetchData = useCallback(() => {
-    fetch('/api/burnout/heatmap')
-      .then((r) => r.json())
-      .then((data) => { if (data && (data.stats || data.critical)) setBurnoutData(data); })
-      .catch(() => {});
-
-    fetch('/api/actions')
-      .then((r) => r.json())
-      .then((data) => { if (data && (data.ml_actions || data.critical_employees)) setActionData(data); })
-      .catch(() => {});
-
-    fetch('/api/employee-intelligence')
-      .then((r) => r.json())
-      .then((data) => { if (data && data.summary) setIntelligence(data); })
-      .catch(() => {});
-
-    setLastUpdated(new Date());
-  }, []);
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000);
-    return () => clearInterval(interval);
-  }, [fetchData]);
-
-  const summary = intelligence?.summary;
-  const riskEmployees = intelligence?.employees?.filter((e) => e.synthesis.riskScore.level === 'critical' || e.synthesis.riskScore.level === 'high') || [];
+  const actions: ActionItem[] = useMemo(
+    () => (data?.actions ?? []).map(mapRankedAction),
+    [data],
+  );
 
   return (
     <div className="flex flex-col gap-12">
-      {/* Greeting */}
-      <Greeting />
+      <Greeting pendingActionCount={actions.length} />
 
-      {/* Organization Health Dashboard */}
-      {summary && (
-        <section>
-          <div className="mb-5 flex items-center gap-3">
-            <h2 className="text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">
-              Organizasyon Saglik Paneli
-            </h2>
-            {lastUpdated && (
-              <span className="text-[11px] text-[#aaa]">
-                Son guncelleme: {formatTimeAgo(lastUpdated)}
-              </span>
-            )}
-            <button
-              onClick={fetchData}
-              className="flex h-6 w-6 items-center justify-center rounded-md text-[#aaa] transition-colors hover:bg-[#f5f5f5] hover:text-[#525252]"
-              title="Yenile"
-            >
-              <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </button>
-          </div>
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:grid-cols-6">
-            <HealthCard label="Toplam Calisan" value={summary.totalEmployees} color="#0A0A0A" />
-            <HealthCard label="Kritik Risk" value={summary.criticalRisk} color="#DC2626" alert={summary.criticalRisk > 0} />
-            <HealthCard label="Yuksek Risk" value={summary.highRisk} color="#D97706" alert={summary.highRisk > 0} />
-            <HealthCard label="OKR Ort." value={`%${summary.avgOkrProgress}`} color="#5E5CE6" />
-            <HealthCard label="Tukenmislik Ort." value={summary.avgBurnout.toFixed(1)} color={summary.avgBurnout >= 2.58 ? '#D97706' : '#059669'} />
-            <HealthCard
-              label="Yildiz Calisan"
-              value={summary.nineBoxDistribution['star'] || 0}
-              color="#059669"
-            />
-          </div>
-
-          {/* 9-Box Mini Distribution */}
-          <div className="mt-4 grid grid-cols-5 gap-2">
-            {[
-              { key: 'star', label: 'Yildiz', color: '#059669', bg: '#DCFCE7' },
-              { key: 'growth', label: 'Buyume', color: '#0EA5E9', bg: '#E0F2FE' },
-              { key: 'solid', label: 'Saglam', color: '#D97706', bg: '#FEF3C7' },
-              { key: 'average', label: 'Orta', color: '#737373', bg: '#F5F5F5' },
-              { key: 'risk', label: 'Riskli', color: '#DC2626', bg: '#FEE2E2' },
-            ].map((cat) => (
-              <div key={cat.key} className="flex items-center gap-2 rounded-lg p-3" style={{ background: cat.bg }}>
-                <span className="text-[20px] font-bold" style={{ color: cat.color }}>
-                  {summary.nineBoxDistribution[cat.key] || 0}
-                </span>
-                <span className="text-[11px] font-medium" style={{ color: cat.color }}>
-                  {cat.label}
-                </span>
-              </div>
-            ))}
-          </div>
-
-          {/* At-Risk Employees */}
-          {riskEmployees.length > 0 && (
-            <div className="mt-4 rounded-xl border border-[#FEE2E2] bg-[#FEF2F2] p-4">
-              <div className="mb-3 text-[12px] font-semibold text-[#DC2626]">
-                Dikkat Gerektiren Calisanlar ({riskEmployees.length})
-              </div>
-              <div className="flex flex-col gap-2">
-                {riskEmployees.slice(0, 5).map((emp) => (
-                  <div key={emp.id} className="flex items-center justify-between rounded-lg bg-white p-3">
-                    <div>
-                      <span className="text-[13px] font-medium text-[#111]">{emp.name}</span>
-                      <span className="ml-2 text-[11px] text-[#888]">{emp.department}</span>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <span className="text-[11px] font-semibold" style={{ color: emp.synthesis.riskScore.level === 'critical' ? '#DC2626' : '#D97706' }}>
-                        Risk: {emp.synthesis.riskScore.score}
-                      </span>
-                      {emp.synthesis.riskScore.signals[0] && (
-                        <span className="rounded-full px-2 py-0.5 text-[10px] font-medium" style={{
-                          background: emp.synthesis.riskScore.signals[0].severity === 'critical' ? '#FEE2E2' : '#FEF3C7',
-                          color: emp.synthesis.riskScore.signals[0].severity === 'critical' ? '#DC2626' : '#D97706',
-                        }}>
-                          {emp.synthesis.riskScore.signals[0].source}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {riskEmployees.length > 0 && riskEmployees[0]?.synthesis.riskScore.recommendations[0] && (
-                <div className="mt-3 rounded-lg bg-white p-3">
-                  <div className="text-[11px] font-semibold text-[#5E5CE6]">Oneri:</div>
-                  <div className="mt-1 text-[12px] text-[#555]">
-                    {riskEmployees[0].synthesis.riskScore.recommendations[0]}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* Priority Actions */}
+      {/* Priority Actions — gerçek action-center verisi */}
       <section>
         <div className="mb-5 flex items-center justify-between">
           <h2 className="text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">
-            Oncelikli Aksiyonlar
+            Öncelikli Aksiyonlar
           </h2>
+          {data?.generated_at && (
+            <span className="text-[11px] text-[#A3A3A3]">
+              {new Date(data.generated_at).toLocaleTimeString('tr-TR', {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}
+            </span>
+          )}
         </div>
-        <PriorityActions burnoutData={burnoutData} />
+
+        {isLoading && (
+          <div className="flex flex-col gap-3">
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className="h-28 animate-pulse rounded-lg border border-[#EDEDED] bg-white"
+              />
+            ))}
+          </div>
+        )}
+
+        {isError && (
+          <div className="rounded-lg border border-[#FECACA] bg-[#FEF2F2] px-5 py-6 text-sm text-[#B91C1C]">
+            <p className="font-medium">Aksiyonlar yüklenemedi.</p>
+            <p className="mt-1 text-[12px] text-[#7F1D1D]">
+              {error?.message ?? 'Bilinmeyen hata'}
+            </p>
+            <button
+              type="button"
+              onClick={() => refetch()}
+              className="mt-3 rounded-md bg-[#B91C1C] px-3 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#991B1B]"
+            >
+              Yeniden dene
+            </button>
+          </div>
+        )}
+
+        {!isLoading && !isError && actions.length === 0 && (
+          <div className="flex flex-col items-center gap-3 rounded-lg border border-[#EDEDED] bg-white px-6 py-12">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D1FAE5]">
+              <svg
+                className="h-6 w-6 text-[#059669]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2.5}
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <p className="text-sm font-medium text-[#0A0A0A]">Harika — şu an bekleyen aksiyon yok</p>
+            <p className="max-w-md text-center text-xs text-[#A3A3A3]">
+              Yeni sinyaller geldiğinde Action Center size öncelikli aksiyonları burada gösterecek.
+              Otomatik güncelleme her 2 dakikada bir yapılır.
+            </p>
+          </div>
+        )}
+
+        {!isLoading && !isError && actions.length > 0 && (
+          <PriorityActions actions={actions} />
+        )}
       </section>
 
-      {/* Weekly Recap */}
       <section>
         <h2 className="mb-5 text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">
           Bu Hafta
@@ -203,23 +152,17 @@ export default function PanelPage() {
         <WeeklyRecap />
       </section>
 
-      {/* Module Overview */}
       <section>
         <h2 className="mb-5 text-[13px] font-semibold uppercase tracking-widest text-[#A3A3A3]">
-          Moduller
+          Modüller
         </h2>
         <ModuleOverview />
       </section>
-    </div>
-  );
-}
 
-function HealthCard({ label, value, color, alert }: { label: string; value: string | number; color: string; alert?: boolean }) {
-  return (
-    <div className="rounded-xl border bg-white p-4" style={{ borderColor: alert ? '#FCA5A5' : '#f0f0f0' }}>
-      <div className="text-[11px] font-medium text-[#888]">{label}</div>
-      <div className="mt-1 text-[22px] font-bold" style={{ color }}>{value}</div>
-      {alert && <div className="mt-1 h-1 w-full rounded-full bg-[#FEE2E2]"><div className="h-1 animate-pulse rounded-full bg-[#DC2626]" style={{ width: '100%' }} /></div>}
+      {/* Onboarding CTA — sadece hiç pulse göndermediyse görünür. */}
+      <section>
+        <FirstPulseCTA />
+      </section>
     </div>
   );
 }

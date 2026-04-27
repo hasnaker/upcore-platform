@@ -1,0 +1,29 @@
+{
+  "id": "admin/iam/sso-oidc",
+  "title": "SSO — OIDC (OpenID Connect) kurulum",
+  "description": "Google Workspace, GitHub, Apple Sign-in, kendi IdP.",
+  "source": "@site/docs/admin/iam/sso-oidc.md",
+  "sourceDirName": "admin/iam",
+  "slug": "/admin/iam/sso-oidc",
+  "permalink": "/en/docs/admin/iam/sso-oidc",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/iam/sso-oidc.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "sso-oidc",
+    "title": "SSO — OIDC (OpenID Connect) kurulum",
+    "sidebar_position": 2
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "SSO — SAML kurulum",
+    "permalink": "/en/docs/admin/iam/sso-saml"
+  },
+  "next": {
+    "title": "SCIM kullanıcı senkron",
+    "permalink": "/en/docs/admin/iam/scim-kullanici-senkron"
+  }
+}

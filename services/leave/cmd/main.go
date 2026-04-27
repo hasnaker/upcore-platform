@@ -40,6 +40,18 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// OpenTelemetry tracer — no-op when OTLP endpoint empty.
+	shutdownTracer, err := middleware.TracerProvider(ctx, cfg.OTLPEndpoint, "leave", cfg.ServiceVersion)
+	if err != nil {
+		logger.Error().Err(err).Msg("otel init failed — continuing without tracing")
+		shutdownTracer = func(context.Context) error { return nil }
+	}
+	defer func() {
+		shutCtx, shutCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutCancel()
+		_ = shutdownTracer(shutCtx)
+	}()
+
 	// Database
 	sqlDB, err := db.Open(ctx, db.Config{
 		DSN:         cfg.DatabaseURL,
@@ -137,9 +149,13 @@ func newRouter(
 	balH := handler.NewBalanceHandler(balanceSvc, dep)
 	calH := handler.NewCalendarHandler(calendarSvc, dep)
 
+	r.Use(middleware.Tracing("leave"))
+	r.Use(middleware.Metrics)
+
 	// Public
 	r.Get("/health", healthHandler)
 	r.Get("/ready", healthHandler)
+	r.Method(http.MethodGet, "/metrics", middleware.MetricsHandler())
 	r.Get("/api/v1/leaves/holidays", calH.Holidays)
 
 	// Authenticated

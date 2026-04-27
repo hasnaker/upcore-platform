@@ -43,6 +43,174 @@ routes:
       per_tenant: 1000
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
+  # Employee service - offer letters (lifecycle 1.1.1)
+  - path_prefix: "/api/v1/offers"
+    upstream: "employee"
+    target: "http://localhost:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - onboarding workflow (lifecycle 1.1.2)
+  - path_prefix: "/api/v1/onboarding"
+    upstream: "employee"
+    target: "http://localhost:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - related contacts (lifecycle 1.1.5)
+  - path_prefix: "/api/v1/related-contacts"
+    upstream: "employee"
+    target: "http://localhost:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - multi-FTE positions (lifecycle 1.1.6)
+  - path_prefix: "/api/v1/employee-positions"
+    upstream: "employee"
+    target: "http://localhost:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - offboarding + exit interview (lifecycle 1.1.7)
+  - path_prefix: "/api/v1/offboarding"
+    upstream: "employee"
+    target: "http://localhost:8003"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Performance module (cycles, goals, OKRs, reviews, 9-box)
+  - path_prefix: "/api/v1/performance"
+    upstream: "performance"
+    target: "http://localhost:8014"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Bordro (Türk payroll — role-gated)
+  - path_prefix: "/api/v1/bordro"
+    upstream: "bordro"
+    target: "http://localhost:8015"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 50
+      per_tenant: 500
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Billing (abonelik + fatura + ödeme)
+  - path_prefix: "/api/v1/plans"
+    upstream: "billing"
+    target: "http://localhost:8026"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET"]
+
+  - path_prefix: "/api/v1/subscriptions"
+    upstream: "billing"
+    target: "http://localhost:8026"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/invoices"
+    upstream: "billing"
+    target: "http://localhost:8026"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST"]
+
+  # Billing admin analytics (platform-admin only: MRR/ARR/plan/trend/invoices/portal/churn)
+  - path_prefix: "/api/v1/admin/billing"
+    upstream: "billing"
+    target: "http://localhost:8026"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 200
+    methods: ["GET", "POST"]
+
+  # Mobility marketplace (dahili kariyer fırsatları)
+  - path_prefix: "/api/v1/mobility"
+    upstream: "mobility"
+    target: "http://localhost:8013"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Status admin endpoints (incidents, components, maintenance)
+  - path_prefix: "/api/v1/admin/status"
+    upstream: "status"
+    target: "http://localhost:8030"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 200
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Public status page (no auth)
+  - path_prefix: "/api/v1/status"
+    upstream: "status"
+    target: "http://localhost:8030"
+    auth_required: false
+    timeout: 30s
+    rate_limit:
+      per_user: 60
+      per_tenant: 1000
+    methods: ["GET"]
+
+  # Admin (feature flags, export jobs, impersonation, API keys, webhooks)
+  - path_prefix: "/api/v1/admin"
+    upstream: "tenant"
+    target: "http://localhost:8002"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 200
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/api-keys"
+    upstream: "tenant"
+    target: "http://localhost:8002"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/webhooks"
+    upstream: "tenant"
+    target: "http://localhost:8002"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
   # Organization service - departments
   - path_prefix: "/api/v1/departments"
     upstream: "organization"
@@ -87,6 +255,17 @@ routes:
       per_tenant: 100
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
+  # Public survey endpoints (token-based, no JWT)
+  - path_prefix: "/api/v1/public/surveys"
+    upstream: "survey"
+    target: "http://localhost:8007"
+    auth_required: false
+    timeout: 30s
+    rate_limit:
+      per_user: 10
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
   # Survey service
   - path_prefix: "/api/v1/surveys"
     upstream: "survey"
@@ -120,6 +299,17 @@ routes:
       per_tenant: 1000
     methods: ["GET"]
 
+  # KVKK çalışan rıza yönetimi (audit servisi)
+  - path_prefix: "/api/v1/kvkk/consents"
+    upstream: "audit"
+    target: "http://localhost:8009"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
   # Notification service
   - path_prefix: "/api/v1/notifications"
     upstream: "notification"
@@ -131,8 +321,8 @@ routes:
       per_tenant: 1000
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
-  # ATS service - candidates
-  - path_prefix: "/api/v1/candidates"
+  # ATS service (tüm ATS endpoints: requisitions, candidates, interviews, board)
+  - path_prefix: "/api/v1/ats"
     upstream: "ats"
     target: "http://localhost:8011"
     auth_required: true
@@ -142,7 +332,18 @@ routes:
       per_tenant: 1000
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
-  # Assessment service
+  # Public candidate assessment (token-based, no JWT)
+  - path_prefix: "/api/v1/assessments/candidate"
+    upstream: "assessment"
+    target: "http://localhost:8012"
+    auth_required: false
+    timeout: 60s
+    rate_limit:
+      per_user: 10
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
+  # Assessment service (authenticated)
   - path_prefix: "/api/v1/assessments"
     upstream: "assessment"
     target: "http://localhost:8012"

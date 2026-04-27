@@ -1,0 +1,26 @@
+{
+  "id": "admin/giris",
+  "title": "Admin rehberine hoş geldiniz",
+  "description": "Admin rehberi platform operatörü, CTO, IT yöneticisi veya sistem integrasyonu yapan ekipler için.",
+  "source": "@site/docs/admin/giris.md",
+  "sourceDirName": "admin",
+  "slug": "/admin/giris",
+  "permalink": "/en/docs/admin/giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "giris",
+    "title": "Admin rehberine hoş geldiniz",
+    "slug": "/admin/giris",
+    "sidebar_position": 1
+  },
+  "sidebar": "adminSidebar",
+  "next": {
+    "title": "Yeni tenant oluşturma",
+    "permalink": "/en/docs/admin/tenant/yeni-tenant-olusturma"
+  }
+}

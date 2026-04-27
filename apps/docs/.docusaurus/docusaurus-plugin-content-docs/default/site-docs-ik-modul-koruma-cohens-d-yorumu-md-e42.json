@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/cohens-d-yorumu",
+  "title": "Cohen's d yorumu",
+  "description": "Cohen's d etki büyüklüğü ölçüsüdür. İstatistiksel anlamlılık (p-değeri) ile karıştırmayın.",
+  "source": "@site/docs/ik/modul/koruma/cohens-d-yorumu.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/cohens-d-yorumu",
+  "permalink": "/en/docs/ik/modul/koruma/cohens-d-yorumu",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/cohens-d-yorumu.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "cohens-d-yorumu",
+    "title": "Cohen's d yorumu",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Etki ölçümü",
+    "permalink": "/en/docs/ik/modul/koruma/etki-olcumu"
+  },
+  "next": {
+    "title": "Referral network (anonim profesyonel ağ)",
+    "permalink": "/en/docs/ik/modul/koruma/referral-network"
+  }
+}

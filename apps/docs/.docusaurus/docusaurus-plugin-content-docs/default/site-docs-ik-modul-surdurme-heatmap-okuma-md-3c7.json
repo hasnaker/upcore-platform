@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/heatmap-okuma",
+  "title": "Heatmap okuma",
+  "description": "Heatmap, departman × madde matrisinde her hücreyi ortalama skor veya JD-R boyut agregası olarak renklendirir.",
+  "source": "@site/docs/ik/modul/surdurme/heatmap-okuma.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/heatmap-okuma",
+  "permalink": "/en/docs/ik/modul/surdurme/heatmap-okuma",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/heatmap-okuma.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "heatmap-okuma",
+    "title": "Heatmap okuma",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Anket güvenilirliği",
+    "permalink": "/en/docs/ik/modul/surdurme/anket-guvenilirligi"
+  },
+  "next": {
+    "title": "Kırmızı band triage — İK protokolü",
+    "permalink": "/en/docs/ik/modul/surdurme/kirmizi-band-triage"
+  }
+}

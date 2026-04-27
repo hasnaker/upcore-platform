@@ -10,7 +10,7 @@ from datetime import datetime, timezone
 from uuid import uuid4
 
 import structlog
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
 from app.aggregation.action_builder import build_candidates
 from app.aggregation.signal_aggregator import aggregate_signals

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/madde-11-talep-yonetimi",
+  "title": "KVKK Madde 11 talep yönetimi",
+  "description": "Çalışanlardan gelen veri sahibi taleplerinin İK tarafı.",
+  "source": "@site/docs/ik/modul/kvkk/madde-11-talep-yonetimi.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/madde-11-talep-yonetimi",
+  "permalink": "/en/docs/ik/modul/kvkk/madde-11-talep-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/madde-11-talep-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "madde-11-talep-yonetimi",
+    "title": "KVKK Madde 11 talep yönetimi",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "KVKK / GRC modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/kvkk/genel-bakis"
+  },
+  "next": {
+    "title": "VERBIS kayıt süreci",
+    "permalink": "/en/docs/ik/modul/kvkk/verbis-kayit-sureci"
+  }
+}

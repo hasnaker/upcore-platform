@@ -26,7 +26,7 @@ export const validateVergiNo = (vkn: string): boolean => {
 
   for (let i = 0; i < 9; i++) {
     const d = digits[i] as number;
-    let tmp = (d + (9 - i)) % 10;
+    const tmp = (d + (9 - i)) % 10;
 
     if (tmp !== 0) {
       const power = Math.pow(2, 9 - i);

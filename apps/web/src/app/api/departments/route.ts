@@ -1,13 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { SERVICES, DEV_HEADERS } from '@/lib/service-urls';
+import { SERVICES } from '@/lib/service-urls';
+import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 import { createAuditLogger } from '@/lib/audit-logger';
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
   try {
+    const ctx = getRequestContext(request);
     const body = await request.json();
     const res = await fetch(`${SERVICES.organization}/api/v1/departments`, {
       method: 'POST',
-      headers: DEV_HEADERS,
+      headers: buildServiceHeaders(ctx),
       body: JSON.stringify(body),
     });
     const data = await res.json();
@@ -17,11 +19,13 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
+    const ctx = getRequestContext(request);
+    const headers = buildServiceHeaders(ctx);
     const [deptRes, empRes] = await Promise.all([
-      fetch(`${SERVICES.organization}/api/v1/departments`, { headers: DEV_HEADERS, cache: 'no-store' }),
-      fetch(`${SERVICES.employee}/api/v1/employees?limit=100`, { headers: DEV_HEADERS, cache: 'no-store' }),
+      fetch(`${SERVICES.organization}/api/v1/departments`, { headers, cache: 'no-store' }),
+      fetch(`${SERVICES.employee}/api/v1/employees?limit=100`, { headers, cache: 'no-store' }),
     ]);
 
     const departments = deptRes.ok ? await deptRes.json() : { items: [] };
@@ -36,7 +40,7 @@ export async function GET() {
     });
 
     return NextResponse.json({ departments: deptList, total_employees: employees.total || 0 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Departman verileri alınamadı', departments: [] }, { status: 500 });
   }
 }
@@ -44,6 +48,7 @@ export async function GET() {
 // PATCH /api/departments — Update department
 export async function PATCH(req: NextRequest) {
   try {
+    const ctx = getRequestContext(req);
     const body = await req.json();
     const { departmentId, name_tr, description, cost_center, active } = body as {
       departmentId?: string;
@@ -70,7 +75,7 @@ export async function PATCH(req: NextRequest) {
 
     const res = await fetch(`${SERVICES.organization}/api/v1/departments/${departmentId}`, {
       method: 'PATCH',
-      headers: DEV_HEADERS,
+      headers: buildServiceHeaders(ctx),
       body: JSON.stringify(updatePayload),
     });
 
@@ -80,7 +85,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json(data, { status: res.status });
     }
 
-    const audit = createAuditLogger(DEV_HEADERS['X-User-Id'], DEV_HEADERS['X-User-Role']);
+    const audit = createAuditLogger(ctx.userId, ctx.userRole, ctx.tenantId);
     void audit.log('update', 'department', departmentId, undefined, updatePayload);
 
     return NextResponse.json({ success: true, department: data, message: 'Departman güncellendi' });
@@ -93,6 +98,7 @@ export async function PATCH(req: NextRequest) {
 // DELETE /api/departments — Soft-delete department
 export async function DELETE(req: NextRequest) {
   try {
+    const ctx = getRequestContext(req);
     const { searchParams } = new URL(req.url);
     const departmentId = searchParams.get('departmentId');
 
@@ -103,7 +109,7 @@ export async function DELETE(req: NextRequest) {
     // Soft delete: set deleted_at and active = false via the organization service
     const res = await fetch(`${SERVICES.organization}/api/v1/departments/${departmentId}`, {
       method: 'PATCH',
-      headers: DEV_HEADERS,
+      headers: buildServiceHeaders(ctx),
       body: JSON.stringify({ active: false, deleted_at: new Date().toISOString() }),
     });
 
@@ -115,7 +121,7 @@ export async function DELETE(req: NextRequest) {
       );
     }
 
-    const audit = createAuditLogger(DEV_HEADERS['X-User-Id'], DEV_HEADERS['X-User-Role']);
+    const audit = createAuditLogger(ctx.userId, ctx.userRole, ctx.tenantId);
     void audit.log('delete', 'department', departmentId);
 
     return NextResponse.json({ success: true, message: 'Departman pasif duruma alındı (soft delete)' });

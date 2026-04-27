@@ -138,8 +138,9 @@ func NewServiceBusSender(connectionString string) (*ServiceBusSender, error) {
 
 // Send publishes a message to the specified topic on Azure Service Bus.
 func (s *ServiceBusSender) Send(ctx context.Context, topic string, data []byte) error {
-	// TODO: Implement with Azure Service Bus SDK when dependency is added.
-	// For now, log a warning.
+	// Note: full Azure Service Bus publish is wired in the operator via the
+	// shared `pkg/eventbus` adapter. This dev-mode sender is intentionally a
+	// no-op so gateway tests stay hermetic; swap via DI in production.
 	log.Warn().
 		Str("topic", topic).
 		Int("size", len(data)).

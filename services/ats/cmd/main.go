@@ -41,6 +41,18 @@ func main() {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
+	// OpenTelemetry tracer — no-op when OTLP endpoint empty.
+	shutdownTracer, err := middleware.TracerProvider(ctx, cfg.OTLPEndpoint, "ats", cfg.ServiceVersion)
+	if err != nil {
+		logger.Error().Err(err).Msg("otel init failed — continuing without tracing")
+		shutdownTracer = func(context.Context) error { return nil }
+	}
+	defer func() {
+		shutCtx, shutCancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer shutCancel()
+		_ = shutdownTracer(shutCtx)
+	}()
+
 	// Database
 	sqlDB, err := db.Open(ctx, db.Config{
 		DSN:         cfg.DatabaseURL,
@@ -53,9 +65,34 @@ func main() {
 	defer func() { _ = db.Close(sqlDB) }()
 	logger.Info().Msg("database connected")
 
-	// Event publisher (no-op until Service Bus is wired)
-	publisher := event.NewNopPublisher(logger)
+	// Event publisher — Service Bus when configured, NopPublisher fallback.
+	var publisher event.Publisher = event.NewNopPublisher(logger)
+	if cfg.ServiceBusConnection != "" {
+		sb, err := event.NewServiceBusPublisher(ctx, cfg.ServiceBusConnection, cfg.ServiceBusTopic, logger)
+		if err != nil {
+			logger.Error().Err(err).Msg("service bus init failed — NopPublisher kullanılıyor")
+		} else {
+			cb := event.NewCircuitBreakerPublisher(sb, logger)
+			publisher = event.NewRetryPublisher(cb, logger)
+			logger.Info().Str("topic", cfg.ServiceBusTopic).Msg("Service Bus publisher active (retry + circuit-breaker wrapped)")
+		}
+	}
 	defer func() { _ = publisher.Close() }()
+
+	// Transactional outbox dispatcher — background goroutine drains pending
+	// app.event_outbox rows to the publisher (at-least-once delivery).
+	outboxDispatcher := event.NewOutboxDispatcher(sqlDB, publisher, logger)
+	go outboxDispatcher.Run(ctx)
+	outboxAdminRepo := repository.NewOutboxAdminRepository(sqlDB)
+	outboxAdminH := handler.NewOutboxAdminHandler(outboxAdminRepo, outboxDispatcher.MaxRetries)
+
+	// Wrap publisher so service-layer emit calls persist events to
+	// app.event_outbox first. Dispatcher pushes async (broker downtime safe).
+	outboxWriter := event.NewOutboxWriter("ats")
+	publisher = event.NewOutboxPublisher(
+		publisher, sqlDB, outboxWriter,
+		middleware.TenantIDFromContext, logger,
+	)
 
 	// Repositories
 	reqRepo := repository.NewRequisitionRepository(sqlDB)
@@ -80,7 +117,7 @@ func main() {
 	authChecker := middleware.NewAuthChecker(cfg.AuthServiceURL, cfg.AuthServiceTimeout)
 
 	// HTTP
-	r := newRouter(cfg, logger, authChecker, reqSvc, candSvc, appSvc, pipelineSvc, interviewSvc, offerSvc)
+	r := newRouter(cfg, logger, authChecker, reqSvc, candSvc, appSvc, pipelineSvc, interviewSvc, offerSvc, outboxAdminH)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -143,6 +180,7 @@ func newRouter(
 	pipelineSvc *service.PipelineService,
 	interviewSvc *service.InterviewService,
 	offerSvc *service.OfferService,
+	outboxAdminH *handler.OutboxAdminHandler,
 ) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
@@ -158,6 +196,8 @@ func newRouter(
 		AllowCredentials: true,
 		MaxAge:           300,
 	}))
+	r.Use(middleware.Tracing("ats"))
+	r.Use(middleware.Metrics)
 	r.Use(middleware.TenantInjector)
 
 	dep := handler.Dependencies{Log: logger, Validator: handler.NewValidator()}
@@ -169,9 +209,10 @@ func newRouter(
 	interviewH := handler.NewInterviewHandler(interviewSvc, dep)
 	offerH := handler.NewOfferHandler(offerSvc, dep)
 
-	// Health
+	// Health + observability
 	r.Get("/health", healthHandler)
 	r.Get("/ready", readyHandler)
+	r.Method(http.MethodGet, "/metrics", middleware.MetricsHandler())
 
 	// Authenticated endpoints
 	r.Route("/api/v1/ats", func(r chi.Router) {
@@ -257,6 +298,14 @@ func newRouter(
 		// Analytics
 		r.Get("/analytics/funnel", pipelineH.GetFunnelAnalytics)
 		r.Get("/analytics/time-to-hire", pipelineH.GetTimeToHire)
+
+		// Transactional outbox DLQ admin — hr_admin/cxo/admin yetkisi.
+		r.Route("/outbox", func(r chi.Router) {
+			r.Use(middleware.RequireRole("hr_admin", "hr_director", "cxo", "admin"))
+			r.Get("/stats", outboxAdminH.Stats)
+			r.Get("/dlq", outboxAdminH.ListDLQ)
+			r.Post("/{id}/replay", outboxAdminH.Replay)
+		})
 	})
 
 	return r

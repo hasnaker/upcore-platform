@@ -1,0 +1,153 @@
+# ============================================================================
+# UpCore Alertmanager configuration
+# ----------------------------------------------------------------------------
+# Routing priority:
+#   severity=P0  → PagerDuty (on-call Hasan, 24/7) + Slack #sre-incidents
+#   severity=P1  → PagerDuty (business hours) + Slack #sre-alerts
+#   severity=P2  → Slack #sre-alerts only
+#   default      → Slack #sre-noise
+#
+# Secret injection: Alertmanager Container App environment variables
+#   PAGERDUTY_SERVICE_KEY_P0
+#   PAGERDUTY_SERVICE_KEY_P1
+#   SLACK_WEBHOOK_INCIDENTS
+#   SLACK_WEBHOOK_ALERTS
+#   SLACK_WEBHOOK_NOISE
+# ============================================================================
+
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.sendgrid.net:587'
+  smtp_from: 'alerts@upcore.io'
+  smtp_require_tls: true
+
+templates:
+  - /etc/alertmanager/templates/*.tmpl
+
+route:
+  receiver: 'slack-noise'
+  group_by: ['alertname', 'service', 'tenant_id']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 12h
+
+  routes:
+    # ------------------------------------------------------------------------
+    # P0 — Customer-facing outage / data loss / security breach
+    # ------------------------------------------------------------------------
+    - matchers:
+        - severity="P0"
+      receiver: 'pagerduty-p0'
+      continue: true
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 30m
+      routes:
+        - matchers:
+            - severity="P0"
+          receiver: 'slack-incidents'
+          continue: true
+
+    # ------------------------------------------------------------------------
+    # P1 — Degraded performance / partial outage / SLA at risk
+    # ------------------------------------------------------------------------
+    - matchers:
+        - severity="P1"
+      receiver: 'pagerduty-p1'
+      continue: true
+      group_wait: 30s
+      group_interval: 2m
+      repeat_interval: 2h
+      routes:
+        - matchers:
+            - severity="P1"
+          receiver: 'slack-alerts'
+          continue: true
+
+    # ------------------------------------------------------------------------
+    # P2 — Low-priority infra warnings (disk 80%, cache hit rate drop, etc.)
+    # ------------------------------------------------------------------------
+    - matchers:
+        - severity="P2"
+      receiver: 'slack-alerts'
+      repeat_interval: 24h
+
+    # ------------------------------------------------------------------------
+    # Business SLA (e.g. burnout-prediction accuracy drops)
+    # ------------------------------------------------------------------------
+    - matchers:
+        - category="business_slo"
+      receiver: 'slack-alerts'
+      group_by: ['alertname', 'module']
+      repeat_interval: 4h
+
+# ============================================================================
+# Inhibitions — suppress downstream alerts when root cause is known
+# ============================================================================
+inhibit_rules:
+  # PG down → ignore all service db_error alerts
+  - source_matchers:
+      - alertname="PostgresDown"
+    target_matchers:
+      - alertname=~"^(ServiceDBError|ServiceDBSlow)$"
+    equal: ['cluster']
+
+  # Full region outage → ignore per-service alerts
+  - source_matchers:
+      - alertname="RegionOutage"
+    target_matchers:
+      - severity=~"P1|P2"
+    equal: ['region']
+
+# ============================================================================
+# Receivers
+# ============================================================================
+receivers:
+  - name: 'pagerduty-p0'
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_SERVICE_KEY_P0}
+        severity: 'critical'
+        description: '[P0] {{ .GroupLabels.alertname }} — {{ .CommonAnnotations.summary }}'
+        details:
+          runbook: '{{ .CommonAnnotations.runbook_url }}'
+          service: '{{ .GroupLabels.service }}'
+          tenant_id: '{{ .GroupLabels.tenant_id }}'
+          region: 'westeurope'
+
+  - name: 'pagerduty-p1'
+    pagerduty_configs:
+      - service_key: ${PAGERDUTY_SERVICE_KEY_P1}
+        severity: 'error'
+        description: '[P1] {{ .GroupLabels.alertname }} — {{ .CommonAnnotations.summary }}'
+        details:
+          runbook: '{{ .CommonAnnotations.runbook_url }}'
+          service: '{{ .GroupLabels.service }}'
+
+  - name: 'slack-incidents'
+    slack_configs:
+      - api_url: ${SLACK_WEBHOOK_INCIDENTS}
+        channel: '#sre-incidents'
+        send_resolved: true
+        title: ':rotating_light: [{{ .CommonLabels.severity }}] {{ .GroupLabels.alertname }}'
+        text: |
+          *Service:* {{ .GroupLabels.service }}
+          *Summary:* {{ .CommonAnnotations.summary }}
+          *Runbook:* {{ .CommonAnnotations.runbook_url }}
+          *Dashboard:* https://grafana.upcore.io/d/{{ .GroupLabels.service }}
+
+  - name: 'slack-alerts'
+    slack_configs:
+      - api_url: ${SLACK_WEBHOOK_ALERTS}
+        channel: '#sre-alerts'
+        send_resolved: true
+        title: ':warning: [{{ .CommonLabels.severity }}] {{ .GroupLabels.alertname }}'
+        text: |
+          *Service:* {{ .GroupLabels.service }}
+          *Summary:* {{ .CommonAnnotations.summary }}
+
+  - name: 'slack-noise'
+    slack_configs:
+      - api_url: ${SLACK_WEBHOOK_NOISE}
+        channel: '#sre-noise'
+        send_resolved: false
+        title: '[info] {{ .GroupLabels.alertname }}'

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/kiyafet-mesai",
+  "title": "Mesai ve fazla çalışma",
+  "description": "Çalışma saatleri ve fazla mesai yönetimi.",
+  "source": "@site/docs/ik/modul/ik-ops/kiyafet-mesai.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/kiyafet-mesai",
+  "permalink": "/en/docs/ik/modul/ik-ops/kiyafet-mesai",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/kiyafet-mesai.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "kiyafet-mesai",
+    "title": "Mesai ve fazla çalışma",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "SGK e-Bildirge",
+    "permalink": "/en/docs/ik/modul/ik-ops/sgk-e-bildirge"
+  },
+  "next": {
+    "title": "Kıdem tazminatı",
+    "permalink": "/en/docs/ik/modul/ik-ops/kidem-tazminati"
+  }
+}

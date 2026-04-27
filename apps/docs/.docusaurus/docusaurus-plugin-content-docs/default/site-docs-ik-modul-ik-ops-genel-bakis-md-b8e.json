@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/genel-bakis",
+  "title": "İK Ops modülü — genel bakış",
+  "description": "İK Operasyon modülü; özlük, sözleşme, izin, bordro, SGK, iş kazası gibi klasik İK işlerini Türkiye mevzuatına uyumlu olarak yönetir.",
+  "source": "@site/docs/ik/modul/ik-ops/genel-bakis.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/genel-bakis",
+  "permalink": "/en/docs/ik/modul/ik-ops/genel-bakis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/genel-bakis.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "genel-bakis",
+    "title": "İK Ops modülü — genel bakış",
+    "sidebar_position": 1
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Geliştirme — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/gelistirme/sikca-sorulanlar"
+  },
+  "next": {
+    "title": "Özlük dosyası",
+    "permalink": "/en/docs/ik/modul/ik-ops/ozluk-dosyasi"
+  }
+}

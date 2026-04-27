@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/bonus-hesabi",
+  "title": "Bonus hesabı",
+  "description": "Performans-linked bonus hesaplama motoru.",
+  "source": "@site/docs/ik/modul/performans/bonus-hesabi.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/bonus-hesabi",
+  "permalink": "/en/docs/ik/modul/performans/bonus-hesabi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/bonus-hesabi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "bonus-hesabi",
+    "title": "Bonus hesabı",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Yıl sonu değerlendirme (performans modülü)",
+    "permalink": "/en/docs/ik/modul/performans/yil-sonu-degerlendirme"
+  },
+  "next": {
+    "title": "Performans — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/performans/sikca-sorulanlar"
+  }
+}

@@ -45,6 +45,10 @@ func buildRouter(t *testing.T) (*chi.Mux, *repository.FakeEmployeeRepo, uuid.UUI
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			ctx := context.WithValue(r.Context(), middleware.CtxTenantID, tenantID)
 			ctx = context.WithValue(ctx, middleware.CtxUserID, userID)
+			// Admin role: bypass manager-scope filter in List handler so tests
+			// exercise the full pipeline rather than the "unknown role → empty"
+			// short-circuit path.
+			ctx = context.WithValue(ctx, middleware.CtxRole, "hr_admin")
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

@@ -5,6 +5,7 @@
   "description": "Upcore V1 — End-to-end tests with Playwright",
   "scripts": {
     "test": "playwright test",
+    "test:smoke": "playwright test --project=smoke-chromium tests/smoke.spec.ts",
     "test:chromium": "playwright test --project=chromium",
     "test:firefox": "playwright test --project=firefox",
     "test:mobile": "playwright test --project=mobile-chrome",

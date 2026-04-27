@@ -172,8 +172,15 @@ func (s *DSRService) GenerateAccessPackage(ctx context.Context, tenantID, dsrID 
 	return blobURL, nil
 }
 
-// ExecuteErasure fan-outs hard-delete commands to all services for KVKK
-// "right to be forgotten". Publishes delete-commands and waits for acks.
+// ExecuteErasure fan-outs erasure commands for KVKK Madde 7 ("right to be
+// forgotten"). Each downstream service decides per-table whether to hard-delete
+// or pseudonymize, according to docs/kvkk/hard-vs-soft-delete.md:
+//   - Payroll, contracts, tax records (5–10 yıl yasal saklama) → pseudonymize
+//     PII columns via pseudonymize_user(tenant_id, user_id) UDF; rows remain.
+//   - Audit-log rows → immutable (WORM); the subject row is replaced by a
+//     tombstone referrer that links to the pseudonymization event.
+//   - All other PII → hard DELETE with ON DELETE CASCADE.
+// The audit service itself never hard-deletes; it only records the act.
 func (s *DSRService) ExecuteErasure(ctx context.Context, tenantID, dsrID, actorID uuid.UUID) error {
 	dsr, err := s.repo.GetByID(ctx, tenantID, dsrID)
 	if err != nil {

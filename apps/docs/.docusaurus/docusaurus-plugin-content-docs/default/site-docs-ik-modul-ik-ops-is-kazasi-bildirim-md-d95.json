@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/is-kazasi-bildirim",
+  "title": "İş kazası bildirimi",
+  "description": "SGK ve İSG (İş Sağlığı ve Güvenliği) mevzuatı gereği bildirim yükümlülüğü.",
+  "source": "@site/docs/ik/modul/ik-ops/is-kazasi-bildirim.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/is-kazasi-bildirim",
+  "permalink": "/en/docs/ik/modul/ik-ops/is-kazasi-bildirim",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/is-kazasi-bildirim.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 9,
+  "frontMatter": {
+    "id": "is-kazasi-bildirim",
+    "title": "İş kazası bildirimi",
+    "sidebar_position": 9
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Kıdem tazminatı",
+    "permalink": "/en/docs/ik/modul/ik-ops/kidem-tazminati"
+  },
+  "next": {
+    "title": "İK Ops — sıkça sorulanlar",
+    "permalink": "/en/docs/ik/modul/ik-ops/sikca-sorulanlar"
+  }
+}

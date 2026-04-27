@@ -37,6 +37,18 @@ type ListFilter struct {
 	Limit        int
 	SortBy       string
 	SortDir      string
+
+	// Keyset pagination cursor. When set, takes precedence over (Page, offset).
+	// Semantics: return rows strictly "older" than (CursorCreatedAt, CursorID)
+	// under DESC ordering on (created_at, id).
+	CursorCreatedAt *time.Time
+	CursorID        *uuid.UUID
+
+	// ScopeManagerID, if set, restricts the result to the recursive subordinate
+	// tree of that manager (the manager + anyone reporting into them, at any
+	// depth). Used by middleware.RequireManagerScope to enforce "manager sees
+	// only their team" without bypassing tenant RLS.
+	ScopeManagerID *uuid.UUID
 }
 
 // EmployeeRepository abstracts persistence for employees.
@@ -230,6 +242,27 @@ func (r *employeeRepo) List(ctx context.Context, f ListFilter) ([]*domain.Employ
 		args = append(args, "%"+s+"%")
 		idx++
 	}
+	if f.CursorCreatedAt != nil && f.CursorID != nil {
+		where = append(where, fmt.Sprintf("(created_at, id) < ($%d, $%d)", idx, idx+1))
+		args = append(args, *f.CursorCreatedAt, *f.CursorID)
+		idx += 2
+	}
+	if f.ScopeManagerID != nil {
+		// Recursive CTE: include the manager + anyone whose manager_id chain
+		// leads back to them. Efficient in PG with the app.employees tree.
+		where = append(where, fmt.Sprintf(`id IN (
+			WITH RECURSIVE team AS (
+				SELECT id FROM app.employees WHERE tenant_id = $1 AND id = $%d
+				UNION ALL
+				SELECT e.id FROM app.employees e
+				JOIN team t ON e.manager_id = t.id
+				WHERE e.tenant_id = $1 AND e.deleted_at IS NULL
+			)
+			SELECT id FROM team
+		)`, idx))
+		args = append(args, *f.ScopeManagerID)
+		idx++
+	}
 	clause := strings.Join(where, " AND ")
 
 	countQ := "SELECT COUNT(*) FROM app.employees WHERE " + clause
@@ -238,11 +271,22 @@ func (r *employeeRepo) List(ctx context.Context, f ListFilter) ([]*domain.Employ
 		return nil, 0, fmt.Errorf("count employees: %w", err)
 	}
 
-	listQ := fmt.Sprintf(
-		"SELECT %s FROM app.employees WHERE %s ORDER BY %s %s LIMIT $%d OFFSET $%d",
-		db.EmployeeCols, clause, sortCol, sortDir, idx, idx+1,
-	)
-	args = append(args, f.Limit, offset)
+	useKeyset := f.CursorCreatedAt != nil && f.CursorID != nil
+	var listQ string
+	if useKeyset {
+		// Keyset mode: force (created_at, id) DESC ordering to match cursor semantics.
+		listQ = fmt.Sprintf(
+			"SELECT %s FROM app.employees WHERE %s ORDER BY created_at DESC, id DESC LIMIT $%d",
+			db.EmployeeCols, clause, idx,
+		)
+		args = append(args, f.Limit)
+	} else {
+		listQ = fmt.Sprintf(
+			"SELECT %s FROM app.employees WHERE %s ORDER BY %s %s LIMIT $%d OFFSET $%d",
+			db.EmployeeCols, clause, sortCol, sortDir, idx, idx+1,
+		)
+		args = append(args, f.Limit, offset)
+	}
 
 	rows := []*domain.Employee{}
 	if err := r.db.SelectContext(ctx, &rows, listQ, args...); err != nil {

@@ -118,7 +118,7 @@ class TestImputeMissing:
         responses = {f"bat_{i:02d}": 3 for i in range(1, 13)}
         del responses["bat_01"]
         del responses["bat_04"]
-        imputed, keys = impute_missing(responses)
+        _imputed, keys = impute_missing(responses)
         assert len(keys) == 2
 
     def test_three_missing_raises(self) -> None:

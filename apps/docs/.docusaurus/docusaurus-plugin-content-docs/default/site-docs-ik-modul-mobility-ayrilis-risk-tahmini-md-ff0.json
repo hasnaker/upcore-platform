@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/ayrilis-risk-tahmini",
+  "title": "Ayrılış risk tahmini (ML)",
+  "description": "UpCore ML modeli her çalışanın 90 gün içinde ayrılma olasılığını tahmin eder.",
+  "source": "@site/docs/ik/modul/mobility/ayrilis-risk-tahmini.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/ayrilis-risk-tahmini",
+  "permalink": "/en/docs/ik/modul/mobility/ayrilis-risk-tahmini",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/ayrilis-risk-tahmini.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "ayrilis-risk-tahmini",
+    "title": "Ayrılış risk tahmini (ML)",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Ready-now sınıflandırma",
+    "permalink": "/en/docs/ik/modul/mobility/ready-now-siniflandirma"
+  },
+  "next": {
+    "title": "9-kutu entegrasyon (Mobility ↔ Performans)",
+    "permalink": "/en/docs/ik/modul/mobility/9-kutu-entegrasyon"
+  }
+}

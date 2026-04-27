@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/ekip/surekli-geri-bildirim",
+  "title": "Sürekli geri bildirim verme",
+  "description": "Yıllık değerlendirme yerine haftalık mikro-geri bildirim.",
+  "source": "@site/docs/yonetici/ekip/surekli-geri-bildirim.md",
+  "sourceDirName": "yonetici/ekip",
+  "slug": "/yonetici/ekip/surekli-geri-bildirim",
+  "permalink": "/en/docs/yonetici/ekip/surekli-geri-bildirim",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/ekip/surekli-geri-bildirim.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "surekli-geri-bildirim",
+    "title": "Sürekli geri bildirim verme",
+    "sidebar_position": 3
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "Bire-bir görüşmeler",
+    "permalink": "/en/docs/yonetici/ekip/bire-bir-gorusmeler"
+  },
+  "next": {
+    "title": "Ekip pulse sonuçlarını yorumlama",
+    "permalink": "/en/docs/yonetici/pulse/ekip-pulse-yorumu"
+  }
+}

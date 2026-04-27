@@ -16,7 +16,7 @@ from app.scoring.bat_scoring import score_bat12
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/v1/score", tags=["scoring"])
+router = APIRouter(prefix="/api/v1/score", tags=["scoring"])
 
 
 @router.post(

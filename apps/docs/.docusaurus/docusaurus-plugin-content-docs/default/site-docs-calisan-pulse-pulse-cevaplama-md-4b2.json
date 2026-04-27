@@ -1,0 +1,29 @@
+{
+  "id": "calisan/pulse/pulse-cevaplama",
+  "title": "Pulse anketini cevaplama",
+  "description": "Pulse anketi tipik olarak 2 dakika alır.",
+  "source": "@site/docs/calisan/pulse/pulse-cevaplama.md",
+  "sourceDirName": "calisan/pulse",
+  "slug": "/calisan/pulse/pulse-cevaplama",
+  "permalink": "/en/docs/calisan/pulse/pulse-cevaplama",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/pulse/pulse-cevaplama.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "pulse-cevaplama",
+    "title": "Pulse anketini cevaplama",
+    "sidebar_position": 2
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Pulse anketi nedir?",
+    "permalink": "/en/docs/calisan/pulse/pulse-nedir"
+  },
+  "next": {
+    "title": "Anonimlik güvencesi",
+    "permalink": "/en/docs/calisan/pulse/anonimlik-guvencesi"
+  }
+}

@@ -15,9 +15,16 @@ import (
 
 // Event topics published by the audit service.
 const (
-	TopicEventLogged  = "audit.event.logged.v1"
-	TopicDSRReceived  = "audit.dsr.received.v1"
-	TopicDSRCompleted = "audit.dsr.completed.v1"
+	TopicEventLogged         = "audit.event.logged.v1"
+	TopicDSRReceived         = "audit.dsr.received.v1"
+	TopicDSRCompleted        = "audit.dsr.completed.v1"
+	TopicMLObjectionReceived = "audit.ml_objection.received.v1"
+	TopicMLObjectionResolved = "audit.ml_objection.resolved.v1"
+	// TopicMLPredictionRetracted is emitted when a prediction is retracted as
+	// the result of an upheld KVKK Madde 22 objection. Downstream subscribers
+	// (intervention, notification, mobility) must remove any recommendations
+	// that were derived from the retracted prediction.
+	TopicMLPredictionRetracted = "ml.prediction.retracted.v1"
 )
 
 // Envelope is the canonical Upcore event envelope.

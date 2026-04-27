@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/analitik/bias-denetimi",
+  "title": "Bias denetimi",
+  "description": "Algorithmic fairness audit — her karar destek modeli için.",
+  "source": "@site/docs/ik/modul/analitik/bias-denetimi.md",
+  "sourceDirName": "ik/modul/analitik",
+  "slug": "/ik/modul/analitik/bias-denetimi",
+  "permalink": "/en/docs/ik/modul/analitik/bias-denetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/analitik/bias-denetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "bias-denetimi",
+    "title": "Bias denetimi",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Executive dashboard",
+    "permalink": "/en/docs/ik/modul/analitik/executive-dashboard"
+  },
+  "next": {
+    "title": "ROI hesabı",
+    "permalink": "/en/docs/ik/modul/analitik/roi-hesabi"
+  }
+}

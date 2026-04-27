@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/succession-pool",
+  "title": "Succession pipeline (kritik pozisyon yedek havuzu)",
+  "description": "Kritik pozisyon tanımı",
+  "source": "@site/docs/ik/modul/mobility/succession-pool.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/succession-pool",
+  "permalink": "/en/docs/ik/modul/mobility/succession-pool",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/succession-pool.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "succession-pool",
+    "title": "Succession pipeline (kritik pozisyon yedek havuzu)",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İç ilan marketplace",
+    "permalink": "/en/docs/ik/modul/mobility/ic-ilan-marketplace"
+  },
+  "next": {
+    "title": "Kariyer yolu editörü",
+    "permalink": "/en/docs/ik/modul/mobility/kariyer-yolu"
+  }
+}

@@ -36,7 +36,7 @@ class TestBatchEndpoint:
                 },
             ],
         }
-        resp = await client.post("/v1/score/batch", json=payload)
+        resp = await client.post("/api/v1/score/batch", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 1
@@ -65,7 +65,7 @@ class TestBatchEndpoint:
                 },
             ],
         }
-        resp = await client.post("/v1/score/batch", json=payload)
+        resp = await client.post("/api/v1/score/batch", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 2
@@ -92,7 +92,7 @@ class TestBatchEndpoint:
                 },
             ],
         }
-        resp = await client.post("/v1/score/batch", json=payload)
+        resp = await client.post("/api/v1/score/batch", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert data["total"] == 2

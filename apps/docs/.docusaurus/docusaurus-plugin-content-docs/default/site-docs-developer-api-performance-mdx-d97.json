@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/performance",
+  "title": "Performance Servisi API Referansı",
+  "description": "UpCore Performance servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/performance.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/performance",
+  "permalink": "/en/docs/developer/api/performance",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/performance.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 19,
+  "frontMatter": {
+    "id": "performance",
+    "title": "Performance Servisi API Referansı",
+    "sidebar_position": 19,
+    "slug": "/developer/api/performance",
+    "description": "UpCore Performance servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

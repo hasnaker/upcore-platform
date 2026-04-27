@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/gelistirme/koçluk-programi",
+  "title": "Koçluk programı",
+  "description": "İç + dış profesyonel koçluk eşleştirme.",
+  "source": "@site/docs/ik/modul/gelistirme/koçluk-programi.md",
+  "sourceDirName": "ik/modul/gelistirme",
+  "slug": "/ik/modul/gelistirme/koçluk-programi",
+  "permalink": "/en/docs/ik/modul/gelistirme/koçluk-programi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/gelistirme/koçluk-programi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "koçluk-programi",
+    "title": "Koçluk programı",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Sertifika takibi",
+    "permalink": "/en/docs/ik/modul/gelistirme/sertifika-takibi"
+  },
+  "next": {
+    "title": "Mentorluk programı",
+    "permalink": "/en/docs/ik/modul/gelistirme/mentorluk"
+  }
+}

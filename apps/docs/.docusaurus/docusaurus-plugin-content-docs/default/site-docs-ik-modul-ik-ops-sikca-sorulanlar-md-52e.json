@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/sikca-sorulanlar",
+  "title": "İK Ops — sıkça sorulanlar",
+  "description": "Asgari ücret üzerinde maaş veren şirketim — en son tarih nedir?",
+  "source": "@site/docs/ik/modul/ik-ops/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/ik-ops/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "İK Ops — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İş kazası bildirimi",
+    "permalink": "/en/docs/ik/modul/ik-ops/is-kazasi-bildirim"
+  },
+  "next": {
+    "title": "Analitik modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/analitik/genel-bakis"
+  }
+}

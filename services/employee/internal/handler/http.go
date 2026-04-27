@@ -117,13 +117,27 @@ func mapError(err error) (int, ErrorResponse) {
 		errors.Is(err, domain.ErrContactNotFound),
 		errors.Is(err, domain.ErrHistoryNotFound),
 		errors.Is(err, domain.ErrManagerNotFound),
+		errors.Is(err, domain.ErrOfferNotFound),
+		errors.Is(err, domain.ErrOnboardingNotFound),
+		errors.Is(err, domain.ErrOnboardingTaskNotFound),
+		errors.Is(err, domain.ErrCareerEventNotFound),
+		errors.Is(err, domain.ErrCompensationNotFound),
+		errors.Is(err, domain.ErrRelatedContactNotFound),
+		errors.Is(err, domain.ErrOffboardingNotFound),
+		errors.Is(err, domain.ErrExitInterviewNotFound),
 		errors.Is(err, domain.ErrNotFound):
 		return http.StatusNotFound, ErrorResponse{Error: "not_found", Message: err.Error()}
 	case errors.Is(err, domain.ErrDuplicateEmployeeNo),
 		errors.Is(err, domain.ErrDuplicateTCKN),
 		errors.Is(err, domain.ErrDuplicateExternalID),
 		errors.Is(err, domain.ErrConflict),
-		errors.Is(err, domain.ErrAlreadyTerminated):
+		errors.Is(err, domain.ErrAlreadyTerminated),
+		errors.Is(err, domain.ErrOfferAlreadyDecided),
+		errors.Is(err, domain.ErrOfferExpired),
+		errors.Is(err, domain.ErrOnboardingExists),
+		errors.Is(err, domain.ErrOnboardingClosed),
+		errors.Is(err, domain.ErrOffboardingExists),
+		errors.Is(err, domain.ErrExitInterviewExists):
 		return http.StatusConflict, ErrorResponse{Error: "conflict", Message: err.Error()}
 	case errors.Is(err, domain.ErrInvalidTCKN),
 		errors.Is(err, domain.ErrInvalidIBAN),
@@ -134,6 +148,10 @@ func mapError(err error) (int, ErrorResponse) {
 		errors.Is(err, domain.ErrInvalidTransition),
 		errors.Is(err, domain.ErrTerminationDate),
 		errors.Is(err, domain.ErrManagerCycle),
+		errors.Is(err, domain.ErrOfferInvalidStatus),
+		errors.Is(err, domain.ErrOfferNotSent),
+		errors.Is(err, domain.ErrUnknownTemplate),
+		errors.Is(err, domain.ErrEmployeePositionInvalid),
 		errors.Is(err, domain.ErrValidation):
 		return http.StatusUnprocessableEntity, ErrorResponse{Error: "validation_error", Message: err.Error()}
 	case errors.Is(err, domain.ErrCSVTooLarge):

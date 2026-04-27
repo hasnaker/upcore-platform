@@ -1,0 +1,89 @@
+# ============================================================================
+# UpCore custom Semgrep rules
+# Enforce UpCore-specific security invariants beyond generic OWASP rules.
+# ============================================================================
+rules:
+  # --- Go rules -------------------------------------------------------------
+  - id: upcore-go-no-fmt-errorf-with-user-input
+    patterns:
+      - pattern-either:
+          - pattern: fmt.Errorf("... %s ...", $INPUT)
+      - metavariable-regex:
+          metavariable: $INPUT
+          regex: "^(r\\.|req\\.|c\\.Request\\.|ctx\\.).*"
+    message: "Do not interpolate raw request data into error messages — use structured errors (errors.New + wrapping)."
+    severity: WARNING
+    languages: [go]
+
+  - id: upcore-go-disallow-direct-db-exec
+    patterns:
+      - pattern-either:
+          - pattern: $DB.Exec($QUERY, ...)
+          - pattern: $DB.QueryContext($CTX, $QUERY, ...)
+      - metavariable-regex:
+          metavariable: $QUERY
+          regex: ".*(fmt\\.Sprintf|\\+ ).*"
+    message: "SQL query must use parameter placeholders ($1, $2). Do not concatenate or fmt.Sprintf into SQL."
+    severity: ERROR
+    languages: [go]
+
+  - id: upcore-go-require-tenant-id-in-rls
+    pattern-either:
+      - pattern: |
+          SELECT * FROM app.$T WHERE ...
+    paths:
+      include: ["services/*/internal/repository/*.go"]
+    message: "Every repository query MUST filter by tenant_id or be wrapped by RLS session context — verify manually."
+    severity: INFO
+    languages: [generic]
+
+  - id: upcore-go-no-panic-in-handler
+    patterns:
+      - pattern: panic(...)
+      - pattern-inside: |
+          func $F(w http.ResponseWriter, r *http.Request) {
+            ...
+          }
+    message: "Do not panic inside HTTP handlers — return an error and let the middleware render 500."
+    severity: ERROR
+    languages: [go]
+
+  # --- TypeScript / React ---------------------------------------------------
+  - id: upcore-ts-no-dangerously-set-html-with-user
+    pattern: <$E dangerouslySetInnerHTML={{ __html: $X }} />
+    message: "dangerouslySetInnerHTML on untrusted input is XSS-risk. Use DOMPurify.sanitize() or render text."
+    severity: ERROR
+    languages: [tsx, jsx]
+
+  - id: upcore-ts-localstorage-token
+    pattern-either:
+      - pattern: localStorage.setItem("token", ...)
+      - pattern: localStorage.setItem("jwt", ...)
+      - pattern: localStorage.setItem("access_token", ...)
+    message: "Do not store auth tokens in localStorage (XSS-exfiltratable). Use HttpOnly secure cookies (Clerk handles this)."
+    severity: ERROR
+    languages: [ts, tsx, js, jsx]
+
+  - id: upcore-ts-forbid-eval
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+    message: "eval / new Function are banned."
+    severity: ERROR
+    languages: [ts, tsx, js, jsx]
+
+  # --- Python ---------------------------------------------------------------
+  - id: upcore-py-no-pickle-from-network
+    pattern-either:
+      - pattern: pickle.loads(...)
+      - pattern: pickle.load(...)
+    message: "pickle is unsafe for untrusted input. Use JSON or a schema-validated format (Pydantic)."
+    severity: ERROR
+    languages: [python]
+
+  - id: upcore-py-no-hardcoded-kvkk-pii
+    patterns:
+      - pattern-regex: "(tckn|TCKN|tc_kimlik|iban|IBAN|maas|salary)\\s*=\\s*['\"][0-9]{8,}['\"]"
+    message: "Hardcoded PII (TCKN/IBAN/salary) detected. Move to test fixtures and never commit real values."
+    severity: ERROR
+    languages: [python]

@@ -3,9 +3,9 @@
 from __future__ import annotations
 
 import structlog
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter
 
-from app.effectiveness.outcome_tracker import compute_success, determine_segment
+from app.effectiveness.outcome_tracker import compute_success
 from app.schemas.requests import OutcomeFeedbackRequest
 
 logger = structlog.get_logger()

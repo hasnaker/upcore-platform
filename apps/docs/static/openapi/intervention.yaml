@@ -1,0 +1,143 @@
+openapi: 3.1.0
+info:
+  title: UpCore Intervention (Müdahale) Servisi
+  version: 1.0.0
+  description: |
+    Evidence-based müdahale kataloğu, Thompson sampling öneri motoru, consent akışı,
+    4/8/12 hafta izleme, Cohen's d etki hesabı.
+servers:
+  - url: https://api.upcore.io
+  - url: http://localhost:8012
+security:
+  - bearerAuth: []
+tags:
+  - name: catalog
+    description: Müdahale katalog yönetimi
+  - name: recommendations
+    description: Thompson sampling öneri motoru
+  - name: plans
+    description: Müdahale planı yaşam döngüsü
+  - name: consent
+    description: Çalışan açık rızası (KVKK uyumlu)
+  - name: outcomes
+    description: Etki ölçümü (Cohen's d)
+
+paths:
+  /api/v1/interventions/catalog:
+    get:
+      tags: [catalog]
+      summary: 20+ evidence-based müdahale kataloğunu listele
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: "#/components/schemas/CatalogItem" }
+
+  /api/v1/interventions/recommendations:
+    post:
+      tags: [recommendations]
+      summary: Thompson sampling ile müdahale önerisi al
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, signal_type]
+              properties:
+                employee_id: { type: string, format: uuid }
+                signal_type:
+                  type: string
+                  enum: [burnout_risk, disengagement, performance_drop]
+                top_k: { type: integer, default: 3, minimum: 1, maximum: 10 }
+      responses:
+        "200":
+          description: Öneriler (top_k adet)
+
+  /api/v1/interventions/plans:
+    post:
+      tags: [plans]
+      summary: Müdahale planı oluştur (consent sonrası)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, intervention_id, consent_id, start_date]
+              properties:
+                employee_id: { type: string, format: uuid }
+                intervention_id: { type: string, format: uuid }
+                consent_id: { type: string, format: uuid }
+                start_date: { type: string, format: date }
+                duration_weeks: { type: integer, enum: [4, 8, 12] }
+      responses:
+        "201":
+          description: Plan oluşturuldu
+
+  /api/v1/interventions/consent:
+    post:
+      tags: [consent]
+      summary: Çalışan açık rızasını kaydet
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [employee_id, purpose, granted]
+              properties:
+                employee_id: { type: string, format: uuid }
+                purpose: { type: string }
+                granted: { type: boolean }
+                signed_text_hash: { type: string }
+      responses:
+        "201":
+          description: Kayıtlı
+
+  /api/v1/interventions/outcomes/{planId}:
+    get:
+      tags: [outcomes]
+      summary: Plan etki ölçüm raporu (Cohen's d)
+      parameters:
+        - name: planId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/OutcomeReport" }
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    CatalogItem:
+      type: object
+      required: [id, name, evidence_level]
+      properties:
+        id: { type: string, format: uuid }
+        name: { type: string }
+        category: { type: string, enum: [coaching, workload, recognition, psychoeducation, referral] }
+        evidence_level: { type: string, enum: [A, B, C] }
+        typical_duration_weeks: { type: integer }
+        references:
+          type: array
+          items: { type: string, format: uri }
+    OutcomeReport:
+      type: object
+      properties:
+        plan_id: { type: string, format: uuid }
+        cohens_d: { type: number }
+        pre_score: { type: number }
+        post_score: { type: number }
+        significance: { type: string, enum: [trivial, small, medium, large] }

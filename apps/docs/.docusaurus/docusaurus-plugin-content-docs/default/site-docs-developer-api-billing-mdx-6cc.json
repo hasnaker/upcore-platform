@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/billing",
+  "title": "Billing Servisi API Referansı",
+  "description": "UpCore Billing servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/billing.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/billing",
+  "permalink": "/en/docs/developer/api/billing",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/billing.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 24,
+  "frontMatter": {
+    "id": "billing",
+    "title": "Billing Servisi API Referansı",
+    "sidebar_position": 24,
+    "slug": "/developer/api/billing",
+    "description": "UpCore Billing servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

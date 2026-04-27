@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/yil-sonu-degerlendirme",
+  "title": "Yıl sonu değerlendirme (performans modülü)",
+  "description": "Hızlı başlangıç tam senaryosu üzerinden genel akışı inceleyin. Bu sayfada performans modülüne özel teknik detaylar.",
+  "source": "@site/docs/ik/modul/performans/yil-sonu-degerlendirme.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/yil-sonu-degerlendirme",
+  "permalink": "/en/docs/ik/modul/performans/yil-sonu-degerlendirme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/yil-sonu-degerlendirme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "yil-sonu-degerlendirme",
+    "title": "Yıl sonu değerlendirme (performans modülü)",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "PIP (Performans İyileştirme Planı) iş akışı",
+    "permalink": "/en/docs/ik/modul/performans/pip-is-akisi"
+  },
+  "next": {
+    "title": "Bonus hesabı",
+    "permalink": "/en/docs/ik/modul/performans/bonus-hesabi"
+  }
+}

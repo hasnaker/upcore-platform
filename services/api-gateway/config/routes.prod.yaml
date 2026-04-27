@@ -1,0 +1,377 @@
+routes:
+  # Authentication service
+  - path_prefix: "/api/v1/auth"
+    upstream: "auth"
+    target: "http://upcore-auth.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: false # auth endpoints handle their own auth
+    timeout: 30s
+    rate_limit:
+      per_user: 10
+      per_tenant: 100
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Clerk webhooks (no JWT)
+  - path_prefix: "/webhooks/clerk"
+    upstream: "auth"
+    target: "http://upcore-auth.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: false
+    timeout: 30s
+    rate_limit:
+      per_user: 0
+      per_tenant: 0
+    methods: ["POST"]
+
+  # Tenant service
+  - path_prefix: "/api/v1/tenants"
+    upstream: "tenant"
+    target: "http://upcore-tenant.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service
+  - path_prefix: "/api/v1/employees"
+    upstream: "employee"
+    target: "http://upcore-employee.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - offer letters (lifecycle 1.1.1)
+  - path_prefix: "/api/v1/offers"
+    upstream: "employee"
+    target: "http://upcore-employee.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - onboarding workflow (lifecycle 1.1.2)
+  - path_prefix: "/api/v1/onboarding"
+    upstream: "employee"
+    target: "http://upcore-employee.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - related contacts (lifecycle 1.1.5)
+  - path_prefix: "/api/v1/related-contacts"
+    upstream: "employee"
+    target: "http://upcore-employee.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - multi-FTE positions (lifecycle 1.1.6)
+  - path_prefix: "/api/v1/employee-positions"
+    upstream: "employee"
+    target: "http://upcore-employee.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Employee service - offboarding + exit interview (lifecycle 1.1.7)
+  - path_prefix: "/api/v1/offboarding"
+    upstream: "employee"
+    target: "http://upcore-employee.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Performance module (cycles, goals, OKRs, reviews, 9-box)
+  - path_prefix: "/api/v1/performance"
+    upstream: "performance"
+    target: "http://upcore-performance.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Bordro (Türk payroll — role-gated)
+  - path_prefix: "/api/v1/bordro"
+    upstream: "bordro"
+    target: "http://upcore-bordro.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 50
+      per_tenant: 500
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Billing (abonelik + fatura + ödeme)
+  - path_prefix: "/api/v1/plans"
+    upstream: "billing"
+    target: "http://upcore-billing.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET"]
+
+  - path_prefix: "/api/v1/subscriptions"
+    upstream: "billing"
+    target: "http://upcore-billing.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/invoices"
+    upstream: "billing"
+    target: "http://upcore-billing.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST"]
+
+  # Billing admin analytics (platform-admin only).
+  - path_prefix: "/api/v1/admin/billing"
+    upstream: "billing"
+    target: "http://upcore-billing.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 200
+    methods: ["GET", "POST"]
+
+  # Mobility marketplace (dahili kariyer fırsatları)
+  - path_prefix: "/api/v1/mobility"
+    upstream: "mobility"
+    target: "http://upcore-mobility.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Status admin endpoints (incidents, components, maintenance)
+  - path_prefix: "/api/v1/admin/status"
+    upstream: "status"
+    target: "http://upcore-status.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 200
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Public status page (no auth)
+  - path_prefix: "/api/v1/status"
+    upstream: "status"
+    target: "http://upcore-status.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: false
+    timeout: 30s
+    rate_limit:
+      per_user: 60
+      per_tenant: 1000
+    methods: ["GET"]
+
+  # Admin (feature flags, export jobs, impersonation, API keys, webhooks)
+  - path_prefix: "/api/v1/admin"
+    upstream: "tenant"
+    target: "http://upcore-tenant.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 200
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  - path_prefix: "/api/v1/api-keys"
+    upstream: "tenant"
+    target: "http://upcore-tenant.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  - path_prefix: "/api/v1/webhooks"
+    upstream: "tenant"
+    target: "http://upcore-tenant.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    methods: ["GET", "POST", "DELETE"]
+
+  # Organization service - departments
+  - path_prefix: "/api/v1/departments"
+    upstream: "organization"
+    target: "http://upcore-organization.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Organization service - positions (org positions, not ATS)
+  - path_prefix: "/api/v1/positions"
+    upstream: "organization"
+    target: "http://upcore-organization.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Leave service
+  - path_prefix: "/api/v1/leaves"
+    upstream: "leave"
+    target: "http://upcore-leave.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Document service
+  - path_prefix: "/api/v1/documents"
+    upstream: "document"
+    target: "http://upcore-document.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 5
+      per_tenant: 100
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Public survey endpoints (token-based, no JWT)
+  - path_prefix: "/api/v1/public/surveys"
+    upstream: "survey"
+    target: "http://upcore-survey.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: false
+    timeout: 30s
+    rate_limit:
+      per_user: 10
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
+  # Survey service
+  - path_prefix: "/api/v1/surveys"
+    upstream: "survey"
+    target: "http://upcore-survey.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Intervention service
+  - path_prefix: "/api/v1/interventions"
+    upstream: "intervention"
+    target: "http://upcore-intervention.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Audit service
+  - path_prefix: "/api/v1/audit"
+    upstream: "audit"
+    target: "http://upcore-audit.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET"]
+
+  # KVKK çalışan rıza yönetimi (audit servisi üstünden)
+  - path_prefix: "/api/v1/kvkk/consents"
+    upstream: "audit"
+    target: "http://upcore-audit.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 30
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
+  # Notification service
+  - path_prefix: "/api/v1/notifications"
+    upstream: "notification"
+    target: "http://upcore-notification.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # ATS service (tüm ATS endpoints: requisitions, candidates, interviews, board)
+  - path_prefix: "/api/v1/ats"
+    upstream: "ats"
+    target: "http://upcore-ats.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Public candidate assessment (token-based, no JWT)
+  - path_prefix: "/api/v1/assessments/candidate"
+    upstream: "assessment"
+    target: "http://upcore-assessment.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: false
+    timeout: 60s
+    rate_limit:
+      per_user: 10
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
+  # Assessment service (authenticated)
+  - path_prefix: "/api/v1/assessments"
+    upstream: "assessment"
+    target: "http://upcore-assessment.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
+
+  # Psychometric scoring service
+  - path_prefix: "/api/v1/score"
+    upstream: "psychometric-scoring"
+    target: "http://localhost:8021"
+    auth_required: true
+    timeout: 60s
+    rate_limit:
+      per_user: 50
+      per_tenant: 500
+    methods: ["GET", "POST"]
+
+  # Action center service
+  - path_prefix: "/api/v1/actions"
+    upstream: "action-center"
+    target: "http://localhost:8024"
+    auth_required: true
+    timeout: 30s
+    rate_limit:
+      per_user: 100
+      per_tenant: 1000
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]

@@ -2,6 +2,8 @@ package testsupport
 
 import (
 	"context"
+	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -20,6 +22,8 @@ type FakeTenantRepo struct {
 	mu     sync.Mutex
 	byID   map[uuid.UUID]*domain.Tenant
 	bySlug map[string]*domain.Tenant
+	subs   *FakeSubscriptionRepo
+	usage  *FakeUsageRepo
 }
 
 // NewFakeTenantRepo creates an empty fake tenant repo.
@@ -108,6 +112,132 @@ func (f *FakeTenantRepo) HardDelete(_ context.Context, id uuid.UUID) error {
 		delete(f.byID, id)
 	}
 	return nil
+}
+
+// ListAdmin returns a filtered, paginated admin projection. Subscription
+// plan and seats and the employee counter are sourced from the optional
+// SubRepo/UsageRepo registered on the fake. If none are registered, the
+// row's plan fields remain nil and employee count is 0.
+func (f *FakeTenantRepo) ListAdmin(_ context.Context, filter repository.TenantListFilter) ([]*domain.TenantAdminRow, int, error) {
+	page := filter.Page
+	if page < 1 {
+		page = 1
+	}
+	size := filter.PageSize
+	if size <= 0 {
+		size = 25
+	}
+	if size > 100 {
+		size = 100
+	}
+
+	status := strings.ToLower(strings.TrimSpace(filter.Status))
+	switch status {
+	case "", "all", "trial", "active", "suspended", "deleted":
+	default:
+		return nil, 0, domain.NewValidationError(map[string]string{"status": "invalid"})
+	}
+
+	search := strings.ToLower(strings.TrimSpace(filter.Search))
+
+	f.mu.Lock()
+	tenants := make([]*domain.Tenant, 0, len(f.byID))
+	for _, t := range f.byID {
+		if t.DeletedAt != nil {
+			continue
+		}
+		tenants = append(tenants, t)
+	}
+	f.mu.Unlock()
+
+	// Sort newest first.
+	sort.SliceStable(tenants, func(i, j int) bool {
+		return tenants[i].CreatedAt.After(tenants[j].CreatedAt)
+	})
+
+	filtered := make([]*domain.Tenant, 0, len(tenants))
+	for _, t := range tenants {
+		if status != "" && status != "all" && string(t.Status) != status {
+			continue
+		}
+		if search != "" {
+			name := strings.ToLower(t.Name)
+			slug := strings.ToLower(t.Slug)
+			if !strings.Contains(name, search) && !strings.Contains(slug, search) {
+				continue
+			}
+		}
+		if filter.PlanID != "" {
+			if f.subs == nil {
+				continue
+			}
+			sub, err := f.subs.GetByTenantID(context.Background(), t.ID)
+			if err != nil || sub.PlanID != filter.PlanID {
+				continue
+			}
+		}
+		filtered = append(filtered, t)
+	}
+
+	total := len(filtered)
+	start := (page - 1) * size
+	if start >= total {
+		return []*domain.TenantAdminRow{}, total, nil
+	}
+	end := start + size
+	if end > total {
+		end = total
+	}
+	pageRows := filtered[start:end]
+
+	out := make([]*domain.TenantAdminRow, 0, len(pageRows))
+	for _, t := range pageRows {
+		row := &domain.TenantAdminRow{
+			ID:          t.ID,
+			Name:        t.Name,
+			Slug:        t.Slug,
+			Country:     t.Country,
+			Locale:      t.Locale,
+			Status:      t.Status,
+			TrialEndsAt: t.TrialEndsAt,
+			CreatedAt:   t.CreatedAt,
+			UpdatedAt:   t.UpdatedAt,
+		}
+		if f.subs != nil {
+			if sub, err := f.subs.GetByTenantID(context.Background(), t.ID); err == nil {
+				planID := sub.PlanID
+				subStatus := string(sub.Status)
+				seats := sub.Seats
+				row.PlanID = &planID
+				row.SubStatus = &subStatus
+				row.Seats = &seats
+			}
+		}
+		if f.usage != nil {
+			if u, err := f.usage.Get(context.Background(), t.ID, domain.MetricEmployees, time.Now().UTC()); err == nil {
+				row.EmployeeCount = u.Value
+			}
+		}
+		out = append(out, row)
+	}
+	return out, total, nil
+}
+
+// WithSubs registers a subscription repo so ListAdmin can join in plan data.
+// Returns the receiver for fluent wiring.
+func (f *FakeTenantRepo) WithSubs(s *FakeSubscriptionRepo) *FakeTenantRepo {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.subs = s
+	return f
+}
+
+// WithUsage registers a usage repo so ListAdmin can include employee counts.
+func (f *FakeTenantRepo) WithUsage(u *FakeUsageRepo) *FakeTenantRepo {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.usage = u
+	return f
 }
 
 // ListPendingHardDelete returns tenants soft-deleted beyond the grace period.

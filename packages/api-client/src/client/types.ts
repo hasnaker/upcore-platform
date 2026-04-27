@@ -1,7 +1,7 @@
 /**
  * Shared internal types for the API client layer.
  */
-import type { KyInstance, Options as KyOptions } from 'ky';
+import type { KyInstance } from 'ky';
 
 /** Configuration required to create a fetcher instance. */
 export interface FetcherConfig {

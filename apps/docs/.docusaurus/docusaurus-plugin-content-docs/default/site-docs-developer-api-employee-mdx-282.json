@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/employee",
+  "title": "Employee Servisi API Referansı",
+  "description": "UpCore Employee servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/employee.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/employee",
+  "permalink": "/en/docs/developer/api/employee",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/employee.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 12,
+  "frontMatter": {
+    "id": "employee",
+    "title": "Employee Servisi API Referansı",
+    "sidebar_position": 12,
+    "slug": "/developer/api/employee",
+    "description": "UpCore Employee servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

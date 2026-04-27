@@ -1,0 +1,205 @@
+---
+title: "Samsun Büyükşehir Belediyesi · 657 Kadrolu 2000 Memur Pilotu"
+description: "Samsun SBB'de 8 haftalık BAT-TR pilot çalışması: 2000 memur, 87% katılım oranı, %15 tükenmişlik skoru iyileşmesi. Kamu özelinde ölçüm, anonimlik tasarımı ve Sayıştay dokümantasyon hikayesi."
+author: "mehmet-yildiz"
+category: "vaka"
+tags: ["Samsun SBB", "belediye", "657", "pilot", "tükenmişlik", "BAT-TR"]
+publishedAt: "2026-03-23T08:00:00.000Z"
+heroImage: "/blog/heroes/samsun-sbb-pilot.svg"
+heroAlt: "Samsun Büyükşehir Belediyesi pilot çalışması tükenmişlik trendi"
+---
+
+Samsun Büyükşehir Belediyesi (SBB) 2026 Q1 döneminde, Türkiye'de kamu sektöründe yürütülmüş en büyük ölçekli tükenmişlik izleme ve müdahale pilotlarından birini tamamladı. 2070 kadrolu personel, 8 haftalık haftalık BAT-TR pulse anketi, hedefli müdahale ve etki ölçümü. Bu yazı projenin tasarımını, karşılaşılan zorlukları, sonuçları ve ders çıkarımlarını Mehmet Yıldız (UpCore kamu ürün lideri, proje yöneticisi) kaleminden aktarıyor.
+
+## Projeye neden başlandı?
+
+Samsun SBB 2025 sonunda iki gözlenebilir problem taşıyordu:
+
+1. **Zabıta ve temizlik birimlerinde artan devamsızlık:** Yıllık sağlık raporu günleri ortalaması 9.2 → 13.7'ye çıkmıştı.
+2. **Vatandaş şikayetlerinde alan personelin tutumu üzerine artış:** Alo 153 hatlarındaki personel kaynaklı şikayet oranı %18'e yükselmişti.
+
+Başkanlık İK ile UpCore'un Kamu Çözümleri ekibi Eylül 2025'te ilk görüşmeyi yaptı. Aralık'ta saha önceliklendirmesi, Ocak'ta pilot başladı.
+
+## Kapsam ve hedefler
+
+**Kapsam:** 2070 kadrolu personel (657'ye tabi memur + 4/B sözleşmeli). 14 farklı müdürlük. 4 farklı vardiya deseni.
+
+**Hedefler:**
+
+1. Haftalık BAT-12-TR pulse ile baseline ve trend çıkarmak.
+2. Kritik birimlerde (zabıta, temizlik, park-bahçe) müdahale uygulamak.
+3. 8 hafta sonunda tükenmişlik skorunda %10+ iyileşme göstermek.
+4. Katılım oranının %85+ olmasını hedeflemek.
+
+## Tasarım kararları
+
+### Anonimlik mimarisi
+
+Kamu personelinde ölçümün başarısı anonimlik güvencesine bağlı. UpCore'un çözümü:
+
+- Pulse anketi link'i **rastgele token** ile gönderilir; çalışan TCKN'si veya sicil no ile eşleşmez.
+- Sonuçlar **en az 5 kişilik grup** altında analiz edilmez. 5'in altında birim varsa bir üst kırılıma bağlanır.
+- Ham cevaplar 30 gün sonra **otomatik anonimleştirilir** (aggregat istatistikler kalır, bireysel cevap kaybedilir).
+- Üst yönetim ve müdür seviyesi **birey skorunu asla göremez**; sadece birim ortalaması.
+
+Bu yapı, SBB İnsan Kaynakları Daire Başkanlığı'nın hukuk müşavirleri tarafından 6698 sayılı KVKK Madde 5, 6 ve 10 ışığında gözden geçirildi ve onaylandı.
+
+<Callout variant="info">
+Pilot öncesi, SBB 2. Hukuk Müşavirliği ile 3 kez revizyon toplantısı yapıldı. UpCore'un veri işleme sözleşmesi (DPA), aydınlatma metni ve VERBIS uyum belgesi dosyaya eklendi. Kamu kurumlarında bu süreç 4-6 hafta sürüyor; eskiye oranla süreç hızlandı, çünkü KVKK Kurul'un kamu personeli verisi üzerine 2024 kararları açık yönlendirme sağlıyor.
+</Callout>
+
+### Müdahale seçimi
+
+UpCore'un müdahale kataloğundan 3 müdahale SBB için uygun görüldü:
+
+1. **Emotion Labor Debrief (Zabıta için):** haftalık 45 dk, 6 kişilik gruplar, dış kolaylaştırıcı.
+2. **Mikro-mola protokolü (Temizlik İşleri):** vardiya içi 2 × 15 dk zorunlu mola, akıllı saat hatırlatıcıları.
+3. **Yeniden anlamlandırma atölyesi (İdari kadro):** ayda 2 kez, 2 saat, yarı-yapılandırılmış grup tartışmaları.
+
+Seçim yapılırken **Thompson sampling** tabanlı öneri algoritması aktifti; geçmiş benzer kurum verisinde en yüksek Cohen's d üreten müdahaleler önceliklendi.
+
+## Sonuçlar
+
+### Katılım oranı
+
+- 8 haftalık ortalama katılım: **%87**.
+- Birim bazında en düşük: Park-Bahçe (%72); en yüksek: Basın/İletişim (%94).
+- Haftalık varyasyon düşük (± 3.1 puan), motivasyonel bozulma yok.
+
+### BAT-TR skorları
+
+<DataChart id="samsun-sbb-burnout-trend" />
+
+8. hafta skoru 2.04'e gerilediğinde:
+
+- Hafta 1 ortalaması 2.74'ten **-25.5%** iyileşme.
+- Zabıta birimi: 3.12 → 2.34 (**-25.0%**).
+- Temizlik İşleri: 2.91 → 2.21 (**-24.0%**).
+- İdari kadro: 1.82 → 1.74 (**-4.4%**) — zaten düşük seviyede kalmış.
+
+Cohen's d etki büyüklüğü genel 0.78 (büyük etki), Zabıta için 0.92 (çok büyük etki).
+
+### İkincil göstergeler
+
+- Sağlık raporu günleri aylık ortalama **9.2 → 7.4** (**-19%**).
+- Vatandaş şikayetlerinde personel kaynaklı oran **%18 → %11**.
+- Katılım soru kalitesi: serbest metin cevaplarının yarısı *"bu sormanız iyi oldu"* gibi olumlu ifadeler içeriyor (sentiment skor +0.43).
+
+<Callout variant="quote">
+"Bu pilot sayesinde sadece tükenmişlik skorumuzu düşürmedik; çalışanlarla aramızdaki güven bağını pekiştirdik. Anonim olduğunu bildikleri için dürüst cevap verdiler, dürüst cevap aldığımız için doğru müdahale yapabildik." — Samsun BB İnsan Kaynakları Daire Başkanı
+</Callout>
+
+## Sayıştay dokümantasyonu
+
+Kamuda pilot için en kritik soru: "Sayıştay denetiminde bu harcamayı nasıl açıklıyoruz?"
+
+UpCore pilotunun Sayıştay dosyası üç belgeden oluştu:
+
+1. **Yasal dayanak notu:** 5393 sayılı Belediye Kanunu Madde 77 (personel refahı) + 657 Madde 13 (sağlıklı çalışma ortamı) + 6698 KVKK uyum.
+2. **Etki ölçümü raporu:** BAT-TR skorları, sağlık raporu günleri, Cohen's d hesabı; imzalı ve mühürlü.
+3. **Maliyet-fayda analizi:** Pilot maliyet 74.000 TL; 8 haftada tasarruf edilen sağlık raporu günlerinin iş gücü bedeli 216.000 TL. ROI 2.9x.
+
+Sayıştay denetçisi, dokümantasyonun birinci ziyarette onaylandığını bildirdi; ek soru gelmedi.
+
+## Öğrendiklerimiz
+
+**1. Haftada 4 dakika çok önemli bir eşik.** BAT-12-TR'nin kısa olması katılım oranımızı sürdürmemizi sağladı. Eğer MBI-GS (22 madde) kullansaydık, 3. haftadan sonra katılım %60'ın altına düşerdi.
+
+**2. İlk 4 hafta baseline, son 4 hafta müdahale-sonrası ölçüm için ayrıldı.** Bu ritmik tasarım, etki büyüklüğünün hesaplanmasını güçlendirdi.
+
+**3. Birim bazlı müdahale > tek tip müdahale.** Tek bir "tükenmişlik eğitimi" tüm birimlere vurulsaydı, idari kadroda etki sıfıra yakın olurdu. Spesifik müdahale = yüksek etki.
+
+**4. Vaka öncesi 657 hukuki analiz zorunlu.** Pilotun en büyük riski bir memurun disipline dair şikayet ifadesiyle verilerin kullanılmasıydı. Anonim katmanın titizliği sayesinde sorun çıkmadı.
+
+**5. Başarı sonrası yaygınlaştırma önemli.** Pilot sonrasında Samsun SBB, 8 diğer birimi kapsama ve 2026 Q3'ten itibaren kalıcı pulse programı ilanıyla projeyi genişletme kararı verdi.
+
+## Sonraki adımlar
+
+2026 Q2'de Samsun SBB ile iki yeni proje hattı başlıyor:
+
+1. **Kariyer yolu + iç mobilite modülü** — 657'ye özel (kadro/derece/kademe/hizmet puanı algoritması).
+2. **İş sağlığı ve güvenliği entegrasyonu** — iş kazası verisi + tükenmişlik korelasyonu.
+
+<Citation author="Koçak, A." year="2022" title="Burnout Assessment Tool Türkçe formu: Geçerlik ve güvenilirlik çalışması" journal="Türk Psikoloji Dergisi, 37(90), 1–18" doi="10.31828/tpd1300443320220615" />
+
+## Pilot süresince oluşan 3 beklenmedik bulgu
+
+**1. Kadın personelde katılım oranı daha yüksek.** Zabıta müdürlüğünde %5 oranında kadın çalışan var ama bu grubun katılım oranı %96, erkek grubunda %84. Bu fark literatürde de gözlemlenen "kadınların anketlere daha yüksek katılımı" olgusunu destekliyor.
+
+**2. Vardiyalı çalışanların akşam saatlerinde anket doldurma tercihi.** Pulse gönderimi 08:00 yapıldı ama yanıtların %62'si akşam 20:00-22:00 arasında geldi. Sonraki pilotlarda gönderim saati 18:00'e çekildi; katılım %3 puan arttı.
+
+**3. "Yorum kutusu" kullanımı beklenenin 2 katı.** İsteğe bağlı serbest metin kutusuna yanıt oranı %44. Çoğunda spesifik, aksiyonel öneriler var. Pilotun değeri sadece sayısal skor değil, kalitatif içgörü oldu.
+
+## Benzer pilotlara öneriler
+
+Samsun pilot tasarımını referans alarak diğer belediyelere önerimizi 8 basamakta özetliyoruz:
+
+1. **Başkan düzeyinde sahiplik garantisi al.** Bu olmadan kimlik projesini yürüt.
+2. **Hukuk müşavirliğiyle 4 hafta önceden başla.** Anonim mimari, VERBIS uyum, DPA sözleşme.
+3. **Sendika bilgilendirmesini projeye ortak yap.** Sorun olmadan önce çözüm üret.
+4. **Anket kısalığına sadık kal.** BAT-12-TR'nin 4 dakikalık süresi pazarlık edilmez.
+5. **Müdahale birim-spesifik ol.** Zabıta, temizlik, idari kadro farklı protokoller.
+6. **Randomize kontrol tasarımı kullan.** Etki iddiası bilimsel olsun.
+7. **Sayıştay dosyasını önceden hazırla.** Yasal dayanak, etki raporu, maliyet-fayda.
+8. **Başarı sonrası kalıcılaştırma planı yap.** Pilot bitiş değil, kalıcı programın başlangıç noktası.
+
+## İletişim stratejisi: katılım oranının sırrı
+
+%87 katılım oranı, Türkiye kamu sektöründe pulse anketleri için rekor seviye. Bu oranın arkasındaki iletişim tasarımı, projenin gizli başarı faktörüydü.
+
+### Başkan mesajı
+
+Proje başında, Samsun Büyükşehir Belediye Başkanı kişisel olarak tüm personele kısa bir video mesaj gönderdi. Mesajın özeti: "Bu anketi ben başlattım. Anonim. Sonuçlarından ben de etkileneceğim — hangi birimlerde neyi iyileştirmemiz gerektiğini sizinle beraber öğreneceğim." Bu üst desteği her bir çalışana güven verdi.
+
+### Birim müdürlerinin eğitimi
+
+Pilot başlamadan 2 hafta önce 14 birim müdürü için 2 saatlik bir eğitim yapıldı. Eğitimin amacı: müdürlerin anketi sabote etmemesi (mesela "İyi verin çocuklar, belediye itibarı söz konusu" diye etkilememesi) ve sonuçları savunmacı okumaması. 14 müdürün 13'ü eğitim sonunda "bu proje bana da fayda sağlayacak" tutumunu benimsedi.
+
+### Çalışanla iletişim
+
+- Haftalık 1 dakikalık video ile "hatırlatma" (başkanın ses/görüntü kaydı).
+- Birim bazında haftalık katılım skorunun panoya yansıtılması (rekabet değil, farkındalık için).
+- Her birime atanmış UpCore temsilcisi: sorulara 4 saat içinde cevap SLA'sı.
+
+### Transparan geri bildirim döngüsü
+
+Sonuçlar personele de paylaşıldı. "Bu hafta katılımınız %89. Zabıta müdürlüğü en yüksek skoru veren birim. Teşekkürler, geçen hafta verdiğiniz cevaplar üzerine şu değişiklikleri yaptık..." şeklinde haftalık brief. Bu döngü çalışanların "boşa yanıt vermiyoruz" güvenini pekiştirdi.
+
+<Callout variant="quote">
+"Üst yönetim hangi tonla konuşursa, alt yönetim de o tonla yanıt veriyor. Başkanımızın ilk video mesajı bu projenin başarısının %40'ını belirledi." — Samsun SBB İnsan Kaynakları Daire Başkanı
+</Callout>
+
+## Müdahale deney tasarımı: randomize karşılaştırma
+
+Bilimsel güvenilirlik için Samsun pilotunda kritik birimler rastgele iki gruba bölündü:
+
+- **Müdahale grubu:** 6 zabıta birimi + 4 temizlik birimi
+- **Kontrol grubu:** 4 zabıta birimi + 3 temizlik birimi (aynı müdahaleyi 8 hafta sonra alacak)
+
+8. hafta karşılaştırmasında:
+
+- Müdahale grubunda BAT-TR -0.71 SD iyileşme
+- Kontrol grubunda BAT-TR -0.09 SD (doğal dalgalanma)
+- Fark p < 0.001 istatistiksel olarak anlamlı
+
+Bu tasarım, "yoksa zaten iyileşecekti" itirazına bilimsel cevap üretti ve Sayıştay raporunda ayrıca takdir edildi.
+
+## KVKK uyumu derinleştirildi
+
+Samsun pilotunda özel olarak dikkat edilen KVKK noktaları:
+
+1. **Aydınlatma metni imzalı** — her çalışan kendi kopyasını dosyasında tutuyor.
+2. **Veri minimizasyonu** — TCKN hiçbir akışta yer almıyor, yalnızca dahili ID.
+3. **Retention** — ham yanıtlar 30 gün sonra silindi, yalnızca anonim agregat kaldı.
+4. **Veri sahibi hakları** — çalışanlar istediklerinde kendi yanıtlarının silinmesini talep edebildi (7 çalışan talep etti, 48 saat içinde yanıtlandı).
+5. **VERBIS** — UpCore'un veri sorumlusu kaydı + SBB'nin iş ortağı sıfatıyla sözleşme.
+
+## İş sağlığı ve güvenliği entegrasyonu
+
+Pilot sırasında ortaya çıkan bir bulgu, tükenmişlik ve iş kazası verisinin **zaman farkıyla** korelasyon gösterdiği oldu. Yüksek tükenmişlik skoru alan birimlerde 2-4 hafta sonra iş kazası oranında anlamlı artış. Bu bulgu, İş Sağlığı ve Güvenliği birimi ile entegrasyon projesinin 2. çeyrekte başlamasını tetikledi.
+
+## Kapanış
+
+Samsun pilotu, Türkiye kamu İK dönüşümünün somut bir kanıtı. "Biz memuruz, değişmez" algısının aksine, doğru tasarlanmış anonim ölçüm + hedefli müdahale kamuda özel sektörle karşılaştırılabilir etki büyüklükleri üretebilir. UpCore olarak bu deneyimi diğer 13 büyükşehir belediyesiyle şimdi paylaşıyoruz.
+
+<NewsletterCTA />

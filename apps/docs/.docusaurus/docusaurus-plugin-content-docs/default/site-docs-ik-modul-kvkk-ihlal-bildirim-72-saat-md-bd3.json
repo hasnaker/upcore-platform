@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/kvkk/ihlal-bildirim-72-saat",
+  "title": "İhlal bildirim (72 saat)",
+  "description": "KVKK Madde 12/5 — kişisel veri ihlali halinde bildirim yükümlülüğü.",
+  "source": "@site/docs/ik/modul/kvkk/ihlal-bildirim-72-saat.md",
+  "sourceDirName": "ik/modul/kvkk",
+  "slug": "/ik/modul/kvkk/ihlal-bildirim-72-saat",
+  "permalink": "/en/docs/ik/modul/kvkk/ihlal-bildirim-72-saat",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/kvkk/ihlal-bildirim-72-saat.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "ihlal-bildirim-72-saat",
+    "title": "İhlal bildirim (72 saat)",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "DPIA (Veri Koruma Etki Değerlendirmesi)",
+    "permalink": "/en/docs/ik/modul/kvkk/dpia-sablon"
+  },
+  "next": {
+    "title": "Saklama politikası",
+    "permalink": "/en/docs/ik/modul/kvkk/saklama-politikasi"
+  }
+}

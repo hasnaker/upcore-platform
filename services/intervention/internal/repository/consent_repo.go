@@ -16,7 +16,8 @@ import (
 type ConsentRepository interface {
 	Create(ctx context.Context, c *domain.ConsentLog) error
 	ListByEmployee(ctx context.Context, tenantID, employeeID uuid.UUID) ([]*domain.ConsentLog, error)
-	ListByAssignment(ctx context.Context, assignmentID uuid.UUID) ([]*domain.ConsentLog, error)
+	ListByAssignment(ctx context.Context, tenantID, assignmentID uuid.UUID) ([]*domain.ConsentLog, error)
+	LatestByAssignment(ctx context.Context, tenantID, assignmentID uuid.UUID) (*domain.ConsentLog, error)
 }
 
 type consentRepo struct {
@@ -35,9 +36,9 @@ func (r *consentRepo) Create(ctx context.Context, c *domain.ConsentLog) error {
 	c.CreatedAt = time.Now().UTC()
 
 	q := `INSERT INTO app.intervention_consent_log (
-		id, tenant_id, assignment_id, employee_id, action, reason, actor_ip, created_at
+		id, tenant_id, assignment_id, employee_id, action, reason, actor_ip, user_agent, created_at
 	) VALUES (
-		:id, :tenant_id, :assignment_id, :employee_id, :action, :reason, :actor_ip, :created_at
+		:id, :tenant_id, :assignment_id, :employee_id, :action, :reason, :actor_ip, :user_agent, :created_at
 	)`
 	_, err := r.db.NamedExecContext(ctx, q, c)
 	if err != nil {
@@ -57,13 +58,24 @@ func (r *consentRepo) ListByEmployee(ctx context.Context, tenantID, employeeID u
 	return rows, nil
 }
 
-func (r *consentRepo) ListByAssignment(ctx context.Context, assignmentID uuid.UUID) ([]*domain.ConsentLog, error) {
+func (r *consentRepo) ListByAssignment(ctx context.Context, tenantID, assignmentID uuid.UUID) ([]*domain.ConsentLog, error) {
 	var rows []*domain.ConsentLog
 	q := `SELECT * FROM app.intervention_consent_log
-		WHERE assignment_id = $1
+		WHERE tenant_id = $1 AND assignment_id = $2
 		ORDER BY created_at ASC`
-	if err := r.db.SelectContext(ctx, &rows, q, assignmentID); err != nil {
+	if err := r.db.SelectContext(ctx, &rows, q, tenantID, assignmentID); err != nil {
 		return nil, fmt.Errorf("list consent by assignment: %w", err)
 	}
 	return rows, nil
+}
+
+func (r *consentRepo) LatestByAssignment(ctx context.Context, tenantID, assignmentID uuid.UUID) (*domain.ConsentLog, error) {
+	var row domain.ConsentLog
+	q := `SELECT * FROM app.intervention_consent_log
+		WHERE tenant_id = $1 AND assignment_id = $2
+		ORDER BY created_at DESC LIMIT 1`
+	if err := r.db.GetContext(ctx, &row, q, tenantID, assignmentID); err != nil {
+		return nil, err
+	}
+	return &row, nil
 }

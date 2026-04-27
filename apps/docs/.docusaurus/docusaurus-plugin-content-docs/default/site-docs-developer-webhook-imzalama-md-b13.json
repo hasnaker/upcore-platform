@@ -1,0 +1,29 @@
+{
+  "id": "developer/webhook/imzalama",
+  "title": "Webhook imzalama ve doğrulama",
+  "description": "İmzalama algoritması",
+  "source": "@site/docs/developer/webhook/imzalama.md",
+  "sourceDirName": "developer/webhook",
+  "slug": "/developer/webhook/imzalama",
+  "permalink": "/en/docs/developer/webhook/imzalama",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/webhook/imzalama.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "imzalama",
+    "title": "Webhook imzalama ve doğrulama",
+    "sidebar_position": 2
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Webhook genel bakış",
+    "permalink": "/en/docs/developer/webhook/genel-bakis"
+  },
+  "next": {
+    "title": "Retry politikası",
+    "permalink": "/en/docs/developer/webhook/retry-politikasi"
+  }
+}

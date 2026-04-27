@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/pip-is-akisi",
+  "title": "PIP (Performans İyileştirme Planı) iş akışı",
+  "description": "PIP, performans sorunlarını yazılı, ölçülebilir, adil bir plan ile çözme sürecidir.",
+  "source": "@site/docs/ik/modul/performans/pip-is-akisi.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/pip-is-akisi",
+  "permalink": "/en/docs/ik/modul/performans/pip-is-akisi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/pip-is-akisi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 7,
+  "frontMatter": {
+    "id": "pip-is-akisi",
+    "title": "PIP (Performans İyileştirme Planı) iş akışı",
+    "sidebar_position": 7
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "9-kutu kalibrasyon (toplantı modu)",
+    "permalink": "/en/docs/ik/modul/performans/9-kutu-kalibrasyon"
+  },
+  "next": {
+    "title": "Yıl sonu değerlendirme (performans modülü)",
+    "permalink": "/en/docs/ik/modul/performans/yil-sonu-degerlendirme"
+  }
+}

@@ -24,18 +24,18 @@ export const queryKeys = {
   // ── Employees ─────────────────────────────────────────────────────────
   employees: {
     all: () => [...queryKeys.all, 'employees'] as const,
-    list: (filters: Record<string, unknown>) =>
+    list: (filters: object) =>
       [...queryKeys.employees.all(), 'list', filters] as const,
     detail: (id: string) =>
       [...queryKeys.employees.all(), 'detail', id] as const,
-    infinite: (filters: Record<string, unknown>) =>
+    infinite: (filters: object) =>
       [...queryKeys.employees.all(), 'infinite', filters] as const,
   },
 
   // ── Departments ───────────────────────────────────────────────────────
   departments: {
     all: () => [...queryKeys.all, 'departments'] as const,
-    list: (filters?: Record<string, unknown>) =>
+    list: (filters?: object) =>
       [...queryKeys.departments.all(), 'list', filters] as const,
     detail: (id: string) =>
       [...queryKeys.departments.all(), 'detail', id] as const,
@@ -45,7 +45,7 @@ export const queryKeys = {
   // ── Positions ─────────────────────────────────────────────────────────
   positions: {
     all: () => [...queryKeys.all, 'positions'] as const,
-    list: (filters?: Record<string, unknown>) =>
+    list: (filters?: object) =>
       [...queryKeys.positions.all(), 'list', filters] as const,
     detail: (id: string) =>
       [...queryKeys.positions.all(), 'detail', id] as const,
@@ -54,7 +54,7 @@ export const queryKeys = {
   // ── Assessments ───────────────────────────────────────────────────────
   assessments: {
     all: () => [...queryKeys.all, 'assessments'] as const,
-    list: (filters?: Record<string, unknown>) =>
+    list: (filters?: object) =>
       [...queryKeys.assessments.all(), 'list', filters] as const,
     detail: (id: string) =>
       [...queryKeys.assessments.all(), 'detail', id] as const,
@@ -68,11 +68,11 @@ export const queryKeys = {
   // ── Burnout ───────────────────────────────────────────────────────────
   burnout: {
     all: () => [...queryKeys.all, 'burnout'] as const,
-    signals: (query: Record<string, unknown>) =>
+    signals: (query: object) =>
       [...queryKeys.burnout.all(), 'signals', query] as const,
     trend: (departmentId: string, weeks: number) =>
       [...queryKeys.burnout.all(), 'trend', departmentId, weeks] as const,
-    heatmap: (query: Record<string, unknown>) =>
+    heatmap: (query: object) =>
       [...queryKeys.burnout.all(), 'heatmap', query] as const,
     drivers: (employeeId: string) =>
       [...queryKeys.burnout.all(), 'drivers', employeeId] as const,
@@ -83,7 +83,7 @@ export const queryKeys = {
   // ── Interventions ─────────────────────────────────────────────────────
   interventions: {
     all: () => [...queryKeys.all, 'interventions'] as const,
-    list: (query: Record<string, unknown>) =>
+    list: (query: object) =>
       [...queryKeys.interventions.all(), 'list', query] as const,
     detail: (id: string) =>
       [...queryKeys.interventions.all(), 'detail', id] as const,
@@ -95,7 +95,7 @@ export const queryKeys = {
   // ── Surveys / Pulse ───────────────────────────────────────────────────
   surveys: {
     all: () => [...queryKeys.all, 'surveys'] as const,
-    cycles: (filters?: Record<string, unknown>) =>
+    cycles: (filters?: object) =>
       [...queryKeys.surveys.all(), 'cycles', filters] as const,
     cycle: (id: string) =>
       [...queryKeys.surveys.all(), 'cycle', id] as const,
@@ -125,7 +125,7 @@ export const queryKeys = {
   // ── Leaves ────────────────────────────────────────────────────────────
   leaves: {
     all: () => [...queryKeys.all, 'leaves'] as const,
-    list: (query: Record<string, unknown>) =>
+    list: (query: object) =>
       [...queryKeys.leaves.all(), 'list', query] as const,
     balance: (employeeId: string) =>
       [...queryKeys.leaves.all(), 'balance', employeeId] as const,
@@ -135,7 +135,7 @@ export const queryKeys = {
   // ── Documents ─────────────────────────────────────────────────────────
   documents: {
     all: () => [...queryKeys.all, 'documents'] as const,
-    list: (filters: Record<string, unknown>) =>
+    list: (filters: object) =>
       [...queryKeys.documents.all(), 'list', filters] as const,
     detail: (id: string) =>
       [...queryKeys.documents.all(), 'detail', id] as const,
@@ -146,7 +146,7 @@ export const queryKeys = {
   // ── Notifications ─────────────────────────────────────────────────────
   notifications: {
     all: () => [...queryKeys.all, 'notifications'] as const,
-    list: (query?: Record<string, unknown>) =>
+    list: (query?: object) =>
       [...queryKeys.notifications.all(), 'list', query] as const,
     unread: () => [...queryKeys.notifications.all(), 'unread'] as const,
   },
@@ -154,7 +154,7 @@ export const queryKeys = {
   // ── Actions ───────────────────────────────────────────────────────────
   actions: {
     all: () => [...queryKeys.all, 'actions'] as const,
-    list: (query: Record<string, unknown>) =>
+    list: (query: object) =>
       [...queryKeys.actions.all(), 'list', query] as const,
     detail: (id: string) =>
       [...queryKeys.actions.all(), 'detail', id] as const,
@@ -163,18 +163,18 @@ export const queryKeys = {
   // ── Admin ─────────────────────────────────────────────────────────────
   admin: {
     all: () => [...queryKeys.all, 'admin'] as const,
-    tenants: (query?: Record<string, unknown>) =>
+    tenants: (query?: object) =>
       [...queryKeys.admin.all(), 'tenants', query] as const,
     tenant: (id: string) =>
       [...queryKeys.admin.all(), 'tenant', id] as const,
-    auditEvents: (query: Record<string, unknown>) =>
+    auditEvents: (query: object) =>
       [...queryKeys.admin.all(), 'audit', query] as const,
   },
 
   // ── ATS (Candidates / Applications) ───────────────────────────────────
   ats: {
     all: () => [...queryKeys.all, 'ats'] as const,
-    candidates: (filters?: Record<string, unknown>) =>
+    candidates: (filters?: object) =>
       [...queryKeys.ats.all(), 'candidates', filters] as const,
     candidate: (id: string) =>
       [...queryKeys.ats.all(), 'candidate', id] as const,

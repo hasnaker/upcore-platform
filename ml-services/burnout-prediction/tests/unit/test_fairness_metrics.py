@@ -3,12 +3,10 @@
 from __future__ import annotations
 
 import numpy as np
-import pytest
 
 from app.evaluation.fairness import (
     compute_demographic_parity,
     compute_equal_opportunity,
-    compute_per_group_auroc,
     generate_fairness_report,
 )
 

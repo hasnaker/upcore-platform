@@ -56,7 +56,7 @@ select = [
     "RUF", # ruff-specific
     "C4",  # flake8-comprehensions
 ]
-ignore = ["E501"]
+ignore = ["E501", "RUF001", "RUF002", "RUF003"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["N802", "N803"]

@@ -1,0 +1,127 @@
+# ============================================================================
+# UpCore Load Testing — k6 against staging
+# - Smoke: nightly 02:00 UTC + PR label "perf"
+# - Stress: workflow_dispatch only (manual trigger, on-demand)
+# ============================================================================
+
+name: Load Tests
+
+on:
+  schedule:
+    - cron: '0 2 * * *'     # nightly 02:00 UTC
+  pull_request:
+    types: [labeled]
+  workflow_dispatch:
+    inputs:
+      scenario:
+        description: 'smoke or stress'
+        required: true
+        default: smoke
+        type: choice
+        options: [smoke, stress]
+      base_url:
+        description: 'Target gateway URL (overrides STAGING_GATEWAY_URL secret)'
+        required: false
+        type: string
+
+concurrency:
+  group: load-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    name: k6 Smoke
+    if: |
+      github.event_name == 'schedule' ||
+      (github.event_name == 'pull_request' && github.event.label.name == 'perf') ||
+      (github.event_name == 'workflow_dispatch' && inputs.scenario == 'smoke')
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run smoke test
+        env:
+          BASE_URL: ${{ inputs.base_url || secrets.STAGING_GATEWAY_URL }}
+          API_KEY:  ${{ secrets.LOAD_TEST_API_KEY }}
+        run: |
+          k6 run \
+            --summary-export=smoke-summary.json \
+            --out json=smoke-results.json \
+            tests/load/smoke.js
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-smoke-${{ github.run_number }}
+          path: |
+            smoke-summary.json
+            smoke-results.json
+          retention-days: 14
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let summary = {};
+            try { summary = JSON.parse(fs.readFileSync('smoke-summary.json', 'utf8')); } catch (_) {}
+            const m = summary.metrics || {};
+            const p95 = m.http_req_duration?.values?.['p(95)']?.toFixed(0) ?? '?';
+            const err = (m.http_req_failed?.values?.rate ?? 0) * 100;
+            const body = [
+              '## k6 Smoke Results',
+              `- p95: **${p95}ms** (budget: 800ms)`,
+              `- error rate: **${err.toFixed(2)}%** (budget: 1%)`,
+              `- VUs: 20 · duration: 2m`,
+            ].join('\n');
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body,
+            });
+
+  stress:
+    name: k6 Stress (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.scenario == 'stress'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install k6
+        run: |
+          curl -fsSL https://dl.k6.io/key.gpg | sudo gpg --dearmor -o /usr/share/keyrings/k6-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/k6-archive-keyring.gpg] https://dl.k6.io/deb stable main" | sudo tee /etc/apt/sources.list.d/k6.list
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Run stress test
+        env:
+          BASE_URL: ${{ inputs.base_url || secrets.STAGING_GATEWAY_URL }}
+          API_KEY:  ${{ secrets.LOAD_TEST_API_KEY }}
+        run: |
+          k6 run \
+            --summary-export=stress-summary.json \
+            --out json=stress-results.json \
+            tests/load/stress.js
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: k6-stress-${{ github.run_number }}
+          path: |
+            stress-summary.json
+            stress-results.json
+          retention-days: 30

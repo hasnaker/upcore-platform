@@ -59,7 +59,7 @@ const BENEFITS_VALUE: Record<string, number> = {
 export default function UcretlendirmePage() {
   const [employees, setEmployees] = useState<CompEmployee[]>([]);
   const [bands, setBands] = useState<SalaryBand[]>([]);
-  const [reviews, setReviews] = useState<CompReview[]>([]);
+  const [, setReviews] = useState<CompReview[]>([]);
   const [stats, setStats] = useState<CompStats | null>(null);
   const [tab, setTab] = useState<'overview' | 'bands' | 'equity' | 'merit' | 'scenario' | 'total-rewards'>('overview');
   const [showReviewModal, setShowReviewModal] = useState(false);

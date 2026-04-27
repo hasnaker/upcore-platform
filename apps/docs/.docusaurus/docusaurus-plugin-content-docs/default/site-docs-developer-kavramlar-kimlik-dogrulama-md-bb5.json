@@ -1,0 +1,29 @@
+{
+  "id": "developer/kavramlar/kimlik-dogrulama",
+  "title": "Kimlik doğrulama",
+  "description": "UpCore API'si iki tür kimlik doğrulama destekler.",
+  "source": "@site/docs/developer/kavramlar/kimlik-dogrulama.md",
+  "sourceDirName": "developer/kavramlar",
+  "slug": "/developer/kavramlar/kimlik-dogrulama",
+  "permalink": "/en/docs/developer/kavramlar/kimlik-dogrulama",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/kavramlar/kimlik-dogrulama.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "kimlik-dogrulama",
+    "title": "Kimlik doğrulama",
+    "sidebar_position": 2
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Mimari genel bakış",
+    "permalink": "/en/docs/developer/kavramlar/mimari-genel-bakis"
+  },
+  "next": {
+    "title": "Çoklu tenant (multi-tenant)",
+    "permalink": "/en/docs/developer/kavramlar/coklu-tenant"
+  }
+}

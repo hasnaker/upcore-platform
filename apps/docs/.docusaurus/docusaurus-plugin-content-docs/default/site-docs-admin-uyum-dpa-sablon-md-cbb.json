@@ -1,0 +1,29 @@
+{
+  "id": "admin/uyum/dpa-sablon",
+  "title": "DPA (Data Processing Agreement) şablonu",
+  "description": "KVKK Madde 12 + GDPR Madde 28 uyumlu alt işleyici sözleşmesi.",
+  "source": "@site/docs/admin/uyum/dpa-sablon.md",
+  "sourceDirName": "admin/uyum",
+  "slug": "/admin/uyum/dpa-sablon",
+  "permalink": "/en/docs/admin/uyum/dpa-sablon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/uyum/dpa-sablon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "dpa-sablon",
+    "title": "DPA (Data Processing Agreement) şablonu",
+    "sidebar_position": 2
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "SOC 2 Type II readiness",
+    "permalink": "/en/docs/admin/uyum/soc2-readiness"
+  },
+  "next": {
+    "title": "Veri ikametgahi",
+    "permalink": "/en/docs/admin/uyum/veri-ikametgahi"
+  }
+}

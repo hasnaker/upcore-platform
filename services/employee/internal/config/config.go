@@ -25,6 +25,11 @@ type Config struct {
 	// Azure Service Bus
 	ServiceBusConnection string `mapstructure:"SERVICE_BUS_CONNECTION_STRING"`
 	ServiceBusNamespace  string `mapstructure:"SERVICE_BUS_NAMESPACE"`
+	ServiceBusTopic      string `mapstructure:"SERVICE_BUS_TOPIC"`
+
+	// Observability (OpenTelemetry)
+	OTLPEndpoint   string `mapstructure:"OTEL_EXPORTER_OTLP_ENDPOINT"`
+	ServiceVersion string `mapstructure:"SERVICE_VERSION"`
 
 	// Auth service integration
 	AuthServiceURL     string        `mapstructure:"AUTH_SERVICE_URL"`
@@ -58,6 +63,8 @@ func Load() (*Config, error) {
 	v.SetDefault("DATABASE_MAX_IDLE", 5)
 	v.SetDefault("AUTH_SERVICE_URL", "http://localhost:8001")
 	v.SetDefault("AUTH_SERVICE_TIMEOUT", 500*time.Millisecond)
+	v.SetDefault("SERVICE_BUS_TOPIC", "employee-events")
+	v.SetDefault("SERVICE_VERSION", "0.1.0")
 	v.SetDefault("IMPORT_BATCH_SIZE", 500)
 	v.SetDefault("IMPORT_MAX_ROWS", 10000)
 	v.SetDefault("IMPORT_MAX_FILE_MB", 10)

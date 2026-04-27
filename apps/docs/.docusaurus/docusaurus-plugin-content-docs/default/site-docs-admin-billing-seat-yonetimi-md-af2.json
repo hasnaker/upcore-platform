@@ -1,0 +1,29 @@
+{
+  "id": "admin/billing/seat-yonetimi",
+  "title": "Seat yönetimi",
+  "description": "\"Seat\" = fatura edilen aktif çalışan slot.",
+  "source": "@site/docs/admin/billing/seat-yonetimi.md",
+  "sourceDirName": "admin/billing",
+  "slug": "/admin/billing/seat-yonetimi",
+  "permalink": "/en/docs/admin/billing/seat-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/billing/seat-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "seat-yonetimi",
+    "title": "Seat yönetimi",
+    "sidebar_position": 4
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Kullanım metrikleri",
+    "permalink": "/en/docs/admin/billing/kullanim-metrikleri"
+  },
+  "next": {
+    "title": "Feature flag yönetimi",
+    "permalink": "/en/docs/admin/operasyon/feature-flag"
+  }
+}

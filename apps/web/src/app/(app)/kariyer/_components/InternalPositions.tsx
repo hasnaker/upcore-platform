@@ -1,816 +1,513 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+/**
+ * Kariyer / İç Pozisyonlar — 9-kutu yetenek haritası.
+ *
+ * Canlı bağlantı:
+ *   - GET /api/v1/performance/cycles?status=active   → aktif dönem
+ *   - GET /api/v1/performance/nine-box/grid?cycle_id → performans × potansiyel
+ *   - GET /api/v1/mobility/succession-plans/critical → kritik pozisyonlar
+ *
+ * Yüksek potansiyelli (high_potential, star) çalışanlar için "succession
+ * havuzuna ekle" CTA'sı ile ilgili pozisyonlara deep-link verilir.
+ * 0 hardcoded veri — boş state tüm branch'larda tam kapsamlı.
+ */
 
-/* ─── Types ─── */
-interface InternalPosition {
-  id: string;
-  title: string;
-  department: string;
-  seniorityReq: string;
-  strengths: string[];
-  fitScore: number;
-  description: string;
-  jdrProfile: { demands: number; resources: number };
-  benefits: string[];
-  requiredSkills: string[];
-  fitBreakdown?: { profileMatch: number; jdrBalance: number; skillCoverage: number; readinessIndex: number } | null;
-  fitInterpretation?: string | null;
-}
+import Link from 'next/link';
+import { useMemo, useState } from 'react';
+import {
+  useNineBoxGrid,
+  usePerformanceCycles,
+  type NineBoxAssignment,
+  type Band,
+  type TalentSegment,
+} from '@/hooks/usePerformance';
+import { useCriticalPositions, type CriticalPosition } from '@/hooks/useSuccession';
 
-interface NewPositionForm {
-  title: string;
-  department: string;
-  seniorityReq: string;
-  strengths: string;
-  description: string;
-}
-
-/* ─── Fallback Data ─── */
-const FALLBACK_POSITIONS: InternalPosition[] = [
+/* ─── 9-Box grid (performance × potential) ───────────────────────────────
+   Y axis (top→bottom) = potential:  high → medium → low
+   X axis (left→right) = performance: low  → medium → high
+   Segment lookup (perf, pot):
+*/
+const SEGMENTS: Array<{
+  perf: Band;
+  pot: Band;
+  segment: TalentSegment;
+  label: string;
+  desc: string;
+  bg: string;
+  text: string;
+  succession: boolean; // surfaces "succession suggestion" CTA
+}> = [
+  // Top row (high potential)
   {
-    id: '1',
-    title: 'Satis Ekip Lideri',
-    department: 'Satis Departmani',
-    seniorityReq: '3+ yil',
-    strengths: ['Liderlik', 'Iletisim'],
-    fitScore: 82,
-    description:
-      'Satis ekibinin gunluk operasyonlarini yonetmek, hedefleri belirlemek ve ekip uyelerinin gelisimini desteklemek. Musteri iliskilerinde stratejik yonlendirme yapmak.',
-    jdrProfile: { demands: 72, resources: 65 },
-    benefits: ['Yonetim deneyimi', 'Bonus hakki (+%15)', 'Liderlik egitimi paketi'],
-    requiredSkills: ['Ekip yonetimi', 'Hedef belirleme', 'Performans degerlendirme', 'Musteri iliskileri'],
+    perf: 'low',
+    pot: 'high',
+    segment: 'dilemma',
+    label: 'Dilemma',
+    desc: 'Yüksek potansiyel, düşük performans',
+    bg: '#FEF3C7',
+    text: '#D97706',
+    succession: false,
   },
   {
-    id: '2',
-    title: 'Kidemli Urun Analisti',
-    department: 'Urun Departmani',
-    seniorityReq: '2+ yil',
-    strengths: ['Analitik', 'Problem Cozme'],
-    fitScore: 74,
-    description:
-      'Urun metriklerini analiz etmek, kullanici davranislarini incelemek ve urun yol haritasina veri odakli katkilar saglamak. Cross-functional ekiplerle isbirligi yapmak.',
-    jdrProfile: { demands: 65, resources: 70 },
-    benefits: ['Urun stratejisi deneyimi', 'Uzaktan calisma esnekligi', 'Konferans butcesi'],
-    requiredSkills: ['Veri analizi', 'SQL', 'A/B test tasarimi', 'Kullanici arastirmasi'],
+    perf: 'medium',
+    pot: 'high',
+    segment: 'high_potential',
+    label: 'Yüksek Potansiyel',
+    desc: 'Gelişim yatırımı + succession havuzu',
+    bg: '#D1FAE5',
+    text: '#059669',
+    succession: true,
   },
   {
-    id: '3',
-    title: 'Backend Lead',
-    department: 'Muhendislik',
-    seniorityReq: '4+ yil',
-    strengths: ['Teknik', 'Liderlik'],
-    fitScore: 68,
-    description:
-      'Backend mimarisini tasarlamak, teknik kararlari yonlendirmek ve muhendislik ekibine mentorluk yapmak. Performans ve olceklenebilirlik odakli calismak.',
-    jdrProfile: { demands: 78, resources: 60 },
-    benefits: ['Teknik liderlik', 'Egitim butcesi (₺15K/yil)', 'Esnek calisma saatleri'],
-    requiredSkills: ['Sistem tasarimi', 'Node.js / Go', 'CI/CD', 'Kod inceleme', 'Mentorluk'],
+    perf: 'high',
+    pot: 'high',
+    segment: 'star',
+    label: 'Yıldız',
+    desc: 'Kritik pozisyon adayı',
+    bg: '#BBF7D0',
+    text: '#047857',
+    succession: true,
+  },
+  // Middle row
+  {
+    perf: 'low',
+    pot: 'medium',
+    segment: 'inconsistent_player',
+    label: 'Tutarsız',
+    desc: 'Coaching + net hedef',
+    bg: '#FECACA',
+    text: '#B91C1C',
+    succession: false,
+  },
+  {
+    perf: 'medium',
+    pot: 'medium',
+    segment: 'core_player',
+    label: 'Kilit Oyuncu',
+    desc: 'Motivasyon + tutulum',
+    bg: '#E0E7FF',
+    text: '#4338CA',
+    succession: false,
+  },
+  {
+    perf: 'high',
+    pot: 'medium',
+    segment: 'high_performer',
+    label: 'Yüksek Performans',
+    desc: 'Tutulum + succession aday',
+    bg: '#C7F9E1',
+    text: '#065F46',
+    succession: true,
+  },
+  // Bottom row (low potential)
+  {
+    perf: 'low',
+    pot: 'low',
+    segment: 'underperformer',
+    label: 'Düşük Performans',
+    desc: 'PIP / rol uyumu',
+    bg: '#FEE2E2',
+    text: '#991B1B',
+    succession: false,
+  },
+  {
+    perf: 'medium',
+    pot: 'low',
+    segment: 'reliable_contributor',
+    label: 'Güvenilir Katkı',
+    desc: 'Konum koruma',
+    bg: '#FEF3C7',
+    text: '#92400E',
+    succession: false,
+  },
+  {
+    perf: 'high',
+    pot: 'low',
+    segment: 'solid_performer',
+    label: 'Sağlam Performans',
+    desc: 'Uzmanlık yolu',
+    bg: '#DBEAFE',
+    text: '#1D4ED8',
+    succession: false,
   },
 ];
 
-/* ─── Fit Score Color ─── */
-const fitScoreColor = (score: number) => {
-  if (score >= 80) return { bg: '#D1FAE5', text: '#059669' };
-  if (score >= 70) return { bg: '#FEF3C7', text: '#D97706' };
-  return { bg: '#FEE2E2', text: '#DC2626' };
-};
+// Visual band → cell ordering indexes.
+const POT_ROWS: Band[] = ['high', 'medium', 'low']; // top→bottom
+const PERF_COLS: Band[] = ['low', 'medium', 'high']; // left→right
 
 export const InternalPositions = () => {
-  const [positions, setPositions] = useState<InternalPosition[]>(FALLBACK_POSITIONS);
-  const [expanded, setExpanded] = useState<string | null>(null);
-  const [applied, setApplied] = useState<Set<string>>(new Set());
+  // 1) Aktif performans dönemi (cycle) → nine-box grid zorunlu cycle_id ister.
+  const cycles = usePerformanceCycles('active');
+  const activeCycle = useMemo(
+    () => cycles.data?.items?.[0] ?? null,
+    [cycles.data?.items],
+  );
 
-  useEffect(() => {
-    fetch('/api/career')
-      .then((r) => r.json())
-      .then((data) => {
-        if (data.positions && data.positions.length > 0) {
-          const mapped: InternalPosition[] = data.positions.map((p: {
-            id: string; title: string; department: string; seniorityReq: string | null;
-            description: string | null; requiredSkills: string[]; jdrProfile: { demands: number; resources: number };
-            fitScore?: number | null; fitBreakdown?: Record<string, number> | null; fitInterpretation?: string | null;
-          }) => ({
-            id: p.id,
-            title: p.title,
-            department: p.department || '',
-            seniorityReq: p.seniorityReq || '',
-            strengths: [],
-            fitScore: p.fitScore ?? 0,
-            description: p.description || '',
-            jdrProfile: p.jdrProfile || { demands: 0, resources: 0 },
-            benefits: [],
-            requiredSkills: Array.isArray(p.requiredSkills) ? p.requiredSkills : [],
-            fitBreakdown: p.fitBreakdown || null,
-            fitInterpretation: p.fitInterpretation || null,
-          }));
-          setPositions(mapped);
-        }
-      })
-      .catch(() => {});
-  }, []);
-  const [confirmModal, setConfirmModal] = useState<string | null>(null);
-  const [successToast, setSuccessToast] = useState<string | null>(null);
-  const [showNewForm, setShowNewForm] = useState(false);
-  const [newForm, setNewForm] = useState<NewPositionForm>({
-    title: '',
-    department: '',
-    seniorityReq: '',
-    strengths: '',
-    description: '',
-  });
+  // 2) Nine-box grid — cycle varsa çağrılır.
+  const grid = useNineBoxGrid(activeCycle?.id ?? null);
 
-  const handleApply = (id: string) => {
-    setConfirmModal(id);
-  };
+  // 3) Kritik pozisyonlar (succession önerisi için).
+  const critical = useCriticalPositions();
 
-  const confirmApplication = () => {
-    if (confirmModal) {
-      setApplied((prev) => new Set(prev).add(confirmModal));
-      setConfirmModal(null);
-      const pos = positions.find((p) => p.id === confirmModal);
-      setSuccessToast(pos?.title ?? '');
-      setTimeout(() => setSuccessToast(null), 3000);
+  const [selectedSegment, setSelectedSegment] = useState<TalentSegment | null>(null);
+
+  const bySegment = useMemo(() => {
+    const map = new Map<TalentSegment, NineBoxAssignment[]>();
+    for (const a of grid.data?.items ?? []) {
+      const seg = (a.talent_segment ?? 'core_player') as TalentSegment;
+      const arr = map.get(seg) ?? [];
+      arr.push(a);
+      map.set(seg, arr);
     }
-  };
+    return map;
+  }, [grid.data?.items]);
+
+  const totalAssigned = grid.data?.items?.length ?? 0;
+  const suggestedHiPo = useMemo(
+    () =>
+      (bySegment.get('high_potential') ?? []).concat(
+        bySegment.get('star') ?? [],
+        bySegment.get('high_performer') ?? [],
+      ),
+    [bySegment],
+  );
+
+  /* ─── Render branches ─── */
+
+  if (cycles.isLoading) {
+    return <FullSkeleton />;
+  }
+
+  if (cycles.isError) {
+    return (
+      <ErrorState
+        title="Performans dönemleri yüklenemedi"
+        detail={
+          cycles.error instanceof Error
+            ? cycles.error.message
+            : 'Gateway ile bağlantı kurulamadı.'
+        }
+        onRetry={() => cycles.refetch()}
+      />
+    );
+  }
+
+  if (!activeCycle) {
+    return <NoCycleEmpty />;
+  }
+
+  if (grid.isLoading) {
+    return <FullSkeleton />;
+  }
+
+  if (grid.isError) {
+    return (
+      <ErrorState
+        title="9-kutu verisi yüklenemedi"
+        detail={
+          grid.error instanceof Error ? grid.error.message : 'Gateway yanıt vermedi.'
+        }
+        onRetry={() => grid.refetch()}
+      />
+    );
+  }
+
+  if (totalAssigned === 0) {
+    return <NoAssignmentsEmpty cycleLabel={activeCycle.name_tr} />;
+  }
 
   return (
-    <div className="flex flex-col gap-4">
-      {/* Privacy banner */}
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          padding: '12px 16px',
-          background: '#FAFAFF',
-          border: '1px solid #E0E0FF',
-          borderRadius: 10,
-        }}
-      >
-        <svg
-          width="16"
-          height="16"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#5E5CE6"
-          strokeWidth="2"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+    <div className="flex flex-col gap-6">
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-xs uppercase tracking-wide text-[#888]">
+            {activeCycle.name_tr} · aktif dönem
+          </div>
+          <h2 className="mt-1 text-xl font-bold text-[#111]">
+            9-Kutu Yetenek Haritası
+          </h2>
+          <p className="mt-1 text-sm text-[#888]">
+            {totalAssigned} çalışan atandı · {suggestedHiPo.length} yüksek potansiyel succession adayı
+          </p>
+        </div>
+        <Link
+          href="/admin/succession/pozisyonlar"
+          className="rounded-md bg-[#5E5CE6] px-3 py-2 text-sm font-semibold text-white hover:bg-[#4F4DD1]"
         >
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-          <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-        </svg>
-        <span style={{ fontSize: 13, color: '#5E5CE6', fontWeight: 500 }}>
-          Gizlilik: Basvurunuz teklif asamasina kadar mevcut yoneticinize bildirilmez.
-        </span>
+          Kritik Pozisyonlar →
+        </Link>
       </div>
 
-      {/* Position cards */}
-      {positions.map((pos) => {
-        const isExpanded = expanded === pos.id;
-        const isApplied = applied.has(pos.id);
-        const sc = fitScoreColor(pos.fitScore);
+      {/* 9-box */}
+      <div data-testid="nine-box-grid" className="rounded-xl border border-[#EDEDED] bg-white p-4">
+        {/* Axis labels */}
+        <div className="relative grid grid-cols-[56px_1fr] gap-2">
+          <div className="flex flex-col items-center justify-center text-xs font-semibold tracking-wide text-[#888]">
+            <div className="-rotate-90 whitespace-nowrap">POTANSİYEL →</div>
+          </div>
 
-        return (
-          <div
-            key={pos.id}
-            style={{
-              background: 'white',
-              border: '1px solid #f0f0f0',
-              borderRadius: 12,
-              overflow: 'hidden',
-              borderLeft: `3px solid ${sc.text}`,
-            }}
-          >
-            <div style={{ padding: '20px 24px' }}>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <div style={{ fontSize: 16, fontWeight: 600, color: '#111' }}>{pos.title}</div>
-                  <div style={{ fontSize: 13, color: '#888', marginTop: 2 }}>{pos.department}</div>
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      marginTop: 10,
-                      flexWrap: 'wrap',
-                    }}
-                  >
-                    <span
+          {/* Box grid */}
+          <div>
+            <div className="grid grid-cols-3 gap-2">
+              {POT_ROWS.map((pot) =>
+                PERF_COLS.map((perf) => {
+                  const cfg = SEGMENTS.find((c) => c.perf === perf && c.pot === pot);
+                  if (!cfg) return null;
+                  const cellEmployees = bySegment.get(cfg.segment) ?? [];
+                  const isSelected = selectedSegment === cfg.segment;
+                  return (
+                    <button
+                      key={cfg.segment}
+                      onClick={() =>
+                        setSelectedSegment(isSelected ? null : cfg.segment)
+                      }
+                      data-testid={`box-cell-${cfg.segment}`}
+                      className="flex h-[140px] flex-col items-start rounded-lg border p-3 text-left transition-all hover:shadow-sm"
                       style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: '3px 10px',
-                        borderRadius: 20,
-                        background: '#f5f5f5',
-                        color: '#666',
+                        background: cfg.bg,
+                        borderColor: isSelected ? cfg.text : 'transparent',
+                        borderWidth: 2,
                       }}
                     >
-                      Gerekli kidem: {pos.seniorityReq}
-                    </span>
-                    {pos.strengths.map((s) => (
-                      <span
-                        key={s}
-                        style={{
-                          fontSize: 11,
-                          fontWeight: 600,
-                          padding: '3px 10px',
-                          borderRadius: 20,
-                          background: '#EEF0FD',
-                          color: '#5E5CE6',
-                        }}
-                      >
-                        {s}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-                <div className="flex shrink-0 flex-col items-end gap-2">
-                  <div
-                    style={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'center',
-                      gap: 2,
-                    }}
-                  >
-                    <span style={{ fontSize: 22, fontWeight: 700, color: sc.text }}>
-                      %{pos.fitScore}
-                    </span>
-                    <span
-                      style={{
-                        fontSize: 10,
-                        fontWeight: 600,
-                        padding: '1px 8px',
-                        borderRadius: 10,
-                        background: sc.bg,
-                        color: sc.text,
-                      }}
-                    >
-                      Uyum skoru
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2">
-                <button
-                  onClick={() => setExpanded(isExpanded ? null : pos.id)}
-                  style={{
-                    fontSize: 12,
-                    color: '#888',
-                    background: 'none',
-                    border: '1px solid #e5e5e5',
-                    borderRadius: 8,
-                    padding: '6px 14px',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {isExpanded ? 'Kapat' : 'Detay'}
-                </button>
-                {isApplied ? (
-                  <span
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: '#059669',
-                      padding: '6px 14px',
-                      background: '#D1FAE5',
-                      borderRadius: 8,
-                    }}
-                  >
-                    Basvuruldu
-                  </span>
-                ) : (
-                  <button
-                    onClick={() => handleApply(pos.id)}
-                    style={{
-                      fontSize: 12,
-                      fontWeight: 600,
-                      color: 'white',
-                      background: '#111',
-                      border: 'none',
-                      borderRadius: 8,
-                      padding: '6px 14px',
-                      cursor: 'pointer',
-                    }}
-                  >
-                    Basvur →
-                  </button>
-                )}
-              </div>
-
-              {/* Expanded detail */}
-              {isExpanded && (
-                <div
-                  style={{
-                    marginTop: 16,
-                    paddingTop: 16,
-                    borderTop: '1px solid #f0f0f0',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 12,
-                  }}
-                >
-                  {/* Description */}
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#888',
-                        textTransform: 'uppercase',
-                        letterSpacing: 1,
-                        marginBottom: 6,
-                      }}
-                    >
-                      Pozisyon Tanimi
-                    </div>
-                    <p style={{ fontSize: 13, color: '#555', lineHeight: 1.6 }}>
-                      {pos.description}
-                    </p>
-                  </div>
-
-                  {/* JD-R Profile */}
-                  <div
-                    style={{
-                      background: '#FAFAFF',
-                      border: '1px solid #E0E0FF',
-                      borderRadius: 10,
-                      padding: 14,
-                    }}
-                  >
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#5E5CE6',
-                        textTransform: 'uppercase',
-                        letterSpacing: 1,
-                        marginBottom: 10,
-                      }}
-                    >
-                      JD-R Profili
-                    </div>
-                    <div className="grid gap-3 sm:grid-cols-2">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <span style={{ fontSize: 11, color: '#888' }}>Is Talepleri</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: '#111' }}>
-                            {pos.jdrProfile.demands}%
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            height: 6,
-                            background: '#f0f0f0',
-                            borderRadius: 3,
-                            marginTop: 4,
-                          }}
+                      <div className="flex w-full items-start justify-between">
+                        <span
+                          className="text-xs font-bold uppercase tracking-wide"
+                          style={{ color: cfg.text }}
                         >
-                          <div
-                            style={{
-                              height: 6,
-                              borderRadius: 3,
-                              width: `${pos.jdrProfile.demands}%`,
-                              background:
-                                pos.jdrProfile.demands > 70 ? '#DC2626' : '#D97706',
-                            }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <span style={{ fontSize: 11, color: '#888' }}>Is Kaynaklari</span>
-                          <span style={{ fontSize: 11, fontWeight: 600, color: '#111' }}>
-                            {pos.jdrProfile.resources}%
-                          </span>
-                        </div>
-                        <div
-                          style={{
-                            height: 6,
-                            background: '#f0f0f0',
-                            borderRadius: 3,
-                            marginTop: 4,
-                          }}
+                          {cfg.label}
+                        </span>
+                        <span
+                          className="rounded-full bg-white/70 px-1.5 py-0.5 text-[11px] font-bold"
+                          style={{ color: cfg.text }}
                         >
-                          <div
-                            style={{
-                              height: 6,
-                              borderRadius: 3,
-                              width: `${pos.jdrProfile.resources}%`,
-                              background: '#5E5CE6',
-                            }}
-                          />
-                        </div>
+                          {cellEmployees.length}
+                        </span>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Fit Score Breakdown — Algoritmik Uyum Analizi */}
-                  {pos.fitBreakdown && (
-                    <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: 10, padding: 14 }}>
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#059669', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 10 }}>
-                        Uyum Analizi (Algoritmik)
+                      <div className="mt-1 text-[11px]" style={{ color: cfg.text }}>
+                        {cfg.desc}
                       </div>
-                      <div className="grid gap-2 sm:grid-cols-2">
-                        {[
-                          { label: 'Profil Eslesmesi', value: pos.fitBreakdown.profileMatch, color: '#5E5CE6' },
-                          { label: 'JD-R Dengesi', value: pos.fitBreakdown.jdrBalance, color: '#0EA5E9' },
-                          { label: 'Yetkinlik Kapsama', value: pos.fitBreakdown.skillCoverage, color: '#D97706' },
-                          { label: 'Hazirlik Indeksi', value: pos.fitBreakdown.readinessIndex, color: '#059669' },
-                        ].map((item) => (
-                          <div key={item.label}>
-                            <div className="flex items-center justify-between">
-                              <span style={{ fontSize: 11, color: '#555' }}>{item.label}</span>
-                              <span style={{ fontSize: 11, fontWeight: 600, color: item.color }}>%{item.value}</span>
-                            </div>
-                            <div style={{ height: 6, background: '#f0f0f0', borderRadius: 3, marginTop: 4 }}>
-                              <div style={{ height: 6, borderRadius: 3, width: `${item.value}%`, background: item.color }} />
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {pos.fitInterpretation && (
-                        <div style={{ marginTop: 10, fontSize: 12, color: '#059669', fontWeight: 500 }}>
-                          {pos.fitInterpretation}
+                      {cfg.succession && cellEmployees.length > 0 && (
+                        <div className="mt-auto">
+                          <span
+                            className="inline-flex items-center gap-1 rounded bg-white/80 px-2 py-0.5 text-[10px] font-semibold"
+                            style={{ color: cfg.text }}
+                            data-testid="succession-suggestion-badge"
+                          >
+                            ★ Succession önerisi
+                          </span>
                         </div>
                       )}
-                    </div>
-                  )}
-
-                  {/* Required skills */}
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#888',
-                        textTransform: 'uppercase',
-                        letterSpacing: 1,
-                        marginBottom: 8,
-                      }}
-                    >
-                      Gerekli Yetkinlikler
-                    </div>
-                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-                      {pos.requiredSkills.map((skill) => (
-                        <span
-                          key={skill}
-                          style={{
-                            fontSize: 11,
-                            fontWeight: 500,
-                            padding: '4px 10px',
-                            borderRadius: 6,
-                            background: '#f5f5f5',
-                            color: '#555',
-                          }}
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Benefits */}
-                  <div>
-                    <div
-                      style={{
-                        fontSize: 11,
-                        fontWeight: 700,
-                        color: '#888',
-                        textTransform: 'uppercase',
-                        letterSpacing: 1,
-                        marginBottom: 8,
-                      }}
-                    >
-                      Avantajlar
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-                      {pos.benefits.map((b) => (
-                        <div key={b} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                          <div
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: '50%',
-                              background: '#059669',
-                              flexShrink: 0,
-                            }}
-                          />
-                          <span style={{ fontSize: 13, color: '#555' }}>{b}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
+                    </button>
+                  );
+                }),
               )}
             </div>
-          </div>
-        );
-      })}
-
-      {/* HR only: Add new position button */}
-      <button
-        onClick={() => setShowNewForm(true)}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 8,
-          padding: '12px 20px',
-          background: 'white',
-          border: '1px dashed #d4d4d4',
-          borderRadius: 12,
-          fontSize: 13,
-          fontWeight: 600,
-          color: '#888',
-          cursor: 'pointer',
-        }}
-      >
-        <svg
-          width="14"
-          height="14"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-        >
-          <line x1="12" y1="5" x2="12" y2="19" />
-          <line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        Yeni Ic Pozisyon Ekle (HR)
-      </button>
-
-      {/* Confirm Modal */}
-      {confirmModal && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 50,
-          }}
-          onClick={() => setConfirmModal(null)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'white',
-              borderRadius: 16,
-              padding: 32,
-              maxWidth: 420,
-              width: '90%',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.12)',
-            }}
-          >
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#111', marginBottom: 8 }}>
-              Basvuruyu Onayla
-            </div>
-            <p style={{ fontSize: 14, color: '#555', lineHeight: 1.6, marginBottom: 8 }}>
-              <strong>{positions.find((p) => p.id === confirmModal)?.title}</strong> pozisyonuna
-              basvurunuzu gonderiyorsunuz.
-            </p>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 8,
-                padding: '10px 14px',
-                background: '#FAFAFF',
-                border: '1px solid #E0E0FF',
-                borderRadius: 8,
-                marginBottom: 20,
-              }}
-            >
-              <svg
-                width="14"
-                height="14"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="#5E5CE6"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              <span style={{ fontSize: 12, color: '#5E5CE6' }}>
-                Basvurunuz teklif asamasina kadar gizli tutulacaktir.
-              </span>
-            </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-              <button
-                onClick={() => setConfirmModal(null)}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: '#888',
-                  background: 'none',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: 8,
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                }}
-              >
-                Vazgec
-              </button>
-              <button
-                onClick={confirmApplication}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: 'white',
-                  background: '#111',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '8px 20px',
-                  cursor: 'pointer',
-                }}
-              >
-                Basvuruyu Gonder
-              </button>
+            <div className="mt-2 text-center text-xs font-semibold uppercase tracking-wide text-[#888]">
+              PERFORMANS →
             </div>
           </div>
         </div>
-      )}
+      </div>
 
-      {/* New Position Modal */}
-      {showNewForm && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.4)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 50,
-          }}
-          onClick={() => setShowNewForm(false)}
-        >
+      {/* Segment detail drawer */}
+      {selectedSegment && (
+        <SegmentDrawer
+          segment={selectedSegment}
+          employees={bySegment.get(selectedSegment) ?? []}
+          criticalPositions={critical.data?.items ?? []}
+          onClose={() => setSelectedSegment(null)}
+        />
+      )}
+    </div>
+  );
+};
+
+/* ─── Sub-components ─── */
+
+interface SegmentDrawerProps {
+  segment: TalentSegment;
+  employees: NineBoxAssignment[];
+  criticalPositions: CriticalPosition[];
+  onClose: () => void;
+}
+
+const SegmentDrawer = ({
+  segment,
+  employees,
+  criticalPositions,
+  onClose,
+}: SegmentDrawerProps) => {
+  const cfg = SEGMENTS.find((s) => s.segment === segment);
+  if (!cfg) return null;
+
+  return (
+    <div
+      data-testid="segment-drawer"
+      data-segment={segment}
+      className="rounded-xl border border-[#EDEDED] bg-white p-4"
+    >
+      <div className="flex items-start justify-between">
+        <div>
           <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              background: 'white',
-              borderRadius: 16,
-              padding: 32,
-              maxWidth: 480,
-              width: '90%',
-              boxShadow: '0 24px 48px rgba(0,0,0,0.12)',
-            }}
+            className="inline-block rounded px-2 py-0.5 text-xs font-bold"
+            style={{ background: cfg.bg, color: cfg.text }}
           >
-            <div style={{ fontSize: 18, fontWeight: 700, color: '#111', marginBottom: 20 }}>
-              Yeni Ic Pozisyon Ekle
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-              {[
-                { label: 'Pozisyon Adi', key: 'title' as const, placeholder: 'orn. Satis Ekip Lideri' },
-                { label: 'Departman', key: 'department' as const, placeholder: 'orn. Satis Departmani' },
-                { label: 'Gerekli Kidem', key: 'seniorityReq' as const, placeholder: 'orn. 3+ yil' },
-                { label: 'Guclu Yonler (virgul ile)', key: 'strengths' as const, placeholder: 'orn. Liderlik, Iletisim' },
-              ].map((field) => (
-                <div key={field.key}>
-                  <label
-                    style={{
-                      fontSize: 11,
-                      fontWeight: 600,
-                      color: '#888',
-                      textTransform: 'uppercase',
-                      letterSpacing: 0.5,
-                      marginBottom: 4,
-                      display: 'block',
-                    }}
-                  >
-                    {field.label}
-                  </label>
-                  <input
-                    type="text"
-                    placeholder={field.placeholder}
-                    value={newForm[field.key]}
-                    onChange={(e) =>
-                      setNewForm((prev) => ({ ...prev, [field.key]: e.target.value }))
-                    }
-                    style={{
-                      width: '100%',
-                      padding: '8px 12px',
-                      fontSize: 13,
-                      border: '1px solid #e5e5e5',
-                      borderRadius: 8,
-                      outline: 'none',
-                    }}
-                  />
-                </div>
-              ))}
-              <div>
-                <label
-                  style={{
-                    fontSize: 11,
-                    fontWeight: 600,
-                    color: '#888',
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.5,
-                    marginBottom: 4,
-                    display: 'block',
-                  }}
-                >
-                  Aciklama
-                </label>
-                <textarea
-                  placeholder="Pozisyon tanimi..."
-                  value={newForm.description}
-                  onChange={(e) =>
-                    setNewForm((prev) => ({ ...prev, description: e.target.value }))
-                  }
-                  rows={3}
-                  style={{
-                    width: '100%',
-                    padding: '8px 12px',
-                    fontSize: 13,
-                    border: '1px solid #e5e5e5',
-                    borderRadius: 8,
-                    outline: 'none',
-                    resize: 'vertical',
-                  }}
-                />
+            {cfg.label}
+          </div>
+          <h3 className="mt-2 text-lg font-bold text-[#111]">
+            {employees.length} çalışan
+          </h3>
+          <p className="text-sm text-[#888]">{cfg.desc}</p>
+        </div>
+        <button
+          onClick={onClose}
+          className="rounded p-1 text-[#888] hover:bg-[#FAFAFA]"
+          aria-label="Kapat"
+        >
+          ✕
+        </button>
+      </div>
+
+      {/* Employee list */}
+      <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
+        {employees.map((e) => (
+          <div
+            key={e.id}
+            className="flex items-center gap-3 rounded-lg border border-[#EDEDED] bg-[#FAFAFA] p-3"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`https://ui-avatars.com/api/?name=${encodeURIComponent(`#${e.employee_id.slice(0, 4)}`)}&background=EEF0FD&color=5E5CE6&bold=true`}
+              alt=""
+              className="h-8 w-8 rounded-full"
+            />
+            <div className="min-w-0 flex-1">
+              <div className="truncate text-sm font-semibold text-[#111]">
+                #{e.employee_id.slice(0, 8)}
+              </div>
+              <div className="text-[11px] text-[#888]">
+                Perf: {e.performance_band} · Pot: {e.potential_band}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 20 }}>
-              <button
-                onClick={() => setShowNewForm(false)}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 500,
-                  color: '#888',
-                  background: 'none',
-                  border: '1px solid #e5e5e5',
-                  borderRadius: 8,
-                  padding: '8px 16px',
-                  cursor: 'pointer',
-                }}
-              >
-                Vazgec
-              </button>
-              <button
-                onClick={() => setShowNewForm(false)}
-                style={{
-                  fontSize: 13,
-                  fontWeight: 600,
-                  color: 'white',
-                  background: '#5E5CE6',
-                  border: 'none',
-                  borderRadius: 8,
-                  padding: '8px 20px',
-                  cursor: 'pointer',
-                }}
-              >
-                Pozisyonu Yayinla
-              </button>
-            </div>
+            {e.recommended_action && (
+              <span className="truncate text-[11px] italic text-[#5E5CE6]">
+                {e.recommended_action}
+              </span>
+            )}
           </div>
-        </div>
-      )}
+        ))}
+      </div>
 
-      {/* Success toast */}
-      {successToast && (
-        <div
-          style={{
-            position: 'fixed',
-            bottom: 24,
-            right: 24,
-            background: '#111',
-            color: 'white',
-            padding: '14px 24px',
-            borderRadius: 12,
-            fontSize: 13,
-            fontWeight: 600,
-            zIndex: 60,
-            boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 10,
-          }}
-        >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="#059669"
-            strokeWidth="2.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polyline points="20 6 9 17 4 12" />
-          </svg>
-          {successToast} pozisyonuna basarili bir sekilde basvurdunuz.
+      {/* Succession suggestion — only if segment is high-potential-ish */}
+      {cfg.succession && criticalPositions.length > 0 && (
+        <div className="mt-5 rounded-lg border border-dashed border-[#5E5CE6] bg-[#FAFAFF] p-3">
+          <div className="text-xs font-semibold uppercase tracking-wide text-[#5E5CE6]">
+            ★ Succession önerisi
+          </div>
+          <p className="mt-1 text-sm text-[#555]">
+            Bu segmentteki çalışanlar aşağıdaki kritik pozisyonlara aday olarak
+            değerlendirilebilir:
+          </p>
+          <div className="mt-2 flex flex-col gap-1">
+            {criticalPositions.slice(0, 4).map((p) => (
+              <Link
+                key={p.plan_id}
+                href={`/admin/succession/havuz/${p.plan_id}`}
+                data-testid="succession-suggestion-link"
+                className="flex items-center justify-between rounded bg-white px-3 py-2 text-sm hover:bg-[#FAFAFF]"
+              >
+                <span className="font-medium text-[#111]">
+                  {p.position_title_tr || 'Pozisyon'}
+                </span>
+                <span className="text-xs text-[#888]">
+                  {p.candidate_count} aday · havuzu aç →
+                </span>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </div>
   );
 };
+
+/* ─── States ─── */
+
+const FullSkeleton = () => (
+  <div className="flex flex-col gap-6">
+    <div className="h-7 w-56 animate-pulse rounded bg-[#F5F5F5]" />
+    <div className="rounded-xl border border-[#EDEDED] bg-white p-4">
+      <div className="grid grid-cols-3 gap-2">
+        {Array.from({ length: 9 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-[140px] animate-pulse rounded-lg bg-[#F5F5F5]"
+          />
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
+interface ErrorStateProps {
+  title: string;
+  detail: string;
+  onRetry: () => void;
+}
+
+const ErrorState = ({ title, detail, onRetry }: ErrorStateProps) => (
+  <div className="flex items-center justify-between rounded-xl border border-[#FECACA] bg-[#FEF2F2] px-4 py-3">
+    <div>
+      <div className="font-semibold text-[#991B1B]">{title}</div>
+      <div className="mt-1 text-xs text-[#B91C1C]/80">{detail}</div>
+    </div>
+    <button
+      onClick={onRetry}
+      className="rounded border border-[#FECACA] bg-white px-3 py-1.5 text-xs font-semibold hover:bg-[#FEF2F2]"
+    >
+      Tekrar dene
+    </button>
+  </div>
+);
+
+const NoCycleEmpty = () => (
+  <div
+    data-testid="no-cycle-empty"
+    className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#D4D4D4] bg-[#FAFAFA] px-6 py-14 text-center"
+  >
+    <div className="text-lg font-semibold text-[#111]">Aktif performans dönemi yok</div>
+    <p className="max-w-md text-sm text-[#888]">
+      9-kutu yetenek haritası için önce bir performans dönemi açılmalı.
+    </p>
+    <Link
+      href="/performans/canli"
+      className="rounded-md bg-[#5E5CE6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#4F4DD1]"
+    >
+      Performans modülüne git
+    </Link>
+  </div>
+);
+
+const NoAssignmentsEmpty = ({ cycleLabel }: { cycleLabel: string }) => (
+  <div
+    data-testid="no-assignments-empty"
+    className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-[#D4D4D4] bg-[#FAFAFA] px-6 py-14 text-center"
+  >
+    <div className="text-lg font-semibold text-[#111]">
+      &quot;{cycleLabel}&quot; için henüz atama yok
+    </div>
+    <p className="max-w-md text-sm text-[#888]">
+      Kalibrasyon toplantısı düzenleyerek çalışanları 9-kutu segmentlerine yerleştirin.
+    </p>
+    <Link
+      href="/performans/canli"
+      className="rounded-md bg-[#5E5CE6] px-4 py-2 text-sm font-semibold text-white hover:bg-[#4F4DD1]"
+    >
+      Kalibrasyon toplantısı aç
+    </Link>
+  </div>
+);

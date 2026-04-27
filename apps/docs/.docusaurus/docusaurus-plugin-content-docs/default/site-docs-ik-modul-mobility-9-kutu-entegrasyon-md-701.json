@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/9-kutu-entegrasyon",
+  "title": "9-kutu entegrasyon (Mobility ↔ Performans)",
+  "description": "Performans modülündeki 9-kutu kalibrasyon sonucu Mobility modülünü besler.",
+  "source": "@site/docs/ik/modul/mobility/9-kutu-entegrasyon.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/9-kutu-entegrasyon",
+  "permalink": "/en/docs/ik/modul/mobility/9-kutu-entegrasyon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/9-kutu-entegrasyon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "9-kutu-entegrasyon",
+    "title": "9-kutu entegrasyon (Mobility ↔ Performans)",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Ayrılış risk tahmini (ML)",
+    "permalink": "/en/docs/ik/modul/mobility/ayrilis-risk-tahmini"
+  },
+  "next": {
+    "title": "Maliyet analizi",
+    "permalink": "/en/docs/ik/modul/mobility/maliyet-analizi"
+  }
+}

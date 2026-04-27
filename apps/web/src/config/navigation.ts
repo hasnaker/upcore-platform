@@ -9,9 +9,9 @@ import {
   Flame,
   Target,
   Compass,
+  Briefcase,
   Settings,
   LogOut,
-  Plug,
   type LucideIcon,
 } from 'lucide-react';
 
@@ -43,6 +43,13 @@ export const appNavigation: NavSection[] = [
     ],
   },
   {
+    title: 'Kazanım',
+    items: [
+      { href: '/ats', label: 'ATS · İşe Alım', icon: Briefcase },
+      { href: '/degerlendirmeler', label: 'Değerlendirmeler', icon: ClipboardCheck },
+    ],
+  },
+  {
     title: 'Gelisim',
     items: [
       { href: '/kariyer', label: 'Kariyer', icon: Compass },
@@ -51,7 +58,6 @@ export const appNavigation: NavSection[] = [
   {
     title: 'Ölçüm',
     items: [
-      { href: '/degerlendirmeler', label: 'Değerlendirmeler', icon: ClipboardCheck },
       { href: '/anketler', label: 'Anketler', icon: BarChart3 },
       { href: '/tukenmislik', label: 'Tükenmişlik', icon: Flame },
     ],
@@ -60,7 +66,6 @@ export const appNavigation: NavSection[] = [
     title: 'Sistem',
     items: [
       { href: '/cikis-yonetimi', label: 'Cikis Yonetimi', icon: LogOut },
-      { href: '/entegrasyonlar', label: 'Entegrasyonlar', icon: Plug },
       { href: '/ayarlar', label: 'Ayarlar', icon: Settings },
     ],
   },

@@ -1,0 +1,29 @@
+{
+  "id": "admin/tenant/ilk-modul-secimi",
+  "title": "İlk modül seçimi",
+  "description": "Tenant için hangi modüller aktif olacak?",
+  "source": "@site/docs/admin/tenant/ilk-modul-secimi.md",
+  "sourceDirName": "admin/tenant",
+  "slug": "/admin/tenant/ilk-modul-secimi",
+  "permalink": "/en/docs/admin/tenant/ilk-modul-secimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/tenant/ilk-modul-secimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "ilk-modul-secimi",
+    "title": "İlk modül seçimi",
+    "sidebar_position": 4
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "CSV ile çalışan import",
+    "permalink": "/en/docs/admin/tenant/csv-import"
+  },
+  "next": {
+    "title": "SSO — SAML kurulum",
+    "permalink": "/en/docs/admin/iam/sso-saml"
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "type": "mdx",
+  "permalink": "/en/hukuki/kullanim-sartlari",
+  "source": "@site/src/pages/hukuki/kullanim-sartlari.mdx",
+  "title": "Kullanım şartları",
+  "description": "UpCore platformunun kullanım şartları.",
+  "frontMatter": {
+    "title": "Kullanım şartları",
+    "description": "UpCore platformunun kullanım şartları."
+  },
+  "unlisted": false
+}

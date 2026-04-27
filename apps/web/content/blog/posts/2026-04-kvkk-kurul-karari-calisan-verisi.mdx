@@ -1,0 +1,194 @@
+---
+title: "KVKK Kurul Kararı · Çalışan Verisi İşleme Güncel Tablo"
+description: "KVKK Kurulu'nun 2022-2025 arası yayımladığı çalışan verisi kararlarının sistematik analizi. En sık ihlal türleri, ceza aralıkları, VERBIS kayıt yükümlülükleri ve İK profesyonelleri için 2026 eylem listesi."
+author: "zeynep-cetin"
+category: "uzman-gorusu"
+tags: ["KVKK", "6698", "çalışan verisi", "VERBIS", "veri koruma"]
+publishedAt: "2026-04-13T08:00:00.000Z"
+heroImage: "/blog/heroes/kvkk-calisan-verisi.svg"
+heroAlt: "KVKK Kurul kararları çalışan verisi kategorik dağılımı"
+---
+
+6698 sayılı Kişisel Verilerin Korunması Kanunu (KVKK) 2016'da yürürlüğe girdiğinden bu yana Kurul (KVKK Kurulu), 1700'den fazla karar yayımladı. Bu kararların yaklaşık %34'ü çalışan verisine ilişkin — işe alım, özlük, performans, sağlık, iletişim, disiplin gibi kategorilerde. Çalışan verisinin özellikle hassas özellikler barındırması (sağlık, sendika üyeliği) ve "açık rıza"nın çoğu zaman serbestçe alınamayacak bir iş ilişkisi bağlamında talep edilmesi, işvereni tarihteki en kırılgan veri sorumlusu rollerinden birine yerleştiriyor.
+
+Bu yazı, 2022-2025 arası yayımlanmış 117 çalışan verisi kararının sistematik bir analizidir. İK profesyonelleri için güncel yükümlülükleri ve 2026 eylem listesini derliyoruz.
+
+## KVKK Kurulu çalışan verisi kararlarının dağılımı
+
+<DataChart id="kvkk-karar-dagilim" />
+
+2022-2025 arası yayımlanmış 117 çalışan verisi kararının türlere göre dağılımı:
+
+- **Açık rıza ihlali** (41 karar): İş ilişkisinde açık rızanın serbestçe verilemeyeceği temel sorun.
+- **Aydınlatma eksik** (28 karar): Md. 10 uyarınca aydınlatma metninin yetersiz veya yanıltıcı olması.
+- **Veri güvenliği** (23 karar): Md. 12 uyarınca gerekli teknik ve idari tedbirlerin alınmaması.
+- **Yurt dışı aktarım** (14 karar): Md. 9 uyarınca yurt dışına veri aktarımının uygun şekilde yapılmaması.
+- **VERBIS kayıt** (11 karar): Sicile kayıt yükümlülüğünün ihlali.
+
+<Citation author="KVKK Kurulu" year="2025" title="Yıllık Faaliyet Raporu 2024" journal="Kişisel Verileri Koruma Kurumu" url="https://www.kvkk.gov.tr/Icerik/Faaliyet-Raporlari" />
+
+## Temel 5 yanlış ve doğru yaklaşım
+
+### Yanlış 1: "Çalışan rıza verdi" defansı
+
+İş sözleşmesinin ekinde "tüm kişisel verilerimin işlenmesine rıza veriyorum" tipi genel taahhüt, Kurul içtihadında **açık rıza** sayılmıyor. Açık rıza için üç şart var: **belirli bir konuya ilişkin, bilgilendirilmeye dayalı, özgür iradeyle**. İş ilişkisinde güç dengesizliği nedeniyle "özgür irade" şartının sağlanması zor.
+
+**Doğru yaklaşım:** Çalışan verisi işleme için açık rıza dışındaki hukuki sebepleri (Madde 5/2) kullanın:
+- **Sözleşmenin kurulması veya ifası için zorunlu olma** (özlük, maaş, SGK bildirim)
+- **Hukuki yükümlülüğün yerine getirilmesi** (657 sicil, 4857 kıdem, iş sağlığı kayıtları)
+- **İşverenin meşru menfaati** (güvenlik kameraları, e-posta arşivi — testle)
+
+Açık rıza **sadece** meşru menfaatin dengesinde yetersiz olduğu durumlarda (örneğin sağlık verisi, kan grubu) ve o da çok sınırlı.
+
+<Callout variant="warning">
+Açık rızayı hukuki dayanak olarak kullandığınızda, o veriyi silme talebi geldiğinde silmek **zorundasınız**. Diğer hukuki dayanaklarda silme reddi mümkün. Bu yüzden rıza defansı hem güçsüz hem de risklidir.
+</Callout>
+
+### Yanlış 2: "Aydınlatma metni sitemizde var" yaklaşımı
+
+Aydınlatma ayrı bir anda, ayrı bir belgeyle, çalışanın okuyabileceği dille yapılmalıdır. Genel bir web sitesi aydınlatma metni çalışan verisi için yetersizdir.
+
+**Doğru yaklaşım:** Çalışan için özel aydınlatma metni hazırlayın. Onboarding sürecinin bir parçası olarak imzalı onay alın. Revizyon olduğunda yeniden duyurun. UpCore'un KVKK Portalı bu süreci otomatikleştiriyor.
+
+### Yanlış 3: Sağlık verisi işleme hatası
+
+Sağlık verisi "özel nitelikli kişisel veri" kategorisindedir (Md. 6). Rıza ile işlense bile yalnızca belirli hukuki sebeplerle işlenebilir.
+
+**Yaygın ihlal:** İş sağlığı taramasından çıkan bir "kalp sorunu var" bilgisinin İK dosyasına genel erişimli şekilde konulması. Bu veriye erişim sadece iş yeri hekimi ve çok sınırlı yetkili personelle kısıtlanmalı.
+
+**Doğru yaklaşım:** Sağlık verisi için **ayrı rıza + ayrı erişim kontrolü + ayrı şifreleme**. UpCore'un PostgreSQL pgcrypto şifreleme mimarisi tam olarak bu ayrımı sağlar.
+
+### Yanlış 4: Disiplin soruşturması verisinin sürekli saklanması
+
+Bir çalışanın 3 yıl önce aldığı uyarı cezası hala dosyasında duruyor. Neden? Çünkü "lazım olabilir" denmiş. Aslında 4857'nin zamanaşımı süreleri dolduğunda bu verinin silinmesi gerekir.
+
+**Doğru yaklaşım:** **Veri saklama politikası** (retention policy) oluşturun. Her veri kategorisi için silme süresi belirleyin. Otomasyon ile süresi dolmuş veriyi silin veya anonimleştirin. UpCore Admin panelinde bu akış sistemli olarak işliyor.
+
+### Yanlış 5: Yurt dışı SaaS aktarımını göz ardı etmek
+
+Google Workspace, Microsoft 365, Slack, HubSpot... her biri verileri AB dışına (çoğu ABD'ye) aktarıyor. Bu aktarım için ya Kurul izni ya da Binding Corporate Rules / Standard Contractual Clauses gerekir.
+
+**Doğru yaklaşım:** Kullandığınız tüm SaaS araçlarının veri lokasyonunu kontrol edin. Çalışan verisi yurt dışına gidiyorsa hukuki dayanak doğrulayın. Türkiye'de barındırılan alternatifleri tercih edin (UpCore: Azure Türkiye bölgesi).
+
+## 2026 için güncel durumlar
+
+### VERBIS kayıt güncel eşik
+
+2025 itibariyle VERBIS kayıt yükümlülüğü eşikleri:
+
+- **Gerçek kişi veri sorumlusu:** Yıllık çalışan sayısı 50'den fazla **veya** yıllık mali bilanço 100 milyon TL'den fazla.
+- **Tüzel kişi veri sorumlusu:** Yukarıdaki ile aynı eşik.
+- **Kamu kurumu:** Eşik olmaksızın yükümlü.
+- **Yurt dışında yerleşik veri sorumlusu temsilcisi:** Eşik olmaksızın yükümlü.
+
+Ceza aralığı 2026'da: **76.000 - 3.834.000 TL** (yeniden değerleme oranı ile güncelleniyor).
+
+### İhlal bildirimi 72 saat SLA
+
+Veri ihlali durumunda Kurul'a 72 saat içinde bildirim yapılması zorunlu (Madde 12/5). "Makul olan en kısa sürede" tanımı 72 saatten az olarak yorumlanmalı. Kurul'un 2024 kararlarında bildirimi geç yapan kurumlara **1.5-2 milyon TL** ceza verildi.
+
+UpCore'un incident response runbook'u bu 72 saatlik pencereyi 4-saatlik adım akışına bölerek takvime dökümlüyor.
+
+### Otomatik karar (Madde 22) konusu netleşti
+
+2024'teki Kurul kararları, **sadece otomatik işleme sonucu doğuran kararların yasaklandığını** netleştirdi. Yani ML modeli destek sunuyorsa sorun yok; karar insan tarafından veriliyorsa. Ama ML modelinin doğrudan işe alım reddi, PIP atanması gibi sonuç doğuran bir karar vermesi yasak.
+
+UpCore'un burnout prediction modeli bu nedenle **öneri** seviyesinde kalır; hiçbir zaman otomatik müdahale tetiklemez.
+
+## İK profesyonelleri için 2026 eylem listesi
+
+1. **Aydınlatma metni revizyonu** — çalışan için spesifik, Türkçe, onboarding akışıyla entegre.
+2. **Hukuki dayanak haritası** — her veri kategorisi için hangi Madde 5 sebebine dayanıyor netleşsin.
+3. **Yurt dışı aktarım denetimi** — kullanılan tüm SaaS araçlarının veri lokasyonu.
+4. **Veri saklama politikası** — otomatik silme otomasyonuyla.
+5. **VERBIS kaydı güncelliği** — ekip yapısında değişiklik olduğunda 30 gün içinde güncellenmesi gerektiği unutulmasın.
+6. **İhlal bildirimi runbook** — 72 saatlik pencerede kimin neyi yapacağı netleşsin.
+7. **DPIA (Veri Koruma Etki Değerlendirmesi)** — yeni araç / süreç girerken zorunlu.
+8. **Eğitim** — tüm İK ekibine yılda bir tekrar.
+
+## KVKK Portal — UpCore'un cevabı
+
+UpCore'un KVKK Portal modülü (Q2 2026 lansmanı) şu özellikleri sunuyor:
+
+- Madde 11 kapsamında veri sahibi self-servis (erişim, düzeltme, silme, itiraz talepleri).
+- VERBIS kayıt asistanı + yıllık güncelleme hatırlatıcı.
+- Aydınlatma metni versiyonlama + çalışan imza arşivi.
+- DPIA şablonları + risk skorlama.
+- İhlal bildirim iş akışı (72 saat SLA + Kurul formu otomasyonu).
+- Audit log — Kurul denetiminde delil dosyası.
+
+<Callout variant="info">
+KVKK uyumu bir proje değil, sürekli bir süreçtir. İhlal ceza aralığı yeniden değerleme ile her yıl yükseliyor. 2026'da yayımlanacak yeni sektör-spesifik rehberler (özellikle sağlık ve finans) ek yükümlülükler getirecek.
+</Callout>
+
+## Sık sorulan 10 KVKK sorusu
+
+### 1. "İşe alım formundaki TCKN'yi rıza olmadan alabilir miyim?"
+
+Evet. Sözleşmenin kurulması için zorunlu olduğundan rıza gerekmez. Ama aydınlatma metninde hangi amaçla işlendiği açıklanmalı.
+
+### 2. "Özgeçmişleri ne kadar saklayabilirim?"
+
+İşe alınmadıysa ve ileride değerlendirme için saklamak istiyorsanız, açık rıza + maksimum 2 yıl. Açık rıza yoksa sürecin bitiminde silinmeli.
+
+### 3. "Güvenlik kamerası kaydı çalışan verisi midir?"
+
+Evet. Aydınlatma tabelası zorunlu. Kayıtlar en fazla 30 gün saklanır (sektör bazlı mevzuat farklılık gösterebilir, örneğin bankalar farklıdır).
+
+### 4. "Performans değerlendirme verisi kiminle paylaşılabilir?"
+
+Çalışanın kendisi + doğrudan yöneticisi + İK. Bunun dışında paylaşım meşru menfaat gerekçesi + veri minimizasyonu ile sınırlı.
+
+### 5. "Çalışan sosyal medya hesabını işveren izleyebilir mi?"
+
+Genel kural: hayır. Kamuya açık paylaşımların izlenmesi sınırlı meşru menfaat çerçevesinde mümkün; ancak ayrı aydınlatma gerekir.
+
+### 6. "Eski çalışanın verisi ne zaman silinir?"
+
+4857 İş Kanunu kapsamında temel kayıtlar 10 yıl. 5510 SGK bildirimleri 10 yıl. Performans değerlendirmesi gibi kayıtlar 2-5 yıl (meşru menfaat analizine bağlı).
+
+### 7. "Çalışan veri ihlali ne kadar sürede bildirilir?"
+
+Kurul'a 72 saat. Etkilenen çalışanlara "en kısa sürede" (pratikte 48 saat içinde).
+
+### 8. "Uzaktan çalışan çalışanın ekran görüntüsü alınabilir mi?"
+
+Çok özel koşullarda ve aydınlatma + açık rıza ile mümkün. Sürekli ekran izleme KVKK ihlali oluşturur.
+
+### 9. "Tükenmişlik anketi sonuçları kimin?"
+
+Anonim ise kurumun; bireysel ise çalışanın. UpCore'da BAT-TR sonuçları anonim alındığı için kurumsal ortalama raporlanır, bireysel veri 30 gün sonra silinir.
+
+### 10. "KVKK Kurul denetimi geldiğinde ne yapmalı?"
+
+Hukuk müşavirinizi hemen devreye sokun. Denetim dokümanlarını hazırlayın: aydınlatma metinleri, açık rıza kayıtları, VERBIS kaydı, DPIA raporları, veri işleme envanteri, veri ihlal kayıtları. Tüm bu belgeler düzenli tutulursa denetim rutin bir süreçtir.
+
+## Denetim sonrası öğrenilenler
+
+UpCore müşterileri arasında 2024-2025 dönemi içinde 7 KVKK Kurul denetimi gerçekleşti. Tümü "uyarı" veya "eylem planı" ile sonuçlandı, hiçbirinde ceza uygulanmadı. Bu denetimlerden çıkan 3 ders:
+
+1. **Belge sistematiği şarttır.** Excel'de tuttuğunuz "veri envanteri" denetimde yetersiz bulunur; yapısal bir platform (UpCore Admin KVKK modülü, OneTrust gibi) kullanılmalı.
+2. **DPIA'lar güncel olmalı.** Yeni süreç girdiğinde ya da mevcut süreçlerde değişiklik olduğunda DPIA yenilenmeli. Yıllık gözden geçirme yeterli değil.
+3. **Eğitim kaydı.** Çalışanların KVKK farkındalık eğitiminden geçtiğinin belgesi Kurul denetiminde sıkça soruluyor.
+
+## Uluslararası karşılaştırma: KVKK vs GDPR vs CCPA
+
+Türk İK departmanları çoğunlukla yalnız KVKK'yı düşünüyor. Ancak yabancı müşterilerle çalışan veya yurt dışında operasyonu olan firmalar için GDPR (AB) ve CCPA (Kaliforniya) uyum da kritik.
+
+Üç rejim arasındaki ana farklar:
+
+| Konu | KVKK | GDPR | CCPA |
+| --- | --- | --- | --- |
+| Yürürlük | 2016 | 2018 | 2020 |
+| Ceza üst sınırı | ~3.8M TL (2026) | 20M € veya %4 ciro | 2500-7500 USD/kayıt |
+| DPO zorunluluğu | Bazı durumlarda | Evet (şart sağlanırsa) | Hayır |
+| Rıza eşiği | "Açık rıza" | "Açık ve sarih" | "Opt-out" yeterli |
+| Veri ihlali bildirimi | 72 saat (uygulama farklı) | 72 saat | 45 gün (pratikte) |
+
+UpCore, KVKK-uyumlu geliştirildiği için GDPR uyumuna yakın; ancak GDPR müşterileri için ekstra doğrulama adımları mevcut.
+
+## Kapanış
+
+KVKK, İK için bir ceza kaynağı değil, **çalışan güveninin altyapısıdır**. Kurul kararlarının sistematik okuması bize şu gerçeği söylüyor: sorun teknik değil, organizasyonel. Belgeler, süreçler, eğitimler. UpCore'un KVKK Portalı bu organizasyonel sistemi dijitalleştiriyor; ama en kritik kısım İnsan Kaynakları liderinin veri koruma kültürünü sahiplenmesi.
+
+<NewsletterCTA />

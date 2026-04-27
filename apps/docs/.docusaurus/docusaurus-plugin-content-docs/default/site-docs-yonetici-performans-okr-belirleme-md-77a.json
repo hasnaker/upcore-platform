@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/performans/okr-belirleme",
+  "title": "OKR belirleme",
+  "description": "OKR = Objective (nereye gidiyoruz?) + Key Result (nereye vardığımızı nasıl ölçeriz?).",
+  "source": "@site/docs/yonetici/performans/okr-belirleme.md",
+  "sourceDirName": "yonetici/performans",
+  "slug": "/yonetici/performans/okr-belirleme",
+  "permalink": "/en/docs/yonetici/performans/okr-belirleme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/performans/okr-belirleme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "okr-belirleme",
+    "title": "OKR belirleme",
+    "sidebar_position": 1
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "Müdahale onayı",
+    "permalink": "/en/docs/yonetici/pulse/mudahale-onayi"
+  },
+  "next": {
+    "title": "360° geri bildirim verme",
+    "permalink": "/en/docs/yonetici/performans/360-feedback-verme"
+  }
+}

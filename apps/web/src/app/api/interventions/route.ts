@@ -1,75 +1,142 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { DB_URL, TENANT_ID } from '@/lib/service-urls';
+import { SERVICES } from '@/lib/service-urls';
 import { createAuditLogger } from '@/lib/audit-logger';
+import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 
-export async function GET() {
+const categoryMap: Record<string, string> = {
+  WORKLOAD: 'workload',
+  AUTONOMY: 'role_design',
+  RELATIONSHIPS: 'social_support',
+  RECOGNITION: 'recognition',
+  GROWTH: 'skill_dev',
+  WELLBEING: 'wellbeing',
+  COACHING: 'coaching',
+  ROLE_DESIGN: 'role_design',
+};
+
+const normalizeCategory = (value: string): string => {
+  const key = value.trim().toUpperCase();
+  return categoryMap[key] || value.trim().toLowerCase() || 'other';
+};
+
+interface JsonRecord {
+  items?: unknown;
+  total?: unknown;
+  id?: unknown;
+}
+
+const readJson = async (response: Response): Promise<JsonRecord> => {
   try {
-    const { Pool } = await import('pg');
-    const pool = new Pool({ connectionString: DB_URL });
-    const result = await pool.query(
-      `SELECT id, code, title_tr, title_en, description_tr, category, evidence_tier, target_drivers, delivery_mode, expected_effect_size
-       FROM app.interventions WHERE tenant_id = $1 ORDER BY evidence_tier, title_tr`,
-      [TENANT_ID]
+    const data = (await response.json()) as unknown;
+    if (data && typeof data === 'object') {
+      return data as JsonRecord;
+    }
+    return {};
+  } catch {
+    return {};
+  }
+};
+
+export async function GET(request: NextRequest) {
+  try {
+    const ctx = getRequestContext(request);
+    const headers = buildServiceHeaders(ctx);
+    const res = await fetch(
+      `${SERVICES.intervention}/api/v1/interventions/catalog?is_active=true&limit=100`,
+      { headers },
     );
-    await pool.end();
-    return NextResponse.json({ items: result.rows, total: result.rowCount });
-  } catch (error) {
+    const data = res.ok ? await readJson(res) : { items: [] };
+    const items = Array.isArray(data.items) ? data.items : [];
+    return NextResponse.json({ items, total: data.total ?? items.length });
+  } catch {
     return NextResponse.json({ error: 'Müdahale verileri alınamadı', items: [] }, { status: 500 });
   }
 }
 
-/**
- * POST — Assign an intervention to an employee.
- */
 export async function POST(req: NextRequest) {
   try {
+    const ctx = getRequestContext(req);
+    const headers = buildServiceHeaders(ctx);
     const body = await req.json();
-    const { interventionId, employeeId, notes } = body as {
-      interventionId: string;
-      employeeId: string;
-      notes?: string;
-    };
 
-    if (!interventionId || !employeeId) {
-      return NextResponse.json({ error: 'interventionId ve employeeId gerekli' }, { status: 400 });
+    const interventionId = body.interventionId || body.intervention_id;
+    const employeeId = body.employeeId || body.employee_id;
+
+    if (interventionId && employeeId) {
+      const assignRes = await fetch(`${SERVICES.intervention}/api/v1/interventions/assignments`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({
+          intervention_id: interventionId,
+          employee_id: employeeId,
+          notes: body.notes || null,
+          trigger_source: body.trigger_source || 'manual',
+        }),
+      });
+
+      const assignData = await readJson(assignRes);
+      if (!assignRes.ok) {
+        return NextResponse.json(assignData, { status: assignRes.status });
+      }
+
+      const audit = createAuditLogger(ctx.userId, ctx.userRole, ctx.tenantId);
+      const assignId = typeof assignData.id === 'string' ? assignData.id : '';
+      void audit.log('create', 'intervention_assignment', assignId, undefined, {
+        interventionId,
+        employeeId,
+      });
+
+      return NextResponse.json({ success: true, id: assignId }, { status: 201 });
     }
 
-    const { Pool } = await import('pg');
-    const pool = new Pool({ connectionString: DB_URL });
+    const category = normalizeCategory(body.category || '');
+    const description = String(body.description || '').trim();
+    const title = description ? description.slice(0, 80) : 'Özel Müdahale';
+    const code = `custom-${Date.now().toString(36)}`;
 
-    const result = await pool.query(
-      `INSERT INTO app.intervention_assignments (tenant_id, intervention_id, employee_id, assigned_at, status, notes)
-       VALUES ($1, $2, $3, now(), 'assigned', $4)
-       RETURNING id`,
-      [TENANT_ID, interventionId, employeeId, notes || null]
-    );
-
-    await pool.end();
-
-    // Audit
-    const actorId = req.headers.get('x-user-id') || '00000000-0000-0000-0000-000000000001';
-    const actorRole = req.headers.get('x-user-role') || 'hr_director';
-    const audit = createAuditLogger(actorId, actorRole);
-    void audit.log('create', 'intervention_assignment', result.rows[0]?.id, undefined, {
-      interventionId, employeeId,
+    const createRes = await fetch(`${SERVICES.intervention}/api/v1/interventions/catalog`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        code,
+        title_tr: title,
+        description_tr: description || 'Manuel olarak oluşturulan müdahale',
+        category,
+        evidence_tier: 'C',
+        target_drivers: [],
+        target_burnout_band: [],
+        delivery_mode: 'self_service',
+        active: true,
+      }),
     });
 
-    return NextResponse.json({ success: true, id: result.rows[0]?.id });
-  } catch (error) {
+    const created = await readJson(createRes);
+    if (!createRes.ok) {
+      return NextResponse.json(created, { status: createRes.status });
+    }
+
+    const audit = createAuditLogger(ctx.userId, ctx.userRole, ctx.tenantId);
+    const createdId = typeof created.id === 'string' ? created.id : '';
+    void audit.log('create', 'intervention_catalog', createdId, undefined, {
+      category,
+      code,
+    });
+
+    return NextResponse.json({ success: true, id: createdId, item: created }, { status: 201 });
+  } catch (error: unknown) {
     console.error('Intervention assignment error:', error);
     return NextResponse.json({ error: 'Müdahale ataması yapılamadı' }, { status: 500 });
   }
 }
 
-/**
- * PATCH — Update intervention assignment status.
- */
 export async function PATCH(req: NextRequest) {
   try {
+    const ctx = getRequestContext(req);
+    const headers = buildServiceHeaders(ctx);
     const body = await req.json();
     const { assignmentId, status, outcome } = body as {
-      assignmentId: string;
-      status: 'in_progress' | 'completed' | 'cancelled';
+      assignmentId?: string;
+      status?: 'in_progress' | 'completed' | 'cancelled';
       outcome?: string;
     };
 
@@ -82,35 +149,44 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: `Geçersiz status: ${status}` }, { status: 400 });
     }
 
-    const { Pool } = await import('pg');
-    const pool = new Pool({ connectionString: DB_URL });
+    let endpoint = '';
+    let payload: Record<string, unknown> = {};
 
-    await pool.query(
-      `UPDATE app.intervention_assignments SET status = $1, updated_at = now() WHERE id = $2 AND tenant_id = $3`,
-      [status, assignmentId, TENANT_ID]
-    );
-
-    // If completed, insert outcome record
-    if (status === 'completed' && outcome) {
-      await pool.query(
-        `INSERT INTO app.intervention_outcomes (tenant_id, assignment_id, outcome, recorded_at)
-         VALUES ($1, $2, $3, now())`,
-        [TENANT_ID, assignmentId, outcome]
-      );
+    if (status === 'in_progress') {
+      endpoint = `/api/v1/interventions/assignments/${assignmentId}/start`;
+    } else if (status === 'completed') {
+      endpoint = `/api/v1/interventions/assignments/${assignmentId}/complete`;
+    } else {
+      endpoint = `/api/v1/interventions/assignments/${assignmentId}/cancel`;
+      payload = { reason: outcome || 'Cancelled from web app' };
     }
 
-    await pool.end();
+    const transitionRes = await fetch(`${SERVICES.intervention}${endpoint}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(payload),
+    });
 
-    // Audit
-    const actorId = req.headers.get('x-user-id') || '00000000-0000-0000-0000-000000000001';
-    const actorRole = req.headers.get('x-user-role') || 'hr_director';
-    const audit = createAuditLogger(actorId, actorRole);
+    if (!transitionRes.ok) {
+      const transitionErr = await readJson(transitionRes);
+      return NextResponse.json(transitionErr, { status: transitionRes.status });
+    }
+
+    if (status === 'completed' && outcome) {
+      await fetch(`${SERVICES.intervention}/api/v1/interventions/assignments/${assignmentId}/outcomes`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ notes: outcome }),
+      });
+    }
+
+    const audit = createAuditLogger(ctx.userId, ctx.userRole, ctx.tenantId);
     void audit.log('update', 'intervention_assignment', assignmentId, {
       status: { old: 'unknown', new: status },
     });
 
     return NextResponse.json({ success: true, assignmentId, status });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Intervention assignment update error:', error);
     return NextResponse.json({ error: 'Müdahale ataması güncellenemedi' }, { status: 500 });
   }

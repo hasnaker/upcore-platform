@@ -90,3 +90,35 @@ func RequireRole(roles ...string) func(http.Handler) http.Handler {
 		})
 	}
 }
+
+// platformAdminRoles is the set of Clerk role/org_role values that grant
+// access to /admin/tenants endpoints. Kept deliberately narrow — UpCore
+// staff only, never customer-tenant admins.
+var platformAdminRoles = map[string]struct{}{
+	"platform-admin":       {},
+	"platform_admin":       {},
+	"upcore_staff":         {},
+	"upcore-staff":         {},
+	"org:platform-admin":   {},
+	"org:platform_admin":   {},
+}
+
+// RequirePlatformAdmin enforces that the authenticated principal carries a
+// platform-admin role (set by the API gateway from Clerk claims into the
+// X-User-Role header). Returns 403 otherwise. Expects RequireAuth to have
+// already run so user/tenant context is populated.
+func RequirePlatformAdmin(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		role := strings.ToLower(strings.TrimSpace(RoleFromContext(r.Context())))
+		if role == "" {
+			role = strings.ToLower(strings.TrimSpace(r.Header.Get("X-User-Role")))
+		}
+		if _, ok := platformAdminRoles[role]; !ok {
+			w.Header().Set("Content-Type", "application/json; charset=utf-8")
+			w.WriteHeader(http.StatusForbidden)
+			_, _ = w.Write([]byte(`{"error":"forbidden","message":"platform-admin role required"}`))
+			return
+		}
+		next.ServeHTTP(w, r)
+	})
+}

@@ -1,0 +1,25 @@
+{
+  "id": "admin/uyum/log-retansiyon",
+  "title": "Log retansiyon",
+  "description": "Audit log + sistem log saklama süreleri.",
+  "source": "@site/docs/admin/uyum/log-retansiyon.md",
+  "sourceDirName": "admin/uyum",
+  "slug": "/admin/uyum/log-retansiyon",
+  "permalink": "/en/docs/admin/uyum/log-retansiyon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/uyum/log-retansiyon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "log-retansiyon",
+    "title": "Log retansiyon",
+    "sidebar_position": 4
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Veri ikametgahi",
+    "permalink": "/en/docs/admin/uyum/veri-ikametgahi"
+  }
+}

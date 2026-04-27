@@ -15,7 +15,7 @@ from app.scoring.jdr_scoring import score_jdr
 
 logger = structlog.get_logger(__name__)
 
-router = APIRouter(prefix="/v1/score", tags=["scoring"])
+router = APIRouter(prefix="/api/v1/score", tags=["scoring"])
 
 
 @router.post(

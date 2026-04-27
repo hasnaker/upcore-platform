@@ -74,7 +74,7 @@ export const useBurnoutHeatmap = (query: BurnoutHeatmapQuery) => {
   return useQuery<BurnoutHeatmapResponse, UpcoreApiError>({
     queryKey: queryKeys.burnout.heatmap(query),
     queryFn: async () => {
-      const params = buildSearchParams(query as Record<string, string | number | boolean | undefined>);
+      const params = buildSearchParams(query);
       return api.get(`burnout/heatmap${params}`).json<BurnoutHeatmapResponse>();
     },
     enabled: !!query.weekFrom && !!query.weekTo,

@@ -13,7 +13,7 @@ import numpy as np
 from numpy.typing import NDArray
 
 # In-memory norm table registry
-_REGISTRY: dict[str, "NormTable"] = {}
+_REGISTRY: dict[str, NormTable] = {}
 
 
 @dataclass

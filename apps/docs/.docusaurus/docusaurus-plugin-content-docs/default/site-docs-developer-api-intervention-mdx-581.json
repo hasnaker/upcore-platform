@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/intervention",
+  "title": "Intervention Servisi API Referansı",
+  "description": "UpCore Intervention servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/intervention.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/intervention",
+  "permalink": "/en/docs/developer/api/intervention",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/intervention.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 18,
+  "frontMatter": {
+    "id": "intervention",
+    "title": "Intervention Servisi API Referansı",
+    "sidebar_position": 18,
+    "slug": "/developer/api/intervention",
+    "description": "UpCore Intervention servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

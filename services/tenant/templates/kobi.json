@@ -1,0 +1,38 @@
+{
+  "code": "kobi",
+  "name": "KOBİ (1-50 çalışan)",
+  "description": "Küçük işletmeler için minimum konfigürasyon, 1-50 çalışan aralığı.",
+  "default_locale": "tr-TR",
+  "default_country": "TR",
+  "default_plan_id": "starter",
+  "modules": [
+    "core_hris",
+    "leave",
+    "document",
+    "kvkk",
+    "payroll"
+  ],
+  "departments": [
+    { "code": "YONETIM", "name": "Yönetim" },
+    { "code": "IDARI", "name": "İdari İşler", "parent": "YONETIM" },
+    { "code": "URETIM", "name": "Üretim / Operasyon", "parent": "YONETIM" },
+    { "code": "SATIS", "name": "Satış ve Pazarlama", "parent": "YONETIM" },
+    { "code": "MUHASEBE", "name": "Muhasebe ve Finans", "parent": "YONETIM" }
+  ],
+  "positions": [
+    { "code": "MUDUR", "name": "Genel Müdür", "department": "YONETIM", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "MUH", "name": "Muhasebe Uzmanı", "department": "MUHASEBE", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "SATIS_UZM", "name": "Satış Uzmanı", "department": "SATIS", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "USTA", "name": "Usta", "department": "URETIM", "personnel_type": "MAVI_YAKA" },
+    { "code": "MEMUR", "name": "Büro Personeli", "department": "IDARI", "personnel_type": "BEYAZ_YAKA" }
+  ],
+  "kvkk_notices": [
+    { "audience": "employee", "version": "2025.01", "title": "Çalışan Aydınlatma Metni" },
+    { "audience": "candidate", "version": "2025.01", "title": "Aday Aydınlatma Metni" },
+    { "audience": "visitor", "version": "2025.01", "title": "Ziyaretçi Aydınlatma Metni" }
+  ],
+  "feature_flags": {
+    "payroll_module": true,
+    "verbis_required": true
+  }
+}

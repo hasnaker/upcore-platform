@@ -1,0 +1,8 @@
+{
+  "theme.NotFound.title": "Page Not Found",
+  "theme.NotFound.p1": "We could not find what you were looking for.",
+  "theme.NotFound.p2": "Please contact the owner of the site that linked you to the original URL and let them know their link is broken.",
+  "theme.SearchBar.seeAll": "See all results",
+  "theme.tags.tagsPageTitle": "Tags",
+  "theme.blog.post.readMore": "Read More"
+}

@@ -1,0 +1,29 @@
+{
+  "id": "calisan/hesap/bildirim-tercihleri",
+  "title": "Bildirim tercihleri",
+  "description": "UpCore, hangi olaylarda hangi kanaldan haberdar edileceğinizi tamamen sizin kontrolünüze bırakır.",
+  "source": "@site/docs/calisan/hesap/bildirim-tercihleri.md",
+  "sourceDirName": "calisan/hesap",
+  "slug": "/calisan/hesap/bildirim-tercihleri",
+  "permalink": "/en/docs/calisan/hesap/bildirim-tercihleri",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/hesap/bildirim-tercihleri.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "bildirim-tercihleri",
+    "title": "Bildirim tercihleri",
+    "sidebar_position": 4
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Şifre ve MFA yönetimi",
+    "permalink": "/en/docs/calisan/hesap/sifre-mfa"
+  },
+  "next": {
+    "title": "Pulse anketi nedir?",
+    "permalink": "/en/docs/calisan/pulse/pulse-nedir"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "id": "developer/api/assessment",
+  "title": "Assessment Servisi API Referansı",
+  "description": "UpCore Assessment servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox.",
+  "source": "@site/docs/developer/api/assessment.mdx",
+  "sourceDirName": "developer/api",
+  "slug": "/developer/api/assessment",
+  "permalink": "/en/docs/developer/api/assessment",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/api/assessment.mdx",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 16,
+  "frontMatter": {
+    "id": "assessment",
+    "title": "Assessment Servisi API Referansı",
+    "sidebar_position": 16,
+    "slug": "/developer/api/assessment",
+    "description": "UpCore Assessment servisi için OpenAPI 3.1 referansı, endpoint listesi, \"Try it out\" sandbox."
+  }
+}

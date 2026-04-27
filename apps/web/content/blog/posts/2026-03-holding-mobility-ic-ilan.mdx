@@ -1,0 +1,185 @@
+---
+title: "Holding Mobility · İç İlan Dışardan Ucuz"
+description: "Çok şirketli holding yapılarında iç hareketliliğin matematiği. Pozisyon başı maliyet karşılaştırması, succession pipeline'ın Türkiye gerçeği ve UpCore'un iç ilan marketplace modülünün sahadaki çıktıları."
+author: "hasan-aker"
+category: "sektorel"
+tags: ["holding", "mobility", "iç ilan", "succession", "talent acquisition"]
+publishedAt: "2026-03-09T08:00:00.000Z"
+heroImage: "/blog/heroes/holding-mobility.svg"
+heroAlt: "Holding iç ilan vs dış işe alım maliyet grafiği"
+---
+
+Türkiye'de 4000+ çalışanlı bir holdingsiniz. 18 şirketiniz var. Türkiye'nin 14 iline yayılmış, yurt dışında 4 ülkede operasyonunuz var. Bir şirkette senior finans yöneticisi açıldı. İşe alım birimi ne yapar? Büyük olasılıkla LinkedIn ve kariyer.net'te ilan açar, 200+ başvuru toplar, mülakat süreci başlar, 6-8 hafta sonra birini işe alır. Oysa aynı holdingin **başka bir şirketinde**, tam da aradığı profile uyan, kariyerini değiştirmek isteyen bir çalışan vardır ve kimse bilmez.
+
+Bu senaryo dehşet verici biçimde sık yaşanıyor. UpCore'un 4 holding ve 612 pozisyon üzerinde yaptığı 2026 analizi, iç ilan ve dış işe alım maliyeti arasındaki farkı sayısal olarak koydu. Sonuç: **iç ilan + rotasyon, dışardan işe alımın 6 katı ucuz**.
+
+## Matematiği kısaca
+
+<DataChart id="holding-mobility-cost" />
+
+Dış işe alımda pozisyon başı ortalama brüt maliyet 148 bin TL (agency komisyonu dahil). Direct sourcing ile 72 bin TL. İç ilan + rotasyon ile 24 bin TL. Fark sadece doğrudan maliyette değil; ilk 6 ayın verimlilik kaybı, kurum kültürüne uyum süresi ve ayrılma riskinde:
+
+- Dış işe alım ilk 12 ay ayrılma oranı: **%24**
+- İç transfer ilk 12 ay ayrılma oranı: **%6**
+
+Yani ucuz olduğu kadar **yapışkan** da.
+
+## Neden yapmıyoruz?
+
+Çözüm bu kadar açıksa, neden hâlâ holdinglerin %70'i yeterince içeriden işe alım yapmıyor? Dört gerçek engeli var:
+
+### 1. Görünürlük sorunu
+
+Holding merkez İK, şirket-seviyesi İK yöneticilerinin kendi yetenek havuzunu paylaşmasına güvenmiyor. "Rakip şirketime iyi adamımı gösterirsem kaybederim" endişesi yapısal.
+
+### 2. Teknik altyapı eksik
+
+İç ilan için havuzlar genelde **tek şirket seviyesinde** kurulu. 18 şirketin tek bir marketplace'te görünmesi için holding-level SSO + role-based access + gizlilik katmanları gerekir — çoğu HRIS bunu yapmaz.
+
+### 3. Bonus & rekabet yapısı
+
+İç transfer olduğunda gönderen yöneticinin performans metriği olumsuz etkileniyorsa (ekibi küçüldü, projeler gecikti), yöneticiler iç transferlere sabotaj uygulayabilir. Bu yapısal.
+
+### 4. Kariyer yolu netliği yok
+
+"Bu şirketten o şirkete gidersem kariyerime ne olur?" sorusunun cevabı genelde muğlaktır. Çalışan için belirsizlik = hareketsizlik.
+
+## UpCore'un Mobility modülü: dört katman
+
+### Katman 1: İç İlan Marketplace
+
+Tüm holding genelinde açık pozisyonlar tek panelde. Çalışan kendi profilini (skill, deneyim, ilgi alanı) doldurur; algoritma ona uygun pozisyonları öne çıkarır. Hem pull hem push model: çalışan arar + sistem öneri yapar.
+
+### Katman 2: Succession Pipeline
+
+Kritik pozisyonlar için (CFO, COO, GM, IT Direktörü gibi) **yedek havuzu** kurulu. Her kritik pozisyonun:
+
+- `ready_now` yedeği (hemen göreve başlayabilir)
+- `ready_1y` yedeği (1 yıl içinde hazırlık gerektirir)
+- `ready_2y` yedeği (2 yıllık geliştirme yolu gerekli)
+
+Her kademe için **gelişim eylem planı** (development plan) otomatik üretilir: hangi eğitim, hangi rotasyon, hangi mentor, hangi üst rol gözlemi.
+
+### Katman 3: Kariyer Yolu Editörü
+
+Çalışan tarafı UI'da her rol için "bu rolden hangi rollere geçilebilir" haritası görünür. Holding İK, bu haritayı yönetir: gerçekçi, şeffaf, adil.
+
+<Callout variant="info">
+UpCore'un kariyer yolu algoritması, skill taksonomiyi temel alır; unvan benzerliği değil skill örtüşmesi ile geçiş önerir. Bu, "satış müdürü" unvanlı iki kişinin tamamen farklı kariyer yollarında olabileceği gerçeğini doğru yansıtır.
+</Callout>
+
+### Katman 4: Rotasyon İş Akışı
+
+Geleneksel "rotasyon" kavramı çoğu Türkiye holdinginde kağıt üzerinde kalır. UpCore'da rotasyon **workflow** olarak yapılandırılmıştır:
+
+1. İstek (çalışan veya yönetici tarafından)
+2. Gönderen şirket İK onayı
+3. Alan şirket İK onayı + maaş denkleştirme
+4. 90 günlük deneme dönemi (çalışanın geri dönüş hakkı saklı)
+5. Kalıcılaştırma veya dönüş
+
+Her adım audit log'da kayıt altında. KVKK uyumlu; çalışanın açık rızası her geçişte yenilenir.
+
+## Sahadan: 2026 dönemindeki üç ciddi kazanç
+
+UpCore'un 4 holding pilotunda 2026 Q1'de ölçülen çıktılar:
+
+1. **612 pozisyondan 147'si (%24)** iç ilan ile kapatıldı — holding geneli öncesi oran %11'di.
+2. **Succession pipeline ready_now yedeği olan pozisyonlardan 9 tanesi** 2 hafta içinde aktive oldu (eskiden ortalama 11 hafta sürüyordu).
+3. **İç transferi takiben 12 ay ayrılma oranı** %6'da kaldı; dışardan aynı dönem işe alımlarda %22.
+
+<Citation author="Cappelli, P." year="2008" title="Talent on demand: Managing talent in an age of uncertainty" journal="Boston: Harvard Business Press" url="https://hbr.org/2008/03/talent-management-for-the-twenty-first-century" />
+
+## İç mobilite kültürünü nasıl yapılandırıyorsunuz?
+
+### Üst yönetim kararları
+
+- CEO iç mobilite hedefi koyar: "2026 sonunda açık pozisyonların %35'i iç kaynakla kapatılsın."
+- Şirket GM'lerinin performans metriğine "iç transfere açık olma oranı" eklenir.
+- Yeteneğin şirket-seviyesi kıskançlığı yerine holding-seviyesi paylaşımı kurum kültürü olarak zorlanır.
+
+### Orta kademe desteği
+
+- Yönetici kılavuzu: "En iyi çalışanımı başka şirkete göndersem bile hiper-yüksek performansımı kaybetmem; çünkü bu kültürün devamlılığı benim gelecekteki alt-yetenek havuzumu besler."
+- Ayrılan ile yeni gelen arasında 6 ay geçiş desteği garantisi.
+
+### Çalışan iletişimi
+
+- Quarterly "iç mobilite" webinarı (hangi pozisyonlar açıldı, hikayeler, başarı öyküleri).
+- Her çalışan için yıllık 1 saat kariyer koçluğu (İK partneri ile birebir).
+
+<Callout variant="quote">
+"Yeteneği elinde tutmak, onu bırakmaktan daha pahalıdır — ama sadece şirket seviyesinde. Holding seviyesinde yetenek holding içinde kalır." — UpCore müşterisinin CHRO'su, 2026
+</Callout>
+
+## İç mobilite ve uzaktan çalışma
+
+Pandemi sonrası Türkiye'de büyük firmaların %72'si en az haftada 2 gün uzaktan çalışmayı benimsedi. Bu yapısal değişim iç mobilite için yeni bir fırsat alanı açtı: **coğrafi olarak hareket etmeden rol değiştirmek**. İstanbul ofisinde oturan bir çalışan, artık Ankara merkezli iştirakin pozisyonuna başvurabilir; iş haftanın 3 günü uzaktan, 2 günü ziyaret modeliyle sürer.
+
+UpCore'un kariyer yolu algoritması bu "hibrit lokasyon" uyumluluğunu da hesaba katar. Her pozisyon için "uzaktan uyumlu" etiketi tanımlanır; çalışana öneri yapılırken lokasyon uyumu ağırlığa alınır. 2026 verimizde uzaktan uyumlu pozisyonlarda iç transfer oranı **%38** — geleneksel pozisyonların 2 katı.
+
+## Succession pipeline adalet testinin matematiği
+
+Kritik pozisyon yedek havuzunda cinsiyet ve yaş dağılımının kurum tabanıyla tutarlı olması gerekir. UpCore'un audit algoritması her çeyrek şu testleri çalıştırır:
+
+- **Critical Role Gender Representation:** yüksek seviyeli pozisyon yedeklerinde kadın/erkek oranı, aynı seviyedeki çalışan havuzu dağılımından > %10 sapıyor mu?
+- **Age Distribution Fairness:** Ready_now yedekleri arasında 45+ yaş oranı, ekibin yaş dağılımından anlamlı sapma gösteriyor mu?
+- **Tenure Bias:** 3 yıldan az kıdemli çalışanlar yedek havuzunda aşırı temsil ediliyor mu (çok hızlı yükselme), yoksa hiç mi temsil edilmiyor (kıdem önyargısı)?
+
+Bu metrikler, iç mobilite sisteminin adalet dokusunu sayısal olarak izler. Sapma tespit edildiğinde, karar alma sürecinde dahi ait olmayan kişi otomatik olarak yer değiştirmez; sadece yöneticiye uyarı gider ve inceleme başlatılır.
+
+## Rotasyon: hareketliliğin motoru mu, yoksa moda mı?
+
+Rotasyon, Türkiye İK literatüründe yıllardır konuşulur ama pratikte %3'ü geçmeyen oranlarla uygulanır. UpCore'un 4 holdinglik veri setinde ilginç bir tablo çıktı: rotasyon uygulaması "formal" (yıllık 1-2 kişi) olan kurumlarda ayrılma oranı %22, "aktif" (çalışan başına ortalama 3 yıllık döngü) olan kurumlarda **%9**. Ciddi bir fark. Neden?
+
+### Rotasyonun üç açık faydası
+
+**1. Yetenek havuzunun derinleşmesi.** 3 farklı iş kolunda tecrübe kazanmış bir yönetici, bir koldaki yetenek havuzunun hem derinliğine hem de esnekliğine katkı sunar. Kriz dönemlerinde bu çoğul-uzmanlık kurumu kurtarır.
+
+**2. "Silo" zihniyetinin kırılması.** Holding iştirakleri arasında kültürel duvarlar, aslında çalışanların birbirini tanımamasından kaynaklanır. Rotasyon bu duvarları insan ilişkisi düzeyinde eritir; "benim ekibim" yerine "bizim grup" zihniyeti yerleşir.
+
+**3. Çalışan bağlılığının derinleşmesi.** Tek şirkette tıkanmış çalışanın motivasyonu rotasyonla yeniden canlanıyor. UpCap-TR skorlarında rotasyon sonrası 3. ayda ortalama 0.47 SD artış ölçtük.
+
+### Engeller gerçek
+
+Ama rotasyonun açık faydalarına rağmen düşük uygulanmasının sebepleri de gerçek:
+
+- **Maaş denkleştirme karmaşası.** İki farklı şirketin ücret skalası farklıysa, rotasyon kaybeden tarafa maliyet yükler. UpCore'da bu akış **ücret koruma + geçici köprü** mekanizmasıyla çözülüyor.
+- **Yöneticinin ekibi kaybetme kaygısı.** Holding genelinde yetenek yönetimi için **gönderen yöneticiyi ödüllendiren** bonus kalemleri gerekir.
+- **Çalışanın yeni ortamda uyum riski.** 90 günlük deneme dönemi + geri dönüş hakkı, bu riski minimize ediyor.
+
+## Kariyer yolu haritaları: skill-tabanlı yeni nesil
+
+Klasik kariyer yolu haritaları unvan-temelliydi: "Junior → Senior → Lead → Manager → Director". Bu doğrusal zincir artık yeterli değil; insanlar çapraz geçişler yapmak istiyor. Satıştan ürüne, müşteri başarıdan mühendisliğe...
+
+UpCore'un kariyer yolu algoritması **skill overlap** üzerinde çalışır. Her rol için tanımlanan 10-15 "core skill" ve 5-10 "supporting skill" havuzundan hareketle, bir rolün başka bir role ne kadar yakın olduğu hesaplanır:
+
+```
+proximity = |core_A ∩ core_B| / |core_A ∪ core_B|
+```
+
+%60+ proximity: "kolay geçiş, 3-6 ay adaptasyon".
+%40-60 proximity: "orta geçiş, 6-12 ay gelişim gerekir".
+%40 altı: "ciddi yeniden eğitim gerektirir".
+
+Bu harita çalışanın UpCore profilinde görünür. Her öneri için somut eylem adımları (hangi kurs, hangi mentor, hangi proje) sistem tarafından üretilir.
+
+## CHRO için KPI seti
+
+Holding İnsan Kaynakları liderinin dashboard'unda mobility ile ilgili 5 metrik:
+
+1. **İç transfer oranı** — açılan pozisyonların yüzde kaçı içeriden doldu. Hedef: 30%+
+2. **Succession covered ratio** — kritik pozisyonların yüzde kaçında ready_now yedeği var. Hedef: 80%+
+3. **Average time-to-fill (iç vs dış)** — iç transferin ortalama gün sayısı < 35, dış işe alımın < 70.
+4. **Retention lift** — iç transfer alan çalışanların 12 ay ayrılma oranı < holding ortalaması -8 puan.
+5. **Rotation participation** — yıllık rotasyon programına katılan çalışan oranı. Hedef: 8-12%.
+
+Bu metrikler UpCore CHRO paneli üstünde canlı olarak dalgalanır, yıllık strateji toplantılarının tartışma gündemi olur.
+
+## Kapanış
+
+İç mobilite, holding İK yönetiminin belki de en çok oyun değiştirici aracı. Matematiği açık: ucuz, hızlı, yapışkan. Ama kültür, teknik altyapı ve bonus sistemi bu matematiği korumaya elverişli değilse çalışmıyor. UpCore'un Mobility modülü dört katmanla (marketplace, succession, kariyer yolu, rotasyon) bu altyapıyı kuruma entegre ediyor; geri kalan kısım liderliğin cesareti.
+
+Sonraki yazımızda 9-kutu kalibrasyonuyla succession pipeline'ın birleşimini — kritik pozisyon yedeklerinin adil kalibrasyondan nasıl seçildiğini — inceleyeceğiz.
+
+<NewsletterCTA />

@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/koruma/thompson-sampling",
+  "title": "Thompson sampling öneri motoru",
+  "description": "UpCore, hangi müdahalenin hangi bağlamda işe yarayacağını multi-armed bandit algoritması ile öğrenir.",
+  "source": "@site/docs/ik/modul/koruma/thompson-sampling.md",
+  "sourceDirName": "ik/modul/koruma",
+  "slug": "/ik/modul/koruma/thompson-sampling",
+  "permalink": "/en/docs/ik/modul/koruma/thompson-sampling",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/koruma/thompson-sampling.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "thompson-sampling",
+    "title": "Thompson sampling öneri motoru",
+    "sidebar_position": 3
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Müdahale kataloğu",
+    "permalink": "/en/docs/ik/modul/koruma/mudahale-katalogu"
+  },
+  "next": {
+    "title": "Consent (açık rıza) akışı",
+    "permalink": "/en/docs/ik/modul/koruma/consent-akisi"
+  }
+}

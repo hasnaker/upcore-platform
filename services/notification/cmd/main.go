@@ -16,6 +16,7 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/upcore/notification/internal/channels"
+	slackchan "github.com/upcore/notification/internal/channels/slack"
 	"github.com/upcore/notification/internal/config"
 	"github.com/upcore/notification/internal/db"
 	"github.com/upcore/notification/internal/event"
@@ -23,6 +24,7 @@ import (
 	"github.com/upcore/notification/internal/middleware"
 	"github.com/upcore/notification/internal/repository"
 	"github.com/upcore/notification/internal/service"
+	slackint "github.com/upcore/notification/internal/slack"
 )
 
 func main() {
@@ -76,19 +78,73 @@ func main() {
 
 	// Channel drivers
 	var channelDrivers []channels.Channel
+	var emailChannel *channels.SendGridChannel
 
 	// SendGrid (email)
 	if cfg.HasSendGrid() {
 		sg := channels.NewSendGridChannel(cfg.SendGridAPIKey, cfg.SendGridFromEmail, cfg.SendGridFromName, logger)
 		channelDrivers = append(channelDrivers, sg)
+		emailChannel = sg
 		logger.Info().Msg("SendGrid email channel enabled")
 	} else {
 		logger.Warn().Msg("SendGrid not configured; email delivery disabled")
 	}
 
+	// Twilio SMS (international) — fallback to Netgsm for TR.
+	if sid := os.Getenv("TWILIO_ACCOUNT_SID"); sid != "" {
+		tok := os.Getenv("TWILIO_AUTH_TOKEN")
+		from := os.Getenv("TWILIO_FROM")
+		tw := channels.NewTwilioChannel(sid, tok, from, logger)
+		channelDrivers = append(channelDrivers, tw)
+		logger.Info().Msg("Twilio SMS channel enabled")
+	}
+
+	// Web Push (VAPID). Stub adapter — real crypto lib wiring in production.
+	if vpk := os.Getenv("WEBPUSH_VAPID_PUBLIC"); vpk != "" {
+		wp := channels.NewWebPushChannel(
+			vpk,
+			os.Getenv("WEBPUSH_VAPID_PRIVATE"),
+			os.Getenv("WEBPUSH_SUBJECT"),
+			logger,
+		)
+		channelDrivers = append(channelDrivers, wp)
+		logger.Info().Msg("Web push channel enabled")
+	}
+
 	// In-app channel
 	inappCh := channels.NewInAppChannel(inappRepo, logger)
 	channelDrivers = append(channelDrivers, inappCh)
+
+	// Slack channel + OAuth handler
+	var slackRepo *slackint.Repository
+	var slackOAuth *slackint.OAuthHandler
+	var slackEvents *slackint.EventsHandler
+	var slackVerifier *slackchan.Verifier
+	if cfg.HasSlack() {
+		var repoErr error
+		slackRepo, repoErr = slackint.NewRepository(sqlDB, cfg.SlackDataEncryptKey)
+		if repoErr != nil {
+			logger.Fatal().Err(repoErr).Msg("slack repository init")
+		}
+		if cfg.SlackDataEncryptKey == "" {
+			logger.Warn().Msg("SLACK_DATA_ENCRYPT_KEY not set — Slack adapter cannot persist tokens; disabling")
+		} else {
+			slackClient := slackchan.NewClient(logger)
+			slackDriver := slackchan.NewChannel(slackClient, slackRepo, logger)
+			channelDrivers = append(channelDrivers, slackDriver)
+			slackOAuth = slackint.NewOAuthHandler(
+				slackRepo, slackClient,
+				cfg.SlackClientID, cfg.SlackClientSecret, cfg.SlackRedirectURL, cfg.SlackAppID,
+				cfg.SlackPublicBaseURL, logger,
+			)
+			feedbackPoster := slackint.NewOutboxFeedbackPoster(sqlDB, logger)
+			slackEvents = slackint.NewEventsHandler(slackRepo, slackClient, feedbackPoster, sqlDB, cfg.SlackPublicBaseURL, logger)
+			slackVerifier = slackchan.NewVerifier(cfg.SlackSigningSecret)
+			logger.Info().Msg("Slack channel + OAuth handler enabled")
+		}
+	} else {
+		logger.Info().Msg("Slack adapter disabled (SLACK_CLIENT_ID / SLACK_CLIENT_SECRET / SLACK_SIGNING_SECRET missing)")
+	}
 
 	// Dispatcher
 	dispatcher := service.NewDispatcher(
@@ -111,11 +167,18 @@ func main() {
 		}
 	}()
 
+	// DLQ watcher — polls app.event_outbox for dead-letter rows and sends
+	// in-app + email notifications (when configured) to hr_admin/admin users.
+	// Otomatik replay yok.
+	dlqWatcher := service.NewDLQWatcher(sqlDB, inappSvc, emailChannel, cfg.MaxRetries, logger)
+	go dlqWatcher.Run(ctx)
+
 	// Auth checker
 	authChecker := middleware.NewAuthChecker("http://localhost:8001", 500*time.Millisecond)
 
 	// HTTP router
-	r := newRouter(cfg, logger, authChecker, tmplSvc, dispatcher, prefSvc, inappSvc, notifRepo, suppRepo)
+	r := newRouter(cfg, logger, authChecker, tmplSvc, dispatcher, prefSvc, inappSvc, notifRepo, suppRepo,
+		slackOAuth, slackEvents, slackVerifier)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -163,6 +226,9 @@ func newRouter(
 	inappSvc *service.InAppService,
 	notifRepo repository.NotificationRepository,
 	suppRepo repository.SuppressionRepository,
+	slackOAuth *slackint.OAuthHandler,
+	slackEvents *slackint.EventsHandler,
+	slackVerifier *slackchan.Verifier,
 ) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
@@ -192,6 +258,21 @@ func newRouter(
 	// Webhooks (no auth -- verified by provider signature)
 	r.Post("/webhooks/sendgrid", webhookH.PostSendGridWebhook)
 	r.Post("/webhooks/netgsm", webhookH.PostNetgsmWebhook)
+
+	// Slack inbound (Events API + slash commands). No bearer auth; the Slack
+	// signature middleware enforces authenticity of every request.
+	if slackEvents != nil && slackVerifier != nil {
+		r.Route("/api/v1/integrations/slack", func(r chi.Router) {
+			// Public — OAuth callback is signed by Slack via state token; challenge
+			// and slash commands use signature verification.
+			r.Group(func(r chi.Router) {
+				r.Use(slackVerifier.Middleware)
+				r.Post("/events", slackEvents.ServeHTTP)
+			})
+			// OAuth callback has no signature; validated via short-lived state row.
+			r.Get("/callback", slackOAuth.Callback)
+		})
+	}
 
 	// Authenticated API
 	r.Route("/api/v1/notifications", func(r chi.Router) {
@@ -229,6 +310,18 @@ func newRouter(
 		// Admin stats
 		r.Get("/admin/stats", notifH.AdminStats)
 	})
+
+	// Slack authenticated routes (install / status / uninstall / test message).
+	if slackOAuth != nil {
+		r.Route("/api/v1/integrations/slack", func(r chi.Router) {
+			r.Use(middleware.RequireAuth(checker))
+			r.Get("/install", slackOAuth.Install)
+			r.Get("/status", slackOAuth.Status)
+			r.Patch("/settings", slackOAuth.UpdateSettings)
+			r.Delete("/", slackOAuth.Uninstall)
+			r.Post("/test", slackOAuth.TestMessage)
+		})
+	}
 
 	return r
 }

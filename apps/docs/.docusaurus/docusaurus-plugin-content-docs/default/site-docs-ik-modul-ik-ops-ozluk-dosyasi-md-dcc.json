@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/ozluk-dosyasi",
+  "title": "Özlük dosyası",
+  "description": "Her çalışan için zorunlu ve opsiyonel bilgileri tutan merkez kayıt.",
+  "source": "@site/docs/ik/modul/ik-ops/ozluk-dosyasi.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/ozluk-dosyasi",
+  "permalink": "/en/docs/ik/modul/ik-ops/ozluk-dosyasi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/ozluk-dosyasi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "ozluk-dosyasi",
+    "title": "Özlük dosyası",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "İK Ops modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/ik-ops/genel-bakis"
+  },
+  "next": {
+    "title": "Sözleşme yönetimi",
+    "permalink": "/en/docs/ik/modul/ik-ops/sozlesme-yonetimi"
+  }
+}

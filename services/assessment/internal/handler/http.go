@@ -19,6 +19,7 @@ import (
 	"github.com/upcore/assessment/internal/config"
 	"github.com/upcore/assessment/internal/domain"
 	"github.com/upcore/assessment/internal/middleware"
+	"github.com/upcore/assessment/internal/repository"
 	"github.com/upcore/assessment/internal/service"
 )
 
@@ -26,6 +27,7 @@ import (
 type Deps struct {
 	Cfg               *config.Config
 	AssessmentService *service.AssessmentService
+	LongitudinalRepo  repository.LongitudinalRepository
 	AuthChecker       *middleware.AuthChecker
 	Log               zerolog.Logger
 }
@@ -77,6 +79,14 @@ func NewRouter(d *Deps) http.Handler {
 				r.Post("/report", h.TriggerReport)
 			})
 		})
+
+		// Longitudinal snapshots + bulk invitations (migration 040).
+		if d.LongitudinalRepo != nil {
+			r.Route("/assessments-longitudinal", func(sub chi.Router) {
+				lh := NewLongitudinalHandler(d.LongitudinalRepo)
+				lh.Register(sub)
+			})
+		}
 	})
 
 	return r

@@ -1,0 +1,29 @@
+{
+  "id": "admin/iam/mfa-zorunlu-kilma",
+  "title": "MFA zorunlu kılma",
+  "description": "Politika seviyeleri",
+  "source": "@site/docs/admin/iam/mfa-zorunlu-kilma.md",
+  "sourceDirName": "admin/iam",
+  "slug": "/admin/iam/mfa-zorunlu-kilma",
+  "permalink": "/en/docs/admin/iam/mfa-zorunlu-kilma",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/iam/mfa-zorunlu-kilma.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "mfa-zorunlu-kilma",
+    "title": "MFA zorunlu kılma",
+    "sidebar_position": 5
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "RBAC rol yönetimi",
+    "permalink": "/en/docs/admin/iam/rbac-rol-yonetimi"
+  },
+  "next": {
+    "title": "Plan seçimi",
+    "permalink": "/en/docs/admin/billing/plan-secimi"
+  }
+}

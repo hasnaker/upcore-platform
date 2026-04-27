@@ -1,0 +1,29 @@
+{
+  "id": "calisan/kvkk/veri-indirme",
+  "title": "Verilerimi indirme",
+  "description": "KVKK Madde 11/(a) ve (b) kapsamında size ait tüm kişisel verilerin bir kopyasını indirebilirsiniz.",
+  "source": "@site/docs/calisan/kvkk/veri-indirme.md",
+  "sourceDirName": "calisan/kvkk",
+  "slug": "/calisan/kvkk/veri-indirme",
+  "permalink": "/en/docs/calisan/kvkk/veri-indirme",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/kvkk/veri-indirme.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "veri-indirme",
+    "title": "Verilerimi indirme",
+    "sidebar_position": 2
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "KVKK Madde 11 hakları",
+    "permalink": "/en/docs/calisan/kvkk/madde-11-haklar"
+  },
+  "next": {
+    "title": "Silme talebi (unutulma hakkı)",
+    "permalink": "/en/docs/calisan/kvkk/silme-talebi"
+  }
+}

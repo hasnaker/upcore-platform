@@ -1,0 +1,4 @@
+# This directory is populated by `make screenshots`.
+#
+# Do not commit .webp / .png binaries directly — CI produces them on demand.
+# The manifest.json here is regenerated on every capture run.

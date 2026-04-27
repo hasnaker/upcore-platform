@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/kirmizi-band-triage",
+  "title": "Kırmızı band triage — İK protokolü",
+  "description": "Bir departman kırmızı banda düştüğünde İK olarak izleyeceğiniz protokol.",
+  "source": "@site/docs/ik/modul/surdurme/kirmizi-band-triage.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/kirmizi-band-triage",
+  "permalink": "/en/docs/ik/modul/surdurme/kirmizi-band-triage",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/kirmizi-band-triage.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "kirmizi-band-triage",
+    "title": "Kırmızı band triage — İK protokolü",
+    "sidebar_position": 5
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Heatmap okuma",
+    "permalink": "/en/docs/ik/modul/surdurme/heatmap-okuma"
+  },
+  "next": {
+    "title": "Soru bankası",
+    "permalink": "/en/docs/ik/modul/surdurme/soru-bankasi"
+  }
+}

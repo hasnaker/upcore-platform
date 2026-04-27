@@ -17,6 +17,7 @@ import (
 type ConsentService struct {
 	consents    repository.ConsentRepository
 	assignments repository.AssignmentRepository
+	catalog     repository.CatalogRepository
 	publisher   event.Publisher
 	log         zerolog.Logger
 }
@@ -25,19 +26,28 @@ type ConsentService struct {
 func NewConsentService(
 	consents repository.ConsentRepository,
 	assignments repository.AssignmentRepository,
+	catalog repository.CatalogRepository,
 	publisher event.Publisher,
 	log zerolog.Logger,
 ) *ConsentService {
 	return &ConsentService{
 		consents:    consents,
 		assignments: assignments,
+		catalog:     catalog,
 		publisher:   publisher,
 		log:         log.With().Str("component", "consent_service").Logger(),
 	}
 }
 
+// ActorContext captures who triggered the consent action and from where.
+type ActorContext struct {
+	EmployeeID uuid.UUID
+	IP         string
+	UserAgent  string
+}
+
 // Grant records that an employee has granted consent for an assignment.
-func (s *ConsentService) Grant(ctx context.Context, tenantID, assignmentID, employeeID uuid.UUID, ip string) error {
+func (s *ConsentService) Grant(ctx context.Context, tenantID, assignmentID uuid.UUID, actor ActorContext) error {
 	a, err := s.assignments.GetByID(ctx, tenantID, assignmentID)
 	if err != nil {
 		return err
@@ -50,14 +60,15 @@ func (s *ConsentService) Grant(ctx context.Context, tenantID, assignmentID, empl
 	}
 
 	// Log consent
-	log := &domain.ConsentLog{
+	logRow := &domain.ConsentLog{
 		TenantID:     tenantID,
 		AssignmentID: assignmentID,
-		EmployeeID:   employeeID,
+		EmployeeID:   actor.EmployeeID,
 		Action:       domain.ConsentGranted,
-		ActorIP:      ip,
+		ActorIP:      actor.IP,
+		UserAgent:    actor.UserAgent,
 	}
-	if err := s.consents.Create(ctx, log); err != nil {
+	if err := s.consents.Create(ctx, logRow); err != nil {
 		return fmt.Errorf("create consent log: %w", err)
 	}
 
@@ -72,7 +83,7 @@ func (s *ConsentService) Grant(ctx context.Context, tenantID, assignmentID, empl
 	_ = s.publisher.Publish(ctx, event.TopicConsentGranted, map[string]any{
 		"assignment_id": assignmentID,
 		"tenant_id":     tenantID,
-		"employee_id":   employeeID,
+		"employee_id":   actor.EmployeeID,
 		"granted_at":    now,
 	})
 
@@ -83,7 +94,7 @@ func (s *ConsentService) Grant(ctx context.Context, tenantID, assignmentID, empl
 }
 
 // Decline records that an employee has declined an assignment.
-func (s *ConsentService) Decline(ctx context.Context, tenantID, assignmentID, employeeID uuid.UUID, reason, ip string) error {
+func (s *ConsentService) Decline(ctx context.Context, tenantID, assignmentID uuid.UUID, reason string, actor ActorContext) error {
 	a, err := s.assignments.GetByID(ctx, tenantID, assignmentID)
 	if err != nil {
 		return err
@@ -92,15 +103,21 @@ func (s *ConsentService) Decline(ctx context.Context, tenantID, assignmentID, em
 		return domain.ErrInvalidStatus
 	}
 
-	log := &domain.ConsentLog{
+	var reasonPtr *string
+	if reason != "" {
+		reasonPtr = &reason
+	}
+
+	logRow := &domain.ConsentLog{
 		TenantID:     tenantID,
 		AssignmentID: assignmentID,
-		EmployeeID:   employeeID,
+		EmployeeID:   actor.EmployeeID,
 		Action:       domain.ConsentDeclined,
-		Reason:       &reason,
-		ActorIP:      ip,
+		Reason:       reasonPtr,
+		ActorIP:      actor.IP,
+		UserAgent:    actor.UserAgent,
 	}
-	if err := s.consents.Create(ctx, log); err != nil {
+	if err := s.consents.Create(ctx, logRow); err != nil {
 		return fmt.Errorf("create consent log: %w", err)
 	}
 
@@ -112,7 +129,8 @@ func (s *ConsentService) Decline(ctx context.Context, tenantID, assignmentID, em
 	_ = s.publisher.Publish(ctx, event.TopicConsentDeclined, map[string]any{
 		"assignment_id": assignmentID,
 		"tenant_id":     tenantID,
-		"employee_id":   employeeID,
+		"employee_id":   actor.EmployeeID,
+		"reason":        reason,
 	})
 
 	s.log.Info().
@@ -122,23 +140,87 @@ func (s *ConsentService) Decline(ctx context.Context, tenantID, assignmentID, em
 }
 
 // Revoke records that consent has been revoked (cancels the assignment).
-func (s *ConsentService) Revoke(ctx context.Context, tenantID, assignmentID, employeeID uuid.UUID, reason, ip string) error {
-	log := &domain.ConsentLog{
+func (s *ConsentService) Revoke(ctx context.Context, tenantID, assignmentID uuid.UUID, reason string, actor ActorContext) error {
+	a, err := s.assignments.GetByID(ctx, tenantID, assignmentID)
+	if err != nil {
+		return err
+	}
+	if domain.IsTerminalStatus(a.Status) {
+		return domain.ErrAssignmentTerminal
+	}
+
+	var reasonPtr *string
+	if reason != "" {
+		reasonPtr = &reason
+	}
+
+	logRow := &domain.ConsentLog{
 		TenantID:     tenantID,
 		AssignmentID: assignmentID,
-		EmployeeID:   employeeID,
+		EmployeeID:   actor.EmployeeID,
 		Action:       domain.ConsentRevoked,
-		Reason:       &reason,
-		ActorIP:      ip,
+		Reason:       reasonPtr,
+		ActorIP:      actor.IP,
+		UserAgent:    actor.UserAgent,
 	}
-	if err := s.consents.Create(ctx, log); err != nil {
+	if err := s.consents.Create(ctx, logRow); err != nil {
 		return fmt.Errorf("create consent log: %w", err)
 	}
 
+	_ = s.publisher.Publish(ctx, event.TopicConsentDeclined, map[string]any{
+		"assignment_id": assignmentID,
+		"tenant_id":     tenantID,
+		"employee_id":   actor.EmployeeID,
+		"reason":        "revoked: " + reason,
+	})
+
 	return s.assignments.Cancel(ctx, tenantID, assignmentID, "consent revoked: "+reason)
+}
+
+// Remind republishes the intervention.assigned.v1 event so the notification
+// service re-sends the consent request email. Only allowed for pending consent
+// assignments that have been waiting more than the configured threshold.
+func (s *ConsentService) Remind(ctx context.Context, tenantID, assignmentID uuid.UUID, minAge time.Duration) error {
+	a, err := s.assignments.GetByID(ctx, tenantID, assignmentID)
+	if err != nil {
+		return err
+	}
+	if !a.CanConsent() {
+		return domain.ErrInvalidStatus
+	}
+	if time.Since(a.AssignedAt) < minAge {
+		return domain.ErrInvalidStatus
+	}
+
+	interv, err := s.catalog.GetByID(ctx, a.InterventionID)
+	if err != nil {
+		return err
+	}
+
+	return s.publisher.Publish(ctx, event.TopicAssigned, map[string]any{
+		"assignment_id":     a.ID,
+		"tenant_id":         tenantID,
+		"intervention":      interv.Code,
+		"intervention_type": interv.TitleTR,
+		"description":       interv.DescriptionTR,
+		"employee_id":       a.EmployeeID,
+		"assigned_at":       a.AssignedAt,
+		"reminder":          true,
+	})
+}
+
+// GetAssignment exposes the assignment lookup used by the handler to enforce
+// ownership before recording a consent action.
+func (s *ConsentService) GetAssignment(ctx context.Context, tenantID, assignmentID uuid.UUID) (*domain.Assignment, error) {
+	return s.assignments.GetByID(ctx, tenantID, assignmentID)
 }
 
 // GetHistory returns consent history for an employee.
 func (s *ConsentService) GetHistory(ctx context.Context, tenantID, employeeID uuid.UUID) ([]*domain.ConsentLog, error) {
 	return s.consents.ListByEmployee(ctx, tenantID, employeeID)
+}
+
+// ListByAssignment returns consent history for a single assignment (HR drill-down).
+func (s *ConsentService) ListByAssignment(ctx context.Context, tenantID, assignmentID uuid.UUID) ([]*domain.ConsentLog, error) {
+	return s.consents.ListByAssignment(ctx, tenantID, assignmentID)
 }

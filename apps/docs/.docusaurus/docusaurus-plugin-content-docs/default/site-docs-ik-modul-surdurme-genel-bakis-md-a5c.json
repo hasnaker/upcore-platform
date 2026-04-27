@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/genel-bakis",
+  "title": "Sürdürme modülü — genel bakış",
+  "description": "Sürdürme modülü UpCore'un erken uyarı sistemidir. Pulse anketleri ile çalışan bağlılığı ve tükenmişlik sinyallerini izler.",
+  "source": "@site/docs/ik/modul/surdurme/genel-bakis.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/genel-bakis",
+  "permalink": "/en/docs/ik/modul/surdurme/genel-bakis",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/genel-bakis.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "genel-bakis",
+    "title": "Sürdürme modülü — genel bakış",
+    "sidebar_position": 1
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Yıl sonu değerlendirme — 360 + OKR + 9-kutu tam senaryo",
+    "permalink": "/en/docs/ik/hizli-baslangic/yil-sonu-degerlendirme"
+  },
+  "next": {
+    "title": "Pulse anketi kurulumu",
+    "permalink": "/en/docs/ik/modul/surdurme/pulse-kurulum"
+  }
+}

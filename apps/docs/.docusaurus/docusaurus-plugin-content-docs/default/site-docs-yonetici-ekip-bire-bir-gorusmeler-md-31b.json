@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/ekip/bire-bir-gorusmeler",
+  "title": "Bire-bir görüşmeler",
+  "description": "Haftalık 30 dakikalık 1-1 görüşmeler, performans yönetiminin en güçlü aracıdır.",
+  "source": "@site/docs/yonetici/ekip/bire-bir-gorusmeler.md",
+  "sourceDirName": "yonetici/ekip",
+  "slug": "/yonetici/ekip/bire-bir-gorusmeler",
+  "permalink": "/en/docs/yonetici/ekip/bire-bir-gorusmeler",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/ekip/bire-bir-gorusmeler.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "bire-bir-gorusmeler",
+    "title": "Bire-bir görüşmeler",
+    "sidebar_position": 2
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "Ekip dashboard'u",
+    "permalink": "/en/docs/yonetici/ekip/ekip-dashboard"
+  },
+  "next": {
+    "title": "Sürekli geri bildirim verme",
+    "permalink": "/en/docs/yonetici/ekip/surekli-geri-bildirim"
+  }
+}

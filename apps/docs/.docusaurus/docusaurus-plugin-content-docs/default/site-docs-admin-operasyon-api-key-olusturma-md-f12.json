@@ -1,0 +1,29 @@
+{
+  "id": "admin/operasyon/api-key-olusturma",
+  "title": "API key oluşturma",
+  "description": "Machine-to-machine kimlik doğrulama.",
+  "source": "@site/docs/admin/operasyon/api-key-olusturma.md",
+  "sourceDirName": "admin/operasyon",
+  "slug": "/admin/operasyon/api-key-olusturma",
+  "permalink": "/en/docs/admin/operasyon/api-key-olusturma",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/operasyon/api-key-olusturma.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "api-key-olusturma",
+    "title": "API key oluşturma",
+    "sidebar_position": 3
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Webhook konfigürasyonu",
+    "permalink": "/en/docs/admin/operasyon/webhook-konfigurasyon"
+  },
+  "next": {
+    "title": "Impersonation (vekaletsiz giriş)",
+    "permalink": "/en/docs/admin/operasyon/impersonation"
+  }
+}

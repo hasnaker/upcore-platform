@@ -426,10 +426,10 @@ export default function BordroPage() {
               </thead>
               <tbody>
                 {(taxRates?.incomeTaxBrackets ?? [
-                  { limit: 110000, rate: 15 },
-                  { limit: 230000, rate: 20 },
-                  { limit: 580000, rate: 27 },
-                  { limit: 3000000, rate: 35 },
+                  { limit: 158000, rate: 15 },
+                  { limit: 330000, rate: 20 },
+                  { limit: 1200000, rate: 27 },
+                  { limit: 4300000, rate: 35 },
                   { limit: 'Uzeri', rate: 40 },
                 ]).map((bracket, idx) => (
                   <tr key={idx} className="border-b border-[#EDEDED] last:border-b-0">

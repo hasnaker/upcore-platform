@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/ic-ilan-marketplace",
+  "title": "İç ilan marketplace",
+  "description": "Şirket içi pozisyon borsası — çalışan dışarı bakmadan içeride fırsat bulsun.",
+  "source": "@site/docs/ik/modul/mobility/ic-ilan-marketplace.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/ic-ilan-marketplace",
+  "permalink": "/en/docs/ik/modul/mobility/ic-ilan-marketplace",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/ic-ilan-marketplace.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 2,
+  "frontMatter": {
+    "id": "ic-ilan-marketplace",
+    "title": "İç ilan marketplace",
+    "sidebar_position": 2
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Mobility modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/mobility/genel-bakis"
+  },
+  "next": {
+    "title": "Succession pipeline (kritik pozisyon yedek havuzu)",
+    "permalink": "/en/docs/ik/modul/mobility/succession-pool"
+  }
+}

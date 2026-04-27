@@ -1,0 +1,29 @@
+{
+  "id": "admin/uyum/veri-ikametgahi",
+  "title": "Veri ikametgahi",
+  "description": "Verilerin hangi coğrafyada saklandığı.",
+  "source": "@site/docs/admin/uyum/veri-ikametgahi.md",
+  "sourceDirName": "admin/uyum",
+  "slug": "/admin/uyum/veri-ikametgahi",
+  "permalink": "/en/docs/admin/uyum/veri-ikametgahi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/uyum/veri-ikametgahi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "veri-ikametgahi",
+    "title": "Veri ikametgahi",
+    "sidebar_position": 3
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "DPA (Data Processing Agreement) şablonu",
+    "permalink": "/en/docs/admin/uyum/dpa-sablon"
+  },
+  "next": {
+    "title": "Log retansiyon",
+    "permalink": "/en/docs/admin/uyum/log-retansiyon"
+  }
+}

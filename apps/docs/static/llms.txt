@@ -1,0 +1,25 @@
+# UpCore Docs — llms.txt
+
+> UpCore, Türkiye'nin ilk bilim-temelli İK SaaS platformudur. Bu belge, LLM tabanlı
+> sistemler için dokümantasyon haritası sağlar.
+
+## Hakkımızda
+- Ürün sayfası: https://upcore.io
+- Platform: Türkiye'deki belediye, 4000+ çalışanlı holding ve 300K+ başvurulu şirketler için
+- Bilimsel temel: JD-R modeli (Demerouti & Bakker), BAT-TR (Koçak 2022), UpCap-TR, JCS
+
+## Hedef kitle rehberleri
+- [Çalışan rehberi](https://docs.upcore.io/docs/calisan/giris)
+- [Yönetici rehberi](https://docs.upcore.io/docs/yonetici/giris)
+- [İK rehberi](https://docs.upcore.io/docs/ik/giris)
+- [Admin rehberi](https://docs.upcore.io/docs/admin/giris)
+- [Geliştirici rehberi](https://docs.upcore.io/docs/developer/giris)
+
+## API referansı
+- [Genel bakış](https://docs.upcore.io/docs/developer/api/genel-bakis)
+- [OpenAPI 3.1 spec indeksi](https://docs.upcore.io/openapi/index.json)
+
+## Uyum
+- [KVKK rehberi](https://docs.upcore.io/docs/ik/kvkk/giris)
+- [ML model kartları](https://docs.upcore.io/docs/developer/ml/model-kartlari)
+- [Değişim günlüğü](https://docs.upcore.io/changelog)

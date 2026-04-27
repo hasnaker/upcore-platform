@@ -1,0 +1,29 @@
+{
+  "id": "admin/operasyon/bulk-export",
+  "title": "Bulk export",
+  "description": "Büyük veri setlerinin toplu dışa aktarımı.",
+  "source": "@site/docs/admin/operasyon/bulk-export.md",
+  "sourceDirName": "admin/operasyon",
+  "slug": "/admin/operasyon/bulk-export",
+  "permalink": "/en/docs/admin/operasyon/bulk-export",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/operasyon/bulk-export.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 5,
+  "frontMatter": {
+    "id": "bulk-export",
+    "title": "Bulk export",
+    "sidebar_position": 5
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "Impersonation (vekaletsiz giriş)",
+    "permalink": "/en/docs/admin/operasyon/impersonation"
+  },
+  "next": {
+    "title": "Audit log izleme",
+    "permalink": "/en/docs/admin/operasyon/audit-log-izleme"
+  }
+}

@@ -91,10 +91,14 @@ func main() {
 	// Auth checker
 	authChecker := middleware.NewAuthChecker(cfg.AuthServiceURL, cfg.AuthServiceTimeout)
 
+	// Longitudinal repo (migration 040): snapshots + bulk invitations.
+	longitudinalRepo := repository.NewLongitudinalRepository(sqlDB)
+
 	// HTTP
 	r := handler.NewRouter(&handler.Deps{
 		Cfg:               cfg,
 		AssessmentService: assessmentSvc,
+		LongitudinalRepo:  longitudinalRepo,
 		AuthChecker:       authChecker,
 		Log:               logger,
 	})

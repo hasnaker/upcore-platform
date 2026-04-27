@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/mobility/sikca-sorulanlar",
+  "title": "Mobility — sıkça sorulanlar",
+  "description": "Yöneticim başvurumu bloklayabilir mi?",
+  "source": "@site/docs/ik/modul/mobility/sikca-sorulanlar.md",
+  "sourceDirName": "ik/modul/mobility",
+  "slug": "/ik/modul/mobility/sikca-sorulanlar",
+  "permalink": "/en/docs/ik/modul/mobility/sikca-sorulanlar",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/mobility/sikca-sorulanlar.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 10,
+  "frontMatter": {
+    "id": "sikca-sorulanlar",
+    "title": "Mobility — sıkça sorulanlar",
+    "sidebar_position": 10
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Maliyet analizi",
+    "permalink": "/en/docs/ik/modul/mobility/maliyet-analizi"
+  },
+  "next": {
+    "title": "Geliştirme modülü — genel bakış",
+    "permalink": "/en/docs/ik/modul/gelistirme/genel-bakis"
+  }
+}

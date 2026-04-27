@@ -61,7 +61,8 @@ export const useApproveAction = () => {
   return useMutation<
     ActionItem,
     UpcoreApiError,
-    { id: string; notes?: string }
+    { id: string; notes?: string },
+    { previous: ActionItem | undefined }
   >({
     mutationFn: async ({ id, notes }) => {
       return api
@@ -107,7 +108,8 @@ export const useRejectAction = () => {
   return useMutation<
     ActionItem,
     UpcoreApiError,
-    { id: string; reason: string }
+    { id: string; reason: string },
+    { previous: ActionItem | undefined }
   >({
     mutationFn: async ({ id, reason }) => {
       return api

@@ -10,7 +10,6 @@ from uuid import UUID
 
 import structlog
 
-from app.config import settings
 from app.schemas.internal import CaseHit, SearchHit
 
 logger = structlog.get_logger()

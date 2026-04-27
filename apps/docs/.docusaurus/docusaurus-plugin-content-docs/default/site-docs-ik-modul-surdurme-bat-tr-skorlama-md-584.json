@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/surdurme/bat-tr-skorlama",
+  "title": "BAT-TR skorlama ve yorumlama",
+  "description": "BAT (Burnout Assessment Tool, Schaufeli et al. 2020) yeni nesil tükenmişlik ölçeğidir. BAT-TR, Koçak (2022) tarafından Türkiye'ye uyarlanmış versiyonudur.",
+  "source": "@site/docs/ik/modul/surdurme/bat-tr-skorlama.md",
+  "sourceDirName": "ik/modul/surdurme",
+  "slug": "/ik/modul/surdurme/bat-tr-skorlama",
+  "permalink": "/en/docs/ik/modul/surdurme/bat-tr-skorlama",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/surdurme/bat-tr-skorlama.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 8,
+  "frontMatter": {
+    "id": "bat-tr-skorlama",
+    "title": "BAT-TR skorlama ve yorumlama",
+    "sidebar_position": 8
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "JD-R boyut yorumu",
+    "permalink": "/en/docs/ik/modul/surdurme/jd-r-yorumu"
+  },
+  "next": {
+    "title": "Şablon kütüphanesi",
+    "permalink": "/en/docs/ik/modul/surdurme/sablon-kutuphanesi"
+  }
+}

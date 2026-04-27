@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/ik-ops/izin-yonetimi",
+  "title": "İzin yönetimi",
+  "description": "Tüm izin tipleri + hakediş + kullanım takibi.",
+  "source": "@site/docs/ik/modul/ik-ops/izin-yonetimi.md",
+  "sourceDirName": "ik/modul/ik-ops",
+  "slug": "/ik/modul/ik-ops/izin-yonetimi",
+  "permalink": "/en/docs/ik/modul/ik-ops/izin-yonetimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/ik-ops/izin-yonetimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 4,
+  "frontMatter": {
+    "id": "izin-yonetimi",
+    "title": "İzin yönetimi",
+    "sidebar_position": 4
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "Sözleşme yönetimi",
+    "permalink": "/en/docs/ik/modul/ik-ops/sozlesme-yonetimi"
+  },
+  "next": {
+    "title": "Bordro hesaplama",
+    "permalink": "/en/docs/ik/modul/ik-ops/bordro-hesaplama"
+  }
+}

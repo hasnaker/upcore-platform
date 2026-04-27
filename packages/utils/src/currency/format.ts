@@ -12,7 +12,7 @@ interface FormatTRYOptions {
   showSymbol?: boolean;
 }
 
-const tryCurrencyFormatter = new Intl.NumberFormat('tr-TR', {
+const _tryCurrencyFormatter = new Intl.NumberFormat('tr-TR', {
   style: 'currency',
   currency: 'TRY',
   minimumFractionDigits: 2,

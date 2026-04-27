@@ -1,0 +1,29 @@
+{
+  "id": "developer/webhook/retry-politikasi",
+  "title": "Retry politikası",
+  "description": "Algoritma",
+  "source": "@site/docs/developer/webhook/retry-politikasi.md",
+  "sourceDirName": "developer/webhook",
+  "slug": "/developer/webhook/retry-politikasi",
+  "permalink": "/en/docs/developer/webhook/retry-politikasi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/developer/webhook/retry-politikasi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "retry-politikasi",
+    "title": "Retry politikası",
+    "sidebar_position": 3
+  },
+  "sidebar": "developerSidebar",
+  "previous": {
+    "title": "Webhook imzalama ve doğrulama",
+    "permalink": "/en/docs/developer/webhook/imzalama"
+  },
+  "next": {
+    "title": "Webhook olayları",
+    "permalink": "/en/docs/developer/webhook/olaylar"
+  }
+}

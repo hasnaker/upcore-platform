@@ -1,0 +1,29 @@
+{
+  "id": "ik/modul/performans/9-kutu-kalibrasyon",
+  "title": "9-kutu kalibrasyon (toplantı modu)",
+  "description": "Yıl sonu kalibrasyon toplantıları için özel toplantı modu vardır.",
+  "source": "@site/docs/ik/modul/performans/9-kutu-kalibrasyon.md",
+  "sourceDirName": "ik/modul/performans",
+  "slug": "/ik/modul/performans/9-kutu-kalibrasyon",
+  "permalink": "/en/docs/ik/modul/performans/9-kutu-kalibrasyon",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/ik/modul/performans/9-kutu-kalibrasyon.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 6,
+  "frontMatter": {
+    "id": "9-kutu-kalibrasyon",
+    "title": "9-kutu kalibrasyon (toplantı modu)",
+    "sidebar_position": 6
+  },
+  "sidebar": "hrSidebar",
+  "previous": {
+    "title": "360 soru havuzu",
+    "permalink": "/en/docs/ik/modul/performans/360-soru-havuzu"
+  },
+  "next": {
+    "title": "PIP (Performans İyileştirme Planı) iş akışı",
+    "permalink": "/en/docs/ik/modul/performans/pip-is-akisi"
+  }
+}

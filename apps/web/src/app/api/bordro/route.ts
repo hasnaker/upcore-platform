@@ -10,12 +10,13 @@ const TAX = {
   unemploymentEmployee: 0.01, // %1 issizlik isci
   unemploymentEmployer: 0.02, // %2 issizlik isveren
   stampTax: 0.00759, // %0.759 damga vergisi
-  // Progressive income tax brackets (2026 annual)
+  // Progressive income tax brackets — 2026 ücret gelirleri (GVK md.103, RG 31.12.2025).
+  // Mirrors database migration 025_bordro.up.sql + packages/go/bordro Brackets2026().
   incomeTaxBrackets: [
-    { limit: 110000, rate: 0.15 },
-    { limit: 230000, rate: 0.20 },
-    { limit: 580000, rate: 0.27 },
-    { limit: 3000000, rate: 0.35 },
+    { limit: 158000, rate: 0.15 },
+    { limit: 330000, rate: 0.20 },
+    { limit: 1200000, rate: 0.27 },
+    { limit: 4300000, rate: 0.35 },
     { limit: Infinity, rate: 0.40 },
   ] as Array<{ limit: number; rate: number }>,
 } as const;

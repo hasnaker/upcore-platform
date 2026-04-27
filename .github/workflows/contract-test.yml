@@ -1,0 +1,160 @@
+name: Contract Tests
+
+# OpenAPI breaking-change gate.
+#
+# Every service under services/<name>/api/openapi.yaml is diffed against the
+# previous main-branch version. If a breaking change is detected (request
+# param removed, response field removed, auth added, etc.) the check fails
+# and blocks the PR until the author either:
+#   - reverts the breakage,
+#   - bumps the service API major version (documented in api/CHANGELOG.md),
+#   - or overrides with the `contract-breaking-change-approved` label
+#     (platform architect sign-off required).
+#
+# On main we additionally publish consumer contracts to a Pact broker if
+# $PACT_BROKER_URL is configured; see docker-compose.contract.yml for local
+# development.
+
+on:
+  pull_request:
+    paths:
+      - "services/*/api/openapi.yaml"
+      - "services/*/api/**.yaml"
+      - ".github/workflows/contract-test.yml"
+  push:
+    branches: [main]
+    paths:
+      - "services/*/api/openapi.yaml"
+      - "services/*/api/**.yaml"
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  openapi-diff:
+    name: OpenAPI diff
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout (full history for diff base)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine base ref
+        id: base
+        run: |
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "ref=HEAD~1" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Find changed openapi specs
+        id: changed
+        run: |
+          set -euo pipefail
+          base="${{ steps.base.outputs.ref }}"
+          mapfile -t files < <(git diff --name-only "$base"..HEAD -- 'services/*/api/openapi.yaml' 'services/*/api/*.yaml' || true)
+          printf 'files<<EOF\n%s\nEOF\n' "${files[*]}" >> "$GITHUB_OUTPUT"
+          echo "count=${#files[@]}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Node (for openapi-diff CLI)
+        if: steps.changed.outputs.count != '0'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install openapi-diff (Tufin oasdiff)
+        if: steps.changed.outputs.count != '0'
+        run: |
+          curl -sSL \
+            https://github.com/Tufin/oasdiff/releases/latest/download/oasdiff_linux_amd64.tar.gz \
+            | tar -xzC /usr/local/bin oasdiff
+          oasdiff --version
+
+      - name: Diff each changed spec
+        if: steps.changed.outputs.count != '0'
+        id: diff
+        run: |
+          set -euo pipefail
+          base="${{ steps.base.outputs.ref }}"
+          has_breaking=0
+          summary="### OpenAPI diff\n\n"
+          for f in ${{ steps.changed.outputs.files }}; do
+            echo "::group::$f"
+            # Extract the base version into a tempfile; fall back to /dev/null
+            # for newly-added specs so the tool treats it as an "add".
+            tmp_base=$(mktemp)
+            if git show "$base:$f" > "$tmp_base" 2>/dev/null; then
+              :
+            else
+              : > "$tmp_base"
+            fi
+
+            # Breaking check — exits non-zero when breaking changes found.
+            if oasdiff breaking "$tmp_base" "$f" --fail-on ERR --format text > diff.txt; then
+              summary+="- \`$f\`: no breaking changes.\n"
+            else
+              has_breaking=1
+              summary+="- \`$f\`: **BREAKING CHANGES DETECTED**\n\n\`\`\`\n$(cat diff.txt)\n\`\`\`\n"
+            fi
+            rm -f "$tmp_base"
+            echo "::endgroup::"
+          done
+          echo -e "$summary" >> "$GITHUB_STEP_SUMMARY"
+          echo "breaking=$has_breaking" >> "$GITHUB_OUTPUT"
+
+      - name: Check for approval override label
+        if: steps.diff.outputs.breaking == '1' && github.event_name == 'pull_request'
+        id: approved
+        run: |
+          labels='${{ toJson(github.event.pull_request.labels) }}'
+          echo "$labels" | grep -q 'contract-breaking-change-approved' \
+            && echo "overridden=1" >> "$GITHUB_OUTPUT" \
+            || echo "overridden=0" >> "$GITHUB_OUTPUT"
+
+      - name: Fail if breaking without approval
+        if: steps.diff.outputs.breaking == '1' && steps.approved.outputs.overridden != '1'
+        run: |
+          echo "::error::Breaking OpenAPI change detected. Add label 'contract-breaking-change-approved' (requires platform architect) or revert."
+          exit 1
+
+  pact-publish:
+    name: Publish Pact contracts (main only)
+    runs-on: ubuntu-latest
+    needs: openapi-diff
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Skip if no broker configured
+        id: broker
+        run: |
+          if [[ -z "${{ secrets.PACT_BROKER_URL }}" ]]; then
+            echo "enabled=0" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=1" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Install pact-cli
+        if: steps.broker.outputs.enabled == '1'
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/pact-foundation/pact-ruby-standalone/master/install.sh | bash
+          echo "$HOME/.pact/bin" >> "$GITHUB_PATH"
+      - name: Publish consumer contracts
+        if: steps.broker.outputs.enabled == '1'
+        env:
+          PACT_BROKER_URL: ${{ secrets.PACT_BROKER_URL }}
+          PACT_BROKER_TOKEN: ${{ secrets.PACT_BROKER_TOKEN }}
+        run: |
+          # Each service publishes its generated pacts under .pacts/
+          for d in services/*/.pacts; do
+            [[ -d "$d" ]] || continue
+            svc=$(basename "$(dirname "$d")")
+            pact-broker publish "$d" \
+              --consumer-app-version "${GITHUB_SHA}" \
+              --branch main \
+              --broker-base-url "$PACT_BROKER_URL" \
+              --broker-token "$PACT_BROKER_TOKEN" \
+              --tag "service=$svc"
+          done

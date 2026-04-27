@@ -1,0 +1,29 @@
+{
+  "id": "admin/billing/plan-secimi",
+  "title": "Plan seçimi",
+  "description": "UpCore planlar 2026.",
+  "source": "@site/docs/admin/billing/plan-secimi.md",
+  "sourceDirName": "admin/billing",
+  "slug": "/admin/billing/plan-secimi",
+  "permalink": "/en/docs/admin/billing/plan-secimi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/admin/billing/plan-secimi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "plan-secimi",
+    "title": "Plan seçimi",
+    "sidebar_position": 1
+  },
+  "sidebar": "adminSidebar",
+  "previous": {
+    "title": "MFA zorunlu kılma",
+    "permalink": "/en/docs/admin/iam/mfa-zorunlu-kilma"
+  },
+  "next": {
+    "title": "Fatura yönetimi",
+    "permalink": "/en/docs/admin/billing/fatura-yonetimi"
+  }
+}

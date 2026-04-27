@@ -1,0 +1,200 @@
+# Default (dev) values. Production için values-prod.yaml.
+# Her servis aynı template'den türer; farkları burada override et.
+
+global:
+  imageRegistry: upcoreprodacr.azurecr.io
+  imageTag: "latest"
+  imagePullPolicy: IfNotPresent
+  env: development
+  logLevel: debug
+  databaseSecretRef: upcore-db-url
+  serviceBusSecretRef: upcore-servicebus-conn
+  clerkSecretRef: upcore-clerk-keys
+  azureClientId: ""
+
+services:
+  api-gateway:
+    enabled: true
+    port: 8080
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    ingress:
+      enabled: true
+      host: api.upcore.app
+      path: /api/v1/
+
+  auth:
+    enabled: true
+    port: 8001
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  tenant:
+    enabled: true
+    port: 8002
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  employee:
+    enabled: true
+    port: 8003
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+  organization:
+    enabled: true
+    port: 8004
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  leave:
+    enabled: true
+    port: 8005
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  document:
+    enabled: true
+    port: 8006
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+  survey:
+    enabled: true
+    port: 8007
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  intervention:
+    enabled: true
+    port: 8008
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  audit:
+    enabled: true
+    port: 8009
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  notification:
+    enabled: true
+    port: 8010
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  ats:
+    enabled: true
+    port: 8011
+    replicas: 2
+    resources:
+      requests:
+        cpu: 200m
+        memory: 256Mi
+
+  assessment:
+    enabled: true
+    port: 8012
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  mobility:
+    enabled: true
+    port: 8013
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  performance:
+    enabled: true
+    port: 8014
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  bordro:
+    enabled: true
+    port: 8015
+    replicas: 2
+    resources:
+      requests:
+        cpu: 300m
+        memory: 512Mi
+
+  billing:
+    enabled: true
+    port: 8016
+    replicas: 2
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+
+  web:
+    enabled: true
+    port: 3000
+    replicas: 3
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+    ingress:
+      enabled: true
+      host: app.upcore.app
+      path: /
+
+  admin:
+    enabled: true
+    port: 3001
+    replicas: 1
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+    ingress:
+      enabled: true
+      host: admin.upcore.app
+      path: /

@@ -1,0 +1,29 @@
+{
+  "id": "calisan/hesap/ilk-giris",
+  "title": "İlk giriş ve hesap aktivasyonu",
+  "description": "İK'nız sizi sisteme eklediğinde şirket e-postanıza bir davet linki gelir.",
+  "source": "@site/docs/calisan/hesap/ilk-giris.md",
+  "sourceDirName": "calisan/hesap",
+  "slug": "/calisan/hesap/ilk-giris",
+  "permalink": "/en/docs/calisan/hesap/ilk-giris",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/calisan/hesap/ilk-giris.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 1,
+  "frontMatter": {
+    "id": "ilk-giris",
+    "title": "İlk giriş ve hesap aktivasyonu",
+    "sidebar_position": 1
+  },
+  "sidebar": "employeeSidebar",
+  "previous": {
+    "title": "Başlangıç",
+    "permalink": "/en/docs/calisan/giris"
+  },
+  "next": {
+    "title": "Profil güncelleme",
+    "permalink": "/en/docs/calisan/hesap/profil-guncelleme"
+  }
+}

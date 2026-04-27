@@ -31,7 +31,7 @@ class TestJDREndpoint:
             "resources_z": 0.5,
             "personal_resources_z": 0.3,
         }
-        resp = await client.post("/v1/score/jdr", json=payload)
+        resp = await client.post("/api/v1/score/jdr", json=payload)
         assert resp.status_code == 200
 
         data = resp.json()
@@ -52,7 +52,7 @@ class TestJDREndpoint:
             "demands_z": 0.0,
             "resources_z": 0.0,
         }
-        resp = await client.post("/v1/score/jdr", json=payload)
+        resp = await client.post("/api/v1/score/jdr", json=payload)
         assert resp.status_code == 200
         data = resp.json()
         assert data["burnout_probability"] == pytest.approx(0.5, abs=1e-4)
@@ -67,7 +67,7 @@ class TestJDREndpoint:
             "demands_z": 1.0,
             "resources_z": 1.0,
         }
-        resp = await client.post("/v1/score/jdr", json=payload)
+        resp = await client.post("/api/v1/score/jdr", json=payload)
         data = resp.json()
         assert data["calibration_status"] == "heuristic_v0.1"
         assert data["metadata"]["confidence"] == "heuristic"
@@ -81,5 +81,5 @@ class TestJDREndpoint:
             "demands_z": 10.0,  # exceeds ge=-5, le=5
             "resources_z": 0.0,
         }
-        resp = await client.post("/v1/score/jdr", json=payload)
+        resp = await client.post("/api/v1/score/jdr", json=payload)
         assert resp.status_code == 422

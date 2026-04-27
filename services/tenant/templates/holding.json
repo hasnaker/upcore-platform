@@ -1,0 +1,50 @@
+{
+  "code": "holding",
+  "name": "Holding / Multi-Entity",
+  "description": "Birden fazla şirket/sicil altında çalışan holding yapılanması.",
+  "default_locale": "tr-TR",
+  "default_country": "TR",
+  "default_plan_id": "enterprise",
+  "modules": [
+    "core_hris",
+    "assessment",
+    "burnout",
+    "strengths",
+    "mobility",
+    "performance",
+    "payroll",
+    "kvkk",
+    "succession",
+    "document",
+    "leave",
+    "learning"
+  ],
+  "departments": [
+    { "code": "HOLD_CEO", "name": "Grup CEO / İcra Kurulu Başkanlığı" },
+    { "code": "HOLD_FIN", "name": "Grup Finans", "parent": "HOLD_CEO" },
+    { "code": "HOLD_HR", "name": "Grup İnsan Kaynakları", "parent": "HOLD_CEO" },
+    { "code": "HOLD_STRAT", "name": "Grup Strateji", "parent": "HOLD_CEO" },
+    { "code": "HOLD_LEGAL", "name": "Grup Hukuk & Uyum", "parent": "HOLD_CEO" },
+    { "code": "HOLD_IT", "name": "Grup Bilgi Teknolojileri", "parent": "HOLD_CEO" },
+    { "code": "HOLD_MA", "name": "M&A / Kurumsal Geliştirme", "parent": "HOLD_STRAT" },
+    { "code": "HOLD_INT_AUDIT", "name": "Grup İç Denetim", "parent": "HOLD_CEO" }
+  ],
+  "positions": [
+    { "code": "GROUP_CEO", "name": "Grup CEO", "department": "HOLD_CEO", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "GROUP_CFO", "name": "Grup CFO", "department": "HOLD_FIN", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "GROUP_CHRO", "name": "Grup CHRO", "department": "HOLD_HR", "personnel_type": "BEYAZ_YAKA" },
+    { "code": "GROUP_LEGAL", "name": "Grup Hukuk Müşaviri", "department": "HOLD_LEGAL", "personnel_type": "BEYAZ_YAKA" }
+  ],
+  "kvkk_notices": [
+    { "audience": "employee", "version": "2025.01", "title": "Grup Personel Aydınlatma Metni" },
+    { "audience": "candidate", "version": "2025.01", "title": "Aday Aydınlatma Metni" },
+    { "audience": "visitor", "version": "2025.01", "title": "Ziyaretçi Aydınlatma Metni" }
+  ],
+  "feature_flags": {
+    "company_groups": true,
+    "cross_entity_reporting": true,
+    "matrix_manager": true,
+    "succession_module": true,
+    "verbis_required": true
+  }
+}

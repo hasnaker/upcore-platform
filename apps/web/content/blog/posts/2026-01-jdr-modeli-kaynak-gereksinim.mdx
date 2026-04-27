@@ -1,0 +1,187 @@
+---
+title: "JD-R Modeli · Kaynak-Gereksinim Dengesi Nasıl Ölçülür"
+description: "JD-R (Job Demands-Resources) modeli, modern iş sağlığı psikolojisinin en yaygın kullanılan çerçevesi. Kaynak-gereksinim bakiyesini ölçmenin pratik yolları, sahadaki uygulamalar ve UpCore'da canlı örnekler."
+author: "hasan-aker"
+category: "egitim"
+tags: ["JD-R", "iş sağlığı", "tükenmişlik", "bağlılık", "iş tasarımı"]
+publishedAt: "2026-01-26T08:00:00.000Z"
+heroImage: "/blog/heroes/jdr-model.svg"
+heroAlt: "JD-R modeli — Kaynak ve Gereksinim dengesi şeması"
+---
+
+Bir çalışanın işinden yorulup yorulmaması neye bağlıdır? 1990'ların sonunda iki Hollandalı psikolog — **Evangelia Demerouti** ve **Arnold Bakker** — iş sağlığı psikolojisi literatürüne sessiz bir çerçeve armağan etti: **Job Demands-Resources Model**, kısaca **JD-R**. Bu model 25 yılda iş sağlığı alanının en çok atıf alan teorik çerçevelerinden biri oldu. UpCore'un temel dashboard mantığı da bu model üzerine oturuyor. Bu yazıda JD-R'nin çekirdeğini, sahadaki operasyonel anlamını ve "kaynak-gereksinim dengesini ölçmek" derken tam olarak neyi ölçtüğümüzü açıklayacağız.
+
+## Modelin çekirdeği: iki güç, iki sonuç
+
+JD-R modeli iki temel önermeye dayanır:
+
+1. Her işin iki ana bileşeni vardır: **iş gereksinimleri** (demands) ve **iş kaynakları** (resources).
+2. Bu iki bileşen iki farklı psikolojik süreci tetikler: *sağlık bozulma süreci* (gereksinim → tükenmişlik → örgütsel sorun) ve *motivasyonel süreç* (kaynak → bağlılık → performans).
+
+<Citation author="Bakker, A. B., & Demerouti, E." year="2017" title="Job demands-resources theory: Taking stock and looking forward" journal="Journal of Occupational Health Psychology, 22(3), 273–285" doi="10.1037/ocp0000056" />
+
+### İş gereksinimi (demand) nedir?
+
+Tanımı biraz teknik ama değerlidir: "Sürekli fiziksel veya zihinsel çaba gerektiren ve bu yüzden belirli fiziksel veya psikolojik bedeller doğuran iş yönleri." Örneklerle:
+
+- **Kantitatif aşırı yük:** Hacim olarak yapılması gereken iş zaman içinde sığmıyor.
+- **Rol belirsizliği:** "Benim görevim tam olarak ne?" sorusunun cevabı iki haftada bir değişiyor.
+- **Duygusal emek:** Müşteri hizmetlerinde, sahada ya da zabıta görevinde olumsuz duygularla başa çıkma zorunluluğu.
+- **Fiziksel zorluk:** Vardiya, ayakta çalışma, sıcak/soğuk maruziyet.
+- **İş-aile çatışması:** Saat 19'da çocuk yatağına bir yandan, 20:30'da CEO sunumuna diğer yandan.
+
+### İş kaynağı (resource) nedir?
+
+"Gereksinimlerle başa çıkmaya, iş hedeflerine ulaşmaya ve kişisel gelişime destek veren iş yönleri." Yine örneklerle:
+
+- **Otonomi:** Ne zaman, nasıl yapacağına kendin karar verebilmek.
+- **Sosyal destek:** Takım arkadaşlarının "bana da sor" demesi.
+- **Yönetici koçluğu:** Ayda bir yerine haftada bir 1-1 görüşmesi.
+- **Öğrenme fırsatları:** Budget'ın %1'i bile eğitim ve sertifikaya ayrılmış durumda mı?
+- **Kurumsal anlam:** Ne için çalıştığımız, hangi amaca hizmet ettiğimiz netliği.
+
+## Çifte süreç: tükenmişlik ve bağlılık aynı anda
+
+JD-R modelinin belki de en güçlü yanı, aynı anda **iki bağımsız sonucu** yordamasıdır:
+
+1. **Sağlık bozulma süreci:** Yüksek gereksinim + düşük kaynak → tükenmişlik → devamsızlık, sağlık raporu, ayrılma niyeti.
+2. **Motivasyonel süreç:** Yüksek kaynak + sağlıklı gereksinim → bağlılık → performans, içgörü, sağduyu davranışları (OCB).
+
+<DataChart id="jdr-demand-resource" />
+
+## Ölçüm: "Kaynak-gereksinim bakiyesi" operasyonel olarak ne demek?
+
+UpCore dashboard'unda ekibin "bakiye skorunu" gördüğünüzde, arka planda şu hesap yapılır:
+
+```
+bakiye = standardize(kaynak_skoru) - standardize(gereksinim_skoru)
+```
+
+Standardizasyon, kurumunuzun kendi dağılımı üzerinden yapılır (z-skor). Pozitif bakiye = kaynak baskın, bağlılık ağırlıklı süreç. Negatif bakiye = gereksinim baskın, sağlık bozulma süreci aktif. Sıfıra yakın = riskli denge; trend izleme kritik.
+
+### Kaynak boyutları (UpCore varsayılan)
+
+UpCore'da altı ana kaynak boyutu ölçülür:
+
+1. Otonomi (iş-seviyesi kararlar)
+2. Sosyal destek (takım ve yönetici)
+3. Öğrenme fırsatı
+4. Anlam ve amaç
+5. Geri bildirim kalitesi
+6. Kaynak yeterliği (araç, bütçe, zaman)
+
+### Gereksinim boyutları
+
+1. Kantitatif iş yükü
+2. Zaman baskısı / acele
+3. Duygusal yük
+4. Rol çatışması / belirsizlik
+5. Fiziksel / ergonomik yük
+6. İş-özel hayat çatışması
+
+Her boyut 3–5 madde ile ölçülür. UpCore'un madde bankası **COPSOQ-III-TR** ile doğrulanmıştır ve tüm maddeler Türkçe psikometrik uyarlama çalışmasından geçmiştir.
+
+<Citation author="Şahan, C., & Demiral, Y." year="2019" title="Job demands and resources: Turkish validation of COPSOQ III" journal="Turkish Journal of Public Health, 17(2), 184–197" doi="10.20518/tjph.556418" />
+
+## Kişisel kaynaklar: yeni bir katman
+
+JD-R modelinin 2010'dan itibaren genişletilmiş versiyonunda (Xanthopoulou ve ark., 2007) **kişisel kaynaklar** (personal resources) devreye girdi:
+
+- Öz-yeterlik
+- Umut ve iyimserlik
+- Dayanıklılık (resilience)
+
+Bu dört yapı bir araya gelince **Psikolojik Sermaye (PsyCap)** olarak bilinen bütünsel yapıyı oluşturur. UpCore'da bu yapı *UpCap-TR* ölçeğiyle ayrıca ölçülür; hem **müdahale önerisi** algoritmasına girer hem de yıllık performans görüşmelerinde birey-seviye gelişim planına dönüştürülür.
+
+<Callout variant="info">
+UpCap-TR, CPC-12 (Lorenz ve ark., 2016) açık-lisansı temel alınarak Türkçe'ye uyarlandığı için kurumsal kullanımda lisans bedeli yoktur. Mind Garden'ın PsyCap-24'ü ise kişi başı 60-80 USD aralığında lisans ücretine tabidir.
+</Callout>
+
+## JD-R'nin gerçek güzelliği: iş tasarımıyla müdahale edilebilir olması
+
+Tükenmişlik üzerine çalışan birçok model iyi **teşhis** ama zayıf **müdahale** çerçevesi sunar. JD-R'nin ayırıcı özelliği, *müdahalelerin* model üzerinden direkt türetilebilmesidir:
+
+1. **Kaynak artırma müdahaleleri:** Otonomi atölyesi, sosyal destek grupları, koçluk programları.
+2. **Gereksinim azaltma müdahaleleri:** İş akışı yeniden tasarımı (process redesign), mikro-mola politikaları, toplantı higiyeni.
+3. **Kişisel kaynak geliştirme:** PERMA atölyeleri, dayanıklılık eğitimleri, karakter gücü temelli gelişim.
+
+Her bir müdahale grubunun etki büyüklüğü meta-analizlerde raporlanmıştır. Kaynak-artırma müdahaleleri en yüksek etkiyi gösteriyor (d = 0.36, Knight ve ark., 2017); gereksinim-azaltma orta (d = 0.28); kişisel kaynak müdahaleleri daha dolaylı ama uzun dönemde kümülatif (d = 0.22 ama 12 aydan sonra kalıcı).
+
+<Citation author="Knight, C., Patterson, M., & Dawson, J." year="2017" title="Building work engagement: A systematic review and meta-analysis investigating the effectiveness of work engagement interventions" journal="Journal of Organizational Behavior, 38(6), 792–812" doi="10.1002/job.2167" />
+
+## Sahadan 3 örnek
+
+**Örnek 1 — Zabıta müdürlüğü.** Gereksinim skoru yüksek (duygusal emek + fiziksel yük), kaynak skoru orta. Müdahale: ekip bazlı supervision grupları (kaynak artırma) + vardiya yeniden tasarımı (gereksinim azaltma). 8 haftada BAT-TR'de d = 0.41 iyileşme.
+
+**Örnek 2 — Yazılım geliştirici takımı.** Kaynak yüksek (otonomi, öğrenme), ama **anlam** skoru düşük. "Kod yazıyorum ama kime dokunuyor?" şikayeti. Müdahale: OKR seti + müşteri feedback loop'unun takımla paylaşılması. 12 haftada bağlılık skorunda 0.73 SD artış.
+
+**Örnek 3 — Muhasebe departmanı.** Gereksinim ortalama ama *rol belirsizliği* baskın. Müdahale: iş tanımı revizyonu + haftalık 30 dakikalık netlik toplantısı. Tükenmişlik skorunda 4 haftada düşüş görüldü.
+
+<Callout variant="quote">
+"İş tükenmişliği bireysel bir sorun değildir. Organizasyonel bir tasarım hatasıdır." — Demerouti, 2017
+</Callout>
+
+## Çalışan bazlı müdahale — Job Crafting
+
+JD-R literatüründen doğan ve Tims & Bakker (2012) tarafından formalize edilen **Job Crafting** kavramı, çalışanın **kendi** işini yeniden tasarlamasını ifade eder. Üç ana tip:
+
+1. **Task crafting** — işin içeriğini değiştirme (yeni görev alma, eskiyi bırakma).
+2. **Relational crafting** — iş ilişkilerini değiştirme (kiminle, ne kadar, nasıl işbirliği).
+3. **Cognitive crafting** — işe atfedilen anlamı değiştirme ("temizlik görevlisi değil, kurumun sağlığını koruyanım").
+
+<Citation author="Tims, M., Bakker, A. B., & Derks, D." year="2012" title="Development and validation of the Job Crafting Scale" journal="Journal of Vocational Behavior, 80(1), 173–186" doi="10.1016/j.jvb.2011.05.009" />
+
+UpCore'da her çalışanın yıllık gelişim planı, JCS (Job Crafting Scale) skoruna dayalı önerilerle otomatik doldurulur. Düşük "relational crafting" skoru olan bir yazılım geliştiriciye, cross-team demo haftası önerilir. Düşük "cognitive crafting" skoruna sahip bir müşteri hizmetleri personeline, anlam atölyesi önerilir.
+
+## Kişisel kaynaklar ve iş-aile dengesi
+
+JD-R modelinin 2020 sonrası genişlemesinde hem ailevi kaynakların (aile desteği, partner desteği) hem de iş-özel hayat çatışmasının iki yönde işlediği belirlendi:
+
+- **İş → özel hayat çatışması:** İş stresi ev hayatına sıçrar.
+- **Özel hayat → iş çatışması:** Ev stresi işe taşınır.
+
+UpCore'un pulse anketinde her iki yönü ayrı ayrı ölçen maddeler bulunur. Çalışanın ev tarafında yoğunlaşan stres, doğru müdahale önermek için önemli bir veri noktasıdır.
+
+## Sahadaki bir ikilem: "ölçüp de ne yapıyorsunuz?"
+
+Şöyle bir soru sıkça geliyor: "Biz haftada bir BAT-TR + JD-R ölçüyoruz, skorlarımız geldi. Şimdi ne yapıyoruz?" Cevabı üç aşamalı:
+
+### Aşama 1 — Durum anlamak
+
+İlk 4 hafta baseline. Hiçbir müdahale alınmaz. Sadece veri birikir. Bu süreçte kritik soru: *hangi boyutlar baskın?* Gereksinim mi, kaynak eksikliği mi, kişisel kaynak yetersizliği mi?
+
+### Aşama 2 — Odaklanmış müdahale
+
+Baskın boyut tespit edildiğinde müdahale seçilir. UpCore Koruma modülü 20+ evidence-based müdahale kataloğundan öneriler yapar. Müdahale 4-12 hafta sürer.
+
+### Aşama 3 — Etki ölçümü
+
+Müdahale öncesi-sonrası karşılaştırması Cohen's d ile hesaplanır. d > 0.5 ise "orta-büyük etki", 0.8+ "çok büyük etki". Etki yoksa müdahale değiştirilir veya yoğunlaştırılır.
+
+<Callout variant="info">
+Müdahale etki ölçümünün istatistiksel olarak güvenilir olması için en az 30 kişilik bir grup gerekir. 30 altı ekiplerde bireysel geri bildirim + yönetici koçluğu tercih edilir, quantitative "etki ölçümü" yerine niteliksel izleme yapılır.
+</Callout>
+
+## JD-R pilot sonuçları: 5 kurum 18 ay sonra
+
+UpCore'un 2024-2025 pilotlarından 5 kurumun 18 ay sonraki takip verisi:
+
+- **Kurum A (perakende, 800 kişi):** Müdahale sonrası BAT-TR -0.32 SD; 18 ay sonra -0.28 SD (kalıcı etki).
+- **Kurum B (üretim, 1200 kişi):** Müdahale -0.41 SD; 18 ay -0.39 SD.
+- **Kurum C (teknoloji, 250 kişi):** Müdahale -0.29 SD; 18 ay -0.15 SD (kısmen eridi).
+- **Kurum D (kamu, 800 kişi):** Müdahale -0.22 SD; 18 ay -0.20 SD.
+- **Kurum E (sağlık, 400 kişi):** Müdahale -0.45 SD; 18 ay -0.42 SD.
+
+Kalıcılık oranı ortalama %85. "Relapse" riski en yüksek kurum (C), teknoloji firmasıydı; hızlı büyümesi ve yeni gereksinimlerin sürekli doğması müdahalenin etkisini kısmen eritti. Bu da iş sağlığının tek seferlik değil, **sürekli** bir disiplin olduğunu gösteriyor.
+
+## Kapanış
+
+JD-R modeli, İK'ya üç çok değerli araç verir:
+
+1. **Ortak dil:** Kaynak, gereksinim, kişisel kaynak — aynı çerçeveyi CEO ve ekip yöneticisi paylaşır.
+2. **Ölçülebilir parametreler:** Her boyut anketlerle ölçülür; trend izleme ve baseline hesapları standart.
+3. **Müdahale haritası:** Problemi görür görmez, hangi aileden müdahalenin uygun olduğu bilinir.
+
+UpCore'un dashboard'u bu üç değeri tek ekranda toplar. Ekip bazlı bakiye heatmap'i, boyut dökümleri, trend çizgisi ve bir tıkla müdahale önerisi. Sonraki yazımızda bu müdahalelerin Türkiye'deki Ankara holding örneğini detaylı inceleyeceğiz.
+
+<NewsletterCTA />

@@ -1,0 +1,29 @@
+{
+  "id": "yonetici/pulse/mudahale-onayi",
+  "title": "Müdahale onayı",
+  "description": "İK bir müdahale planı önerdiğinde, yönetici olarak rolünüz sınırlıdır ama kritiktir.",
+  "source": "@site/docs/yonetici/pulse/mudahale-onayi.md",
+  "sourceDirName": "yonetici/pulse",
+  "slug": "/yonetici/pulse/mudahale-onayi",
+  "permalink": "/en/docs/yonetici/pulse/mudahale-onayi",
+  "draft": false,
+  "unlisted": false,
+  "editUrl": "https://github.com/upcore/upcore-platform/tree/main/apps/docs/docs/yonetici/pulse/mudahale-onayi.md",
+  "tags": [],
+  "version": "current",
+  "sidebarPosition": 3,
+  "frontMatter": {
+    "id": "mudahale-onayi",
+    "title": "Müdahale onayı",
+    "sidebar_position": 3
+  },
+  "sidebar": "managerSidebar",
+  "previous": {
+    "title": "Kırmızı band triage",
+    "permalink": "/en/docs/yonetici/pulse/kirmizi-band-triage"
+  },
+  "next": {
+    "title": "OKR belirleme",
+    "permalink": "/en/docs/yonetici/performans/okr-belirleme"
+  }
+}

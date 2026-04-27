@@ -1,0 +1,55 @@
+# ============================================================================
+# UpCore gitleaks configuration
+# Extends the default ruleset with UpCore-specific allow/deny patterns.
+# ============================================================================
+[extend]
+useDefault = true
+
+[[rules]]
+id = "upcore-clerk-secret"
+description = "Clerk secret key"
+regex = '''sk_(live|test)_[A-Za-z0-9_\-]{32,}'''
+tags = ["clerk", "auth", "production"]
+
+[[rules]]
+id = "upcore-stripe-secret"
+description = "Stripe secret / restricted key"
+regex = '''(sk|rk)_(live|test)_[A-Za-z0-9]{24,}'''
+tags = ["stripe", "billing", "production"]
+
+[[rules]]
+id = "upcore-azure-key-vault-kv-secret"
+description = "Azure Key Vault secret URL"
+regex = '''https://[a-z0-9\-]+\.vault\.azure\.net/secrets/[^\s'"]+'''
+tags = ["azure", "keyvault"]
+
+[[rules]]
+id = "upcore-jwt-hs-secret"
+description = "Hard-coded JWT HS256 secret candidate (UpCore services use RS256 only)"
+regex = '''(?i)(jwt|jwtsecret|hmac_secret)\s*[:=]\s*["'][A-Za-z0-9+/=]{20,}["']'''
+tags = ["jwt", "auth"]
+
+[[rules]]
+id = "upcore-postgres-uri"
+description = "Postgres connection string with inline password"
+regex = '''postgres(ql)?://[^:\s]+:[^@\s]{4,}@'''
+tags = ["database", "credential"]
+
+[allowlist]
+description = "Generated, test fixture, and vendor paths."
+paths = [
+  '''node_modules/''',
+  '''pnpm-lock\.yaml''',
+  '''go\.sum''',
+  '''uv\.lock''',
+  '''.*\.test\.ts''',
+  '''.*_test\.go''',
+  '''tests/fixtures/''',
+  '''database/seeds/''',
+  '''docs/security/ir/runbook\.md''',    # contains example (redacted) URLs
+]
+regexes = [
+  '''sk_test_dummy''',                   # test stub used in CI
+  '''pk_test_dummy''',
+  '''xoxb-EXAMPLE-TOKEN''',
+]

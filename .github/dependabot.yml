@@ -1,0 +1,151 @@
+# ============================================================================
+# UpCore Dependabot config
+# Weekly updates, security advisories opened immediately.
+# ============================================================================
+version: 2
+updates:
+  # --- GitHub Actions -------------------------------------------------------
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:00"
+      timezone: Europe/Istanbul
+    labels: ["deps", "ci"]
+    commit-message:
+      prefix: "ci"
+    open-pull-requests-limit: 5
+
+  # --- Node / TS workspace root --------------------------------------------
+  - package-ecosystem: npm
+    directory: "/"
+    schedule:
+      interval: weekly
+      day: monday
+      time: "03:15"
+      timezone: Europe/Istanbul
+    labels: ["deps", "ts"]
+    versioning-strategy: increase-if-necessary
+    commit-message:
+      prefix: "chore(deps)"
+    groups:
+      next:
+        patterns: ["next", "@next/*", "react", "react-dom"]
+      types:
+        patterns: ["@types/*"]
+      tooling:
+        patterns: ["eslint*", "prettier", "typescript", "vitest", "@playwright/*"]
+    open-pull-requests-limit: 15
+
+  - package-ecosystem: npm
+    directory: "/apps/web"
+    schedule:
+      interval: weekly
+    labels: ["deps", "ts", "apps/web"]
+
+  - package-ecosystem: npm
+    directory: "/apps/admin"
+    schedule:
+      interval: weekly
+    labels: ["deps", "ts", "apps/admin"]
+
+  - package-ecosystem: npm
+    directory: "/apps/marketing"
+    schedule:
+      interval: weekly
+    labels: ["deps", "ts", "apps/marketing"]
+
+  # --- Go services (17 modules) --------------------------------------------
+  - package-ecosystem: gomod
+    directory: "/services/api-gateway"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/auth"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/employee"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/tenant"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/organization"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/leave"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/survey"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/assessment"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/document"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/notification"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/audit"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/intervention"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/mobility"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/ats"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/billing"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/bordro"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+  - package-ecosystem: gomod
+    directory: "/services/performance"
+    schedule: { interval: weekly }
+    labels: ["deps", "go"]
+
+  # --- Python ML services --------------------------------------------------
+  - package-ecosystem: pip
+    directory: "/ml-services/burnout-prediction"
+    schedule: { interval: weekly }
+    labels: ["deps", "python"]
+  - package-ecosystem: pip
+    directory: "/ml-services/psychometric-scoring"
+    schedule: { interval: weekly }
+    labels: ["deps", "python"]
+  - package-ecosystem: pip
+    directory: "/ml-services/recommendation"
+    schedule: { interval: weekly }
+    labels: ["deps", "python"]
+  - package-ecosystem: pip
+    directory: "/ml-services/action-center"
+    schedule: { interval: weekly }
+    labels: ["deps", "python"]
+
+  # --- Docker images --------------------------------------------------------
+  - package-ecosystem: docker
+    directory: "/"
+    schedule: { interval: weekly }
+    labels: ["deps", "docker"]

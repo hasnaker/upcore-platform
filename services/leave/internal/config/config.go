@@ -26,6 +26,10 @@ type Config struct {
 	ServiceBusConnection string `mapstructure:"SERVICE_BUS_CONNECTION_STRING"`
 	ServiceBusNamespace  string `mapstructure:"SERVICE_BUS_NAMESPACE"`
 
+	// Observability (OpenTelemetry)
+	OTLPEndpoint   string `mapstructure:"OTEL_EXPORTER_OTLP_ENDPOINT"`
+	ServiceVersion string `mapstructure:"SERVICE_VERSION"`
+
 	// Leave policy
 	CarryOverDefaultDays    int  `mapstructure:"CARRY_OVER_DEFAULT_DAYS"`
 	ProRateFirstYear        bool `mapstructure:"PRO_RATE_FIRST_YEAR"`
@@ -45,7 +49,7 @@ type Config struct {
 func Load() (*Config, error) {
 	v := viper.New()
 
-	v.SetDefault("PORT", "8006")
+	v.SetDefault("PORT", "8005")
 	v.SetDefault("APP_ENV", "development")
 	v.SetDefault("LOG_LEVEL", "info")
 	v.SetDefault("SHUTDOWN_TIMEOUT", 10*time.Second)
@@ -61,6 +65,7 @@ func Load() (*Config, error) {
 	v.SetDefault("JWT_ISSUER", "upcore-auth")
 	v.SetDefault("JWT_AUDIENCE", "upcore-api")
 	v.SetDefault("CORS_ALLOWED_ORIGINS", []string{"*"})
+	v.SetDefault("SERVICE_VERSION", "0.1.0")
 
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	v.AutomaticEnv()
