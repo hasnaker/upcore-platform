@@ -38,7 +38,7 @@ jobs:
           pct=$(go tool cover -func=coverage.out | awk '/^total:/ {print $3}' | sed 's/%//')
           echo "Coverage for ${{ matrix.service }}: ${pct}%"
           awk -v p="$pct" 'BEGIN { if (p+0 < 80.0) exit 1 }'
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: coverage-${{ matrix.service }}
           path: services/${{ matrix.service }}/coverage.out

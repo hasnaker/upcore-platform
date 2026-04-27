@@ -139,7 +139,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: go-coverage-${{ matrix.service }}
           path: services/${{ matrix.service }}/coverage.out
@@ -196,7 +196,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: go-pkg-coverage-${{ matrix.pkg }}
           path: packages/go/${{ matrix.pkg }}/coverage.out
@@ -324,7 +324,7 @@ jobs:
 
       - name: Upload coverage
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: python-coverage-${{ matrix.service }}
           path: ml-services/${{ matrix.service }}/coverage.xml
