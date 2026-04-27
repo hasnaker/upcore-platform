@@ -58,7 +58,7 @@ jobs:
 
       - name: Set up Go
         if: steps.gate.outputs.enabled == '1'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version: "1.23"
           cache: true
