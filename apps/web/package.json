@@ -35,7 +35,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^15.0.0",
+    "@next/bundle-analyzer": "^16.2.4",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.11.30",
     "@types/pg": "^8.20.0",
