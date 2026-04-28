@@ -68,13 +68,17 @@ const nextConfig: NextConfig = {
             value: 'max-age=63072000; includeSubDomains; preload',
           },
           {
-            // CSP — Clerk auth (JS/connect/img), Plausible analytics ve Sentry
-            // error reporting whitelistlendi. 'unsafe-inline' + 'unsafe-eval'
+            // CSP — Clerk auth (JS/connect/img/worker/iframe), Plausible
+            // analytics ve Sentry error reporting whitelistlendi.
+            // worker-src + child-src 'self' blob: → Clerk web worker (telemetry,
+            // verification) blob URL'lerinden çalışıyor; engellenirse SignIn
+            // initialize edemiyor. frame-src cloudflare turnstile + Clerk
+            // captcha iframe'i için açıldı. 'unsafe-inline' + 'unsafe-eval'
             // Next.js 15 hidrasyonu ve Clerk SDK için zorunlu (sıkılaştırma
             // için nonce+strict-dynamic ileride P3'te ele alınacak).
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.upcore.io https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: https://img.clerk.com https://*.upcore.io https://ui-avatars.com; font-src 'self' data:; connect-src 'self' https://*.clerk.accounts.dev https://clerk.upcore.io https://*.upcore.io https://plausible.io https://*.sentry.io wss://*.upcore.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.clerk.accounts.dev https://clerk.upcore.io https://challenges.cloudflare.com https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://img.clerk.com https://*.upcore.io https://ui-avatars.com; font-src 'self' data:; connect-src 'self' https://*.clerk.accounts.dev https://clerk.upcore.io https://*.upcore.io https://plausible.io https://*.sentry.io wss://*.upcore.io; worker-src 'self' blob:; child-src 'self' blob:; frame-src 'self' https://*.clerk.accounts.dev https://challenges.cloudflare.com https://clerk.upcore.io https://accounts.upcore.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
           },
         ],
       },

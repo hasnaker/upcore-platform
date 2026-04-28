@@ -33,9 +33,11 @@ const nextConfig: NextConfig = {
             // Status sayfası en az ayrıcalıklı CSP — Clerk yok (anonim
             // erişim), sadece Plausible analytics + Sentry crash report
             // origin'leri. frame-ancestors 'none' ile clickjacking kapatıldı.
+            // worker-src + child-src 'self' blob: Sentry replay/web worker
+            // çıktıları için (Clerk yok ama Sentry blob worker spawn ediyor).
             key: 'Content-Security-Policy',
             value:
-              "default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' https://status.upcore.io https://api.upcore.io https://plausible.io https://*.sentry.io; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
+              "default-src 'self'; script-src 'self' 'unsafe-inline' https://plausible.io; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://status.upcore.io https://api.upcore.io https://plausible.io https://*.sentry.io; worker-src 'self' blob:; child-src 'self' blob:; frame-ancestors 'none'; base-uri 'self'; form-action 'self'",
           },
           {
             key: 'Permissions-Policy',

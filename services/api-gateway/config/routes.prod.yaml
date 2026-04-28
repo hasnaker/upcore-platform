@@ -354,10 +354,14 @@ routes:
       per_tenant: 1000
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"]
 
-  # Psychometric scoring service
+  # Psychometric scoring service — Python ML container app deploy edilene
+  # kadar internal target placeholder. Gateway başarısız upstream'i 502 ile
+  # dönecek; frontend isError state'i zarif handle eder.
+  # NOT: Container Apps'te upcore-psychometric-scoring revision'ı oluşturulduğunda
+  # target FQDN'i güncellenmeli.
   - path_prefix: "/api/v1/score"
     upstream: "psychometric-scoring"
-    target: "http://localhost:8021"
+    target: "http://upcore-psychometric-scoring.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
     auth_required: true
     timeout: 60s
     rate_limit:
@@ -365,10 +369,11 @@ routes:
       per_tenant: 500
     methods: ["GET", "POST"]
 
-  # Action center service
+  # Action center service — aynı durum. ML container deploy edilene kadar
+  # 502 dönecek; UI tarafı boş action listesi olarak render eder.
   - path_prefix: "/api/v1/actions"
     upstream: "action-center"
-    target: "http://localhost:8024"
+    target: "http://upcore-action-center.internal.greenplant-1f2ac771.northeurope.azurecontainerapps.io"
     auth_required: true
     timeout: 30s
     rate_limit:

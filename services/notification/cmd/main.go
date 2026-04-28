@@ -54,9 +54,11 @@ func main() {
 	defer func() { _ = db.Close(sqlDB) }()
 	logger.Info().Msg("database connected")
 
-	// Run migrations
+	// Run migrations — fatal: prod'da yarı-uygulanmış şema 500'leri tetikliyordu.
+	// Geri dönmek için migrate failure → restart loop, böylece deploy bozuksa
+	// hızlıca fark edilir.
 	if err := db.RunMigrations(ctx, sqlDB, "migrations"); err != nil {
-		logger.Warn().Err(err).Msg("run migrations (non-fatal)")
+		logger.Fatal().Err(err).Msg("run migrations failed; aborting startup")
 	}
 
 	// Event publisher (no-op until Service Bus is wired)

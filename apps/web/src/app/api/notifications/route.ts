@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server';
 import { SERVICES } from '@/lib/service-urls';
 import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 
+// Production'da NOTIFICATION_SERVICE_URL env'i web container'da set edilmediği
+// için gateway üzerinden proxy yapıyoruz; gateway routes.prod.yaml'da
+// /api/v1/notifications zaten notification servisine forward ediyor.
+const notificationBase = (() => {
+  const direct = process.env['NOTIFICATION_SERVICE_URL'];
+  if (direct) return `${direct}/api/v1/notifications`;
+  return `${SERVICES.gateway}/api/v1/notifications`;
+})();
+
 interface Notification {
   id: string;
   type: 'risk' | 'deadline' | 'feedback' | 'review' | 'application' | 'system';
@@ -76,8 +85,8 @@ export async function GET(request: NextRequest) {
     const headers = buildServiceHeaders(ctx);
 
     const [inappRes, unreadRes] = await Promise.all([
-      fetch(`${SERVICES.notification}/api/v1/notifications/inapp?limit=20`, { headers }),
-      fetch(`${SERVICES.notification}/api/v1/notifications/inapp/unread-count`, { headers }),
+      fetch(`${notificationBase}/inapp?limit=20`, { headers }),
+      fetch(`${notificationBase}/inapp/unread-count`, { headers }),
     ]);
 
     const inappData = inappRes.ok ? await readJson(inappRes) : { items: [] };
@@ -131,7 +140,7 @@ export async function PATCH(req: NextRequest) {
     const ids = Array.isArray(notificationIds) ? notificationIds.filter(Boolean) : [];
 
     if (ids.length === 0) {
-      await fetch(`${SERVICES.notification}/api/v1/notifications/inapp/read-all`, {
+      await fetch(`${notificationBase}/inapp/read-all`, {
         method: 'POST',
         headers,
       });
@@ -144,7 +153,7 @@ export async function PATCH(req: NextRequest) {
 
     await Promise.all(
       ids.map((id) =>
-        fetch(`${SERVICES.notification}/api/v1/notifications/inapp/${id}/read`, {
+        fetch(`${notificationBase}/inapp/${id}/read`, {
           method: 'POST',
           headers,
         }),

@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useUser } from '@clerk/nextjs';
 import { useAuthMe } from '@/hooks/useAuthMe';
 
@@ -30,8 +31,15 @@ export const Greeting = ({
   employeeCount,
   tenantName,
 }: GreetingProps) => {
-  const greeting = getGreeting();
-  const dateStr = formatDate();
+  // SSR/CSR mismatch'i önle: server'da hour/Intl değerleri client'tan
+  // farklı çıkabilir (TZ + locale). useEffect içinde set et.
+  const [greeting, setGreeting] = useState('Hoş geldiniz');
+  const [dateStr, setDateStr] = useState('');
+
+  useEffect(() => {
+    setGreeting(getGreeting());
+    setDateStr(formatDate());
+  }, []);
 
   // Clerk session → hızlı isim görünümü (optimistic).
   const { user: clerkUser, isLoaded: clerkReady } = useUser();

@@ -96,7 +96,7 @@ func main() {
 	go sentimentWorker.Run(ctx)
 
 	// HTTP router
-	r := newRouter(cfg, logger, authChecker, surveySvc, scheduleSvc, distSvc, responseSvc, aggSvc)
+	r := newRouter(cfg, logger, authChecker, surveySvc, scheduleSvc, distSvc, responseSvc, aggSvc, distRepo)
 
 	srv := &http.Server{
 		Addr:              ":" + cfg.Port,
@@ -143,6 +143,7 @@ func newRouter(
 	distSvc *service.DistributionService,
 	responseSvc *service.ResponseService,
 	aggSvc *service.AggregationService,
+	distRepo repository.DistributionRepository,
 ) http.Handler {
 	r := chi.NewRouter()
 	r.Use(chimw.RequestID)
@@ -160,7 +161,7 @@ func newRouter(
 	}))
 	r.Use(middleware.TenantInjector)
 
-	surveyH := handler.NewSurveyHandler(surveySvc, logger)
+	surveyH := handler.NewSurveyHandler(surveySvc, distRepo, logger)
 	scheduleH := handler.NewScheduleHandler(scheduleSvc, distSvc, logger)
 	distH := handler.NewDistributionHandler(distSvc, logger)
 	publicH := handler.NewPublicHandler(responseSvc, logger)
@@ -183,6 +184,10 @@ func newRouter(
 			r.Get("/", surveyH.List)
 			r.Post("/", surveyH.Create)
 			r.Get("/mine/pending", surveyH.ListPending)
+			// Pulse onboarding probe — /pulse/status MUTLAKA /{code}
+			// route'undan önce kayıtlı olmalı, aksi halde "pulse" code
+			// olarak yorumlanır.
+			r.Get("/pulse/status", surveyH.PulseStatus)
 			r.Get("/{code}", surveyH.GetByCode)
 			r.Get("/{code}/items", surveyH.GetItems)
 			r.Patch("/{id}", surveyH.Update)

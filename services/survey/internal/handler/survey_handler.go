@@ -8,18 +8,20 @@ import (
 	"github.com/rs/zerolog"
 
 	"github.com/upcore/survey/internal/middleware"
+	"github.com/upcore/survey/internal/repository"
 	"github.com/upcore/survey/internal/service"
 )
 
 // SurveyHandler exposes survey CRUD endpoints.
 type SurveyHandler struct {
-	svc *service.SurveyService
-	log zerolog.Logger
+	svc      *service.SurveyService
+	distRepo repository.DistributionRepository
+	log      zerolog.Logger
 }
 
 // NewSurveyHandler constructs a SurveyHandler.
-func NewSurveyHandler(svc *service.SurveyService, log zerolog.Logger) *SurveyHandler {
-	return &SurveyHandler{svc: svc, log: log}
+func NewSurveyHandler(svc *service.SurveyService, distRepo repository.DistributionRepository, log zerolog.Logger) *SurveyHandler {
+	return &SurveyHandler{svc: svc, distRepo: distRepo, log: log}
 }
 
 // List handles GET /surveys.
@@ -116,6 +118,30 @@ func (h *SurveyHandler) Update(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	WriteJSON(w, http.StatusOK, survey)
+}
+
+// PulseStatus handles GET /surveys/pulse/status. Onboarding probe — frontend
+// FirstPulseCTA hiç pulse gönderilmediyse kartı gösterir. Distribution sayısı
+// > 0 ise has_sent_pulse = true.
+func (h *SurveyHandler) PulseStatus(w http.ResponseWriter, r *http.Request) {
+	tid := middleware.TenantIDFromContext(r.Context())
+	if tid == uuid.Nil {
+		WriteError(w, http.StatusUnauthorized, "unauthorized", "missing tenant")
+		return
+	}
+	total := 0
+	if h.distRepo != nil {
+		n, err := h.distRepo.CountByTenant(r.Context(), tid)
+		if err != nil {
+			h.log.Warn().Err(err).Msg("pulse status count failed; defaulting to 0")
+			n = 0
+		}
+		total = n
+	}
+	WriteJSON(w, http.StatusOK, map[string]any{
+		"has_sent_pulse": total > 0,
+		"total_sent":     total,
+	})
 }
 
 // ListPending handles GET /surveys/mine/pending.

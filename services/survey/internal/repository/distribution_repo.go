@@ -22,6 +22,10 @@ type DistributionRepository interface {
 	IncrementResponseCount(ctx context.Context, id uuid.UUID) error
 	List(ctx context.Context, f DistFilter) ([]*domain.Distribution, int, error)
 	ListExpired(ctx context.Context, now time.Time) ([]*domain.Distribution, error)
+	// CountByTenant returns the number of distributions for a tenant. Used by
+	// the pulse-status onboarding probe to decide whether the first-pulse CTA
+	// should be shown.
+	CountByTenant(ctx context.Context, tenantID uuid.UUID) (int, error)
 }
 
 // DistFilter parameterises distribution listing.
@@ -160,4 +164,16 @@ func (r *distRepo) ListExpired(ctx context.Context, now time.Time) ([]*domain.Di
 		return nil, fmt.Errorf("list expired distributions: %w", err)
 	}
 	return rows, nil
+}
+
+// CountByTenant returns the total number of distributions ever created for a
+// tenant. Distribution row sayısı = "anket gönderildi" event'i; pulse-status
+// onboarding kartı bu sayıya göre gösterilir/gizlenir.
+func (r *distRepo) CountByTenant(ctx context.Context, tenantID uuid.UUID) (int, error) {
+	var total int
+	q := `SELECT COUNT(*) FROM app.survey_distributions WHERE tenant_id = $1`
+	if err := r.db.GetContext(ctx, &total, q, tenantID); err != nil {
+		return 0, fmt.Errorf("count distributions by tenant: %w", err)
+	}
+	return total, nil
 }
