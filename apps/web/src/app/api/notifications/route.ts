@@ -81,7 +81,7 @@ type InAppNotification = {
 
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const headers = buildServiceHeaders(ctx);
 
     const [inappRes, unreadRes] = await Promise.all([
@@ -122,7 +122,7 @@ export async function GET(request: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
     const body = await req.json();
     const { action, notificationIds } = body as {

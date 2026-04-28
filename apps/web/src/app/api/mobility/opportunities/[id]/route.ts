@@ -9,7 +9,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   try {
     const r = await fetch(
       `${SERVICES.gateway ?? MOBILITY}/api/v1/mobility/marketplace/opportunities/${id}`,

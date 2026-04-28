@@ -5,7 +5,7 @@ import { createAuditLogger } from '@/lib/audit-logger';
 
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const res = await fetch(`${SERVICES.document}/api/v1/documents`, {
       headers: buildServiceHeaders(ctx),
       cache: 'no-store',
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const body = await request.json();
     const res = await fetch(`${SERVICES.document}/api/v1/documents`, {
       method: 'POST',
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const documentId = req.nextUrl.searchParams.get('documentId');
     if (!documentId) {
       return NextResponse.json({ error: 'documentId parametresi gerekli' }, { status: 400 });

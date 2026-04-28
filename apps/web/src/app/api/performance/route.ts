@@ -101,7 +101,7 @@ const potentialLabel = (value: number | null): 'high' | 'medium' | 'low' => {
 
 export async function GET(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
 
     const cyclesRes = await fetch(`${SERVICES.performance}/api/v1/performance/cycles?limit=20`, { headers });

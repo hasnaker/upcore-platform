@@ -10,7 +10,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   if (!HR_ROLES.has(ctx.userRole.toLowerCase())) {
     return NextResponse.json(
       { error: { code: 'forbidden', message: 'Rotasyonu kapatma yetkiniz yok.' } },

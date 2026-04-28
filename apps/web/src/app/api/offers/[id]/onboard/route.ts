@@ -9,7 +9,7 @@ export async function POST(
   { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const body = await req.text();
   try {
     const r = await fetch(`${SERVICES.employee}/api/v1/offers/${id}/onboard`, {

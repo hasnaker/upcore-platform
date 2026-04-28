@@ -114,7 +114,7 @@ type AtsApplication = {
 
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const headers = buildServiceHeaders(ctx);
 
     const [positionsRes, candidatesRes, applicationsRes] = await Promise.all([
@@ -196,7 +196,7 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'applicationId ve stage gerekli' }, { status: 400 });
     }
 
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
     const toStage = toAtsApiStage(stage);
 

@@ -19,7 +19,7 @@ function isPendingRole(v: string | null): v is PendingRole {
 }
 
 export async function GET(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const url = new URL(req.url);
   const roleParam = url.searchParams.get('role');
   if (!isPendingRole(roleParam)) {

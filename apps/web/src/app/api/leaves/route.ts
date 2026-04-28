@@ -6,7 +6,7 @@ import { createAuditLogger } from '@/lib/audit-logger';
 // GET /api/leaves — list types + balance + requests
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const employeeId = request.headers.get('x-employee-id') || ctx.userId;
     const headers = buildServiceHeaders(ctx, { 'X-Employee-Id': employeeId });
 
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
 // POST /api/leaves — submit leave request
 export async function POST(request: Request) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const employeeId = request.headers.get('x-employee-id') || ctx.userId;
     const body = await request.json();
     const res = await fetch(`${SERVICES.leave}/api/v1/leaves/requests`, {
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 // PATCH /api/leaves — Approve or reject leave request
 export async function PATCH(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const body = await req.json();
     const { requestId, action, managerNotes } = body as {
       requestId?: string;

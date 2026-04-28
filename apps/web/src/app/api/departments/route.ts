@@ -5,7 +5,7 @@ import { createAuditLogger } from '@/lib/audit-logger';
 
 export async function POST(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const body = await request.json();
     const res = await fetch(`${SERVICES.organization}/api/v1/departments`, {
       method: 'POST',
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const headers = buildServiceHeaders(ctx);
     const [deptRes, empRes] = await Promise.all([
       fetch(`${SERVICES.organization}/api/v1/departments`, { headers, cache: 'no-store' }),
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
 // PATCH /api/departments — Update department
 export async function PATCH(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const body = await req.json();
     const { departmentId, name_tr, description, cost_center, active } = body as {
       departmentId?: string;
@@ -98,7 +98,7 @@ export async function PATCH(req: NextRequest) {
 // DELETE /api/departments — Soft-delete department
 export async function DELETE(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const { searchParams } = new URL(req.url);
     const departmentId = searchParams.get('departmentId');
 

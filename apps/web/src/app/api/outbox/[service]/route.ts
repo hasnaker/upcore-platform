@@ -24,7 +24,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ serv
     return NextResponse.json({ error: 'unknown_service' }, { status: 400 });
   }
 
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const url = new URL(req.url);
   const kind = url.searchParams.get('kind') ?? 'stats';
   const page = url.searchParams.get('page') ?? '0';

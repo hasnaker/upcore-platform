@@ -7,7 +7,7 @@ import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 // re-checks tenant + cooldown; role-gated operations (approve/reject) live in
 // sibling routes.
 export async function POST(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const body = await req.text();
   const upstream = SERVICES.gateway ?? SERVICES.mobility;
   try {

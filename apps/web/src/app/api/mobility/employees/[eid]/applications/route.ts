@@ -8,7 +8,7 @@ export async function GET(
   { params }: { params: Promise<{ eid: string }> },
 ) {
   const { eid } = await params;
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const upstream = SERVICES.gateway ?? SERVICES.mobility;
   try {
     const r = await fetch(

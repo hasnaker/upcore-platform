@@ -5,7 +5,7 @@ import { getRequestContext } from '@/lib/request-context';
 // Score an assessment via Python psychometric-scoring service
 export async function POST(request: Request) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const body = await request.json();
     const { instrument, responses, tenantId, employeeId, assessmentId } = body;
 

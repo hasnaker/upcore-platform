@@ -4,7 +4,7 @@ import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 
 // GET /api/offers — list offers via employee service.
 export async function GET(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const url = new URL(req.url);
   const qs = new URLSearchParams();
   for (const k of ['page', 'limit', 'status']) {

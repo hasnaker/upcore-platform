@@ -29,6 +29,11 @@ type Deps struct {
 func Router(d *Deps) http.Handler {
 	r := chi.NewRouter()
 
+	// StripSlashes removes trailing slashes ("/api/v1/auth/me/" -> "/api/v1/auth/me")
+	// so chi routes match without emitting a 301 redirect. The gateway logs
+	// status=0/301 (browser cancels the redirected POST) when a trailing slash
+	// is present in the proxied request — strip them server-side instead.
+	r.Use(chimw.StripSlashes)
 	r.Use(appmw.RequestLogger)
 	r.Use(appmw.Recover)
 	r.Use(chimw.Timeout(d.Cfg.RequestTimeout))

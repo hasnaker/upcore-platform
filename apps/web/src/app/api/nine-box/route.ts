@@ -53,7 +53,7 @@ export async function PATCH(req: NextRequest) {
     }
 
     const { employeeId, performanceScore, potentialScore, category } = validation.data!;
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
     const cycleId = await resolveCycleId(headers);
 
@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'updates array zorunlu' }, { status: 400 });
     }
 
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
     const cycleId = await resolveCycleId(headers);
 

@@ -20,7 +20,7 @@ type ScorePayload = {
 export async function POST(request: Request) {
   let ctx;
   try {
-    ctx = getRequestContext(request);
+    ctx = await getRequestContext(request);
   } catch (err) {
     return NextResponse.json(
       { error: 'Authentication required', details: String(err) },

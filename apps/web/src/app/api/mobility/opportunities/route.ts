@@ -6,7 +6,7 @@ const MOBILITY = process.env['MOBILITY_SERVICE_URL'] || 'http://localhost:8013';
 
 // GET /api/mobility/opportunities?type=permanent
 export async function GET(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const url = new URL(req.url);
   const qs = new URLSearchParams();
   if (url.searchParams.get('type')) qs.set('type', url.searchParams.get('type') ?? '');
@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const body = await req.text();
   try {
     const r = await fetch(

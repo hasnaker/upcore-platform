@@ -21,7 +21,7 @@ export async function GET(
   { params }: { params: Promise<{ eid: string }> },
 ) {
   const { eid } = await params;
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const role = ctx.userRole.toLowerCase();
   const isManager = MANAGEMENT_ROLES.has(role);
   const isSelf = ctx.userId && ctx.userId === eid;

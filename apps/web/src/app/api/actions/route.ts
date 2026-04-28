@@ -20,7 +20,7 @@ const mapActionRole = (role: string): 'hr_director' | 'people_partner' | 'line_m
 
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const headers = buildServiceHeaders(ctx);
 
     const [actionsRes, criticalRes] = await Promise.all([

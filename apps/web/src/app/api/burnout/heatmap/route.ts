@@ -8,7 +8,7 @@ import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
  */
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const headers = buildServiceHeaders(ctx);
     const weeks = Number.parseInt(request.nextUrl.searchParams.get('weeks') || '4', 10);
     const limit = Number.parseInt(request.nextUrl.searchParams.get('limit') || '10', 10);

@@ -39,7 +39,7 @@ const readJson = async (response: Response): Promise<JsonRecord> => {
 
 export async function GET(request: NextRequest) {
   try {
-    const ctx = getRequestContext(request);
+    const ctx = await getRequestContext(request);
     const headers = buildServiceHeaders(ctx);
     const res = await fetch(
       `${SERVICES.intervention}/api/v1/interventions/catalog?is_active=true&limit=100`,
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
     const body = await req.json();
 
@@ -131,7 +131,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
-    const ctx = getRequestContext(req);
+    const ctx = await getRequestContext(req);
     const headers = buildServiceHeaders(ctx);
     const body = await req.json();
     const { assignmentId, status, outcome } = body as {

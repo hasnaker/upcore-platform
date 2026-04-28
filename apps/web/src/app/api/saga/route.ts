@@ -5,7 +5,7 @@ import { buildServiceHeaders, getRequestContext } from '@/lib/request-context';
 // GET /api/saga?kind=stats
 // GET /api/saga?kind=list&status=failed&saga_name=onboarding_v1&page=0
 export async function GET(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const url = new URL(req.url);
   const kind = url.searchParams.get('kind') ?? 'list';
 

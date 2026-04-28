@@ -20,7 +20,7 @@ export async function POST(
     return NextResponse.json({ error: 'unknown_service' }, { status: 400 });
   }
   const svcKey = service as ServiceKey;
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const target = `${SERVICES[svcKey]}${BASE_PATH[svcKey]}/${id}/replay`;
 
   try {

@@ -21,7 +21,7 @@ type ApiEmployee = {
 // scope'a uyarak) Excel dosyası olarak indirir — 1. Paraşüt göçü + 2. Muhasebe
 // departmanı aylık manuel rapor use-case'i.
 export async function GET(req: NextRequest) {
-  const ctx = getRequestContext(req);
+  const ctx = await getRequestContext(req);
   const format = req.nextUrl.searchParams.get('format') ?? 'xlsx';
 
   // Fetch full list in pages of 500
