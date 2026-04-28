@@ -60,15 +60,18 @@ ALTER TABLE teams_installations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE teams_oauth_states  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE teams_user_map      ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS tenant_iso_teams_installations
+DROP POLICY IF EXISTS tenant_iso_teams_installations ON teams_installations;
+CREATE POLICY tenant_iso_teams_installations
     ON teams_installations
     USING (tenant_id = current_setting('app.tenant_id', true)::UUID);
 
-CREATE POLICY IF NOT EXISTS tenant_iso_teams_oauth_states
+DROP POLICY IF EXISTS tenant_iso_teams_oauth_states ON teams_oauth_states;
+CREATE POLICY tenant_iso_teams_oauth_states
     ON teams_oauth_states
     USING (tenant_id = current_setting('app.tenant_id', true)::UUID);
 
-CREATE POLICY IF NOT EXISTS tenant_iso_teams_user_map
+DROP POLICY IF EXISTS tenant_iso_teams_user_map ON teams_user_map;
+CREATE POLICY tenant_iso_teams_user_map
     ON teams_user_map
     USING (tenant_id = current_setting('app.tenant_id', true)::UUID);
 

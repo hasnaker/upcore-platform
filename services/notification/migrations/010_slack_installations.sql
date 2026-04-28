@@ -71,15 +71,18 @@ ALTER TABLE slack_installations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE slack_oauth_states ENABLE ROW LEVEL SECURITY;
 ALTER TABLE slack_user_map ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS tenant_isolation_slack_installations
+DROP POLICY IF EXISTS tenant_isolation_slack_installations ON slack_installations;
+CREATE POLICY tenant_isolation_slack_installations
     ON slack_installations
     USING (tenant_id = current_setting('app.tenant_id', true)::UUID);
 
-CREATE POLICY IF NOT EXISTS tenant_isolation_slack_oauth_states
+DROP POLICY IF EXISTS tenant_isolation_slack_oauth_states ON slack_oauth_states;
+CREATE POLICY tenant_isolation_slack_oauth_states
     ON slack_oauth_states
     USING (tenant_id = current_setting('app.tenant_id', true)::UUID);
 
-CREATE POLICY IF NOT EXISTS tenant_isolation_slack_user_map
+DROP POLICY IF EXISTS tenant_isolation_slack_user_map ON slack_user_map;
+CREATE POLICY tenant_isolation_slack_user_map
     ON slack_user_map
     USING (tenant_id = current_setting('app.tenant_id', true)::UUID);
 
