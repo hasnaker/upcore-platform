@@ -48,8 +48,8 @@
     "@types/rss": "^0.0.32",
     "@typescript-eslint/eslint-plugin": "^7.18.0",
     "@typescript-eslint/parser": "^7.18.0",
-    "eslint": "^8.57.0",
-    "typescript": "^5.5.3"
+    "eslint": "^10.3.0",
+    "typescript": "^6.0.3"
   },
   "browserslist": {
     "production": [">0.5%", "not dead", "not op_mini all"],

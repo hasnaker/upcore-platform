@@ -32,7 +32,7 @@
     "lint-staged": "^15.2.7",
     "prettier": "^3.3.2",
     "turbo": "^2.0.6",
-    "typescript": "^5.5.3"
+    "typescript": "^6.0.3"
   },
   "pnpm": {
     "overrides": {
