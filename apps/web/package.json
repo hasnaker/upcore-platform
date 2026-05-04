@@ -25,7 +25,7 @@
     "@upcore/types": "workspace:*",
     "exceljs": "^4.4.0",
     "lucide-react": "^0.400.0",
-    "next": "^15.0.0",
+    "next": "^16.2.4",
     "pg": "^8.20.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -35,7 +35,7 @@
     "zustand": "^4.5.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^15.0.0",
+    "@next/bundle-analyzer": "^16.2.4",
     "@tailwindcss/postcss": "^4.0.0",
     "@types/node": "^20.11.30",
     "@types/pg": "^8.20.0",
