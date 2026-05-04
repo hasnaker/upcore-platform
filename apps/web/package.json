@@ -24,7 +24,7 @@
     "@upcore/design-system": "workspace:*",
     "@upcore/types": "workspace:*",
     "exceljs": "^4.4.0",
-    "lucide-react": "^0.400.0",
+    "lucide-react": "^1.14.0",
     "next": "^15.0.0",
     "pg": "^8.20.0",
     "react": "^19.0.0",
