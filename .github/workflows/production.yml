@@ -222,7 +222,7 @@ jobs:
           done
 
       - name: Upload rollback data
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: rollback-revisions-${{ steps.deployment.outputs.deploy_id }}
           path: /tmp/rollback/
